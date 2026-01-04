@@ -12,6 +12,7 @@ use App\Http\Controllers\StatsController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\AccountantController;
 use App\Http\Controllers\SystemAdminController;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -51,22 +52,30 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // System Admin Routes
-    Route::get('/admin/dashboard', [SystemAdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::post('/admin/shops/{shop}/approve', [SystemAdminController::class, 'approveShop'])->name('admin.shops.approve');
-    Route::post('/admin/shops/{shop}/reject', [SystemAdminController::class, 'rejectShop'])->name('admin.shops.reject');
-    Route::get('/admin/shops/create', [SystemAdminController::class, 'createShop'])->name('admin.shops.create');
-    Route::post('/admin/shops', [SystemAdminController::class, 'storeShop'])->name('admin.shops.store');
-    Route::get('/admin/users', [SystemAdminController::class, 'listUsers'])->name('admin.users.index');
+    // System Admin Routes - Only accessible by system_admin
+    Route::middleware(RoleMiddleware::class.':system_admin')->group(function () {
+        Route::get('/admin/dashboard', [SystemAdminController::class, 'dashboard'])->name('admin.dashboard');
+        Route::post('/admin/shops/{shop}/approve', [SystemAdminController::class, 'approveShop'])->name('admin.shops.approve');
+        Route::post('/admin/shops/{shop}/reject', [SystemAdminController::class, 'rejectShop'])->name('admin.shops.reject');
+        Route::get('/admin/shops/create', [SystemAdminController::class, 'createShop'])->name('admin.shops.create');
+        Route::post('/admin/shops', [SystemAdminController::class, 'storeShop'])->name('admin.shops.store');
+        Route::get('/admin/users', [SystemAdminController::class, 'listUsers'])->name('admin.users.index');
+    });
 
-    // Shop Admin Routes
-    Route::get('/shop/dashboard', [ShopAdminController::class, 'dashboard'])->name('shop.dashboard');
+    // Shop Admin Routes - Only accessible by shop_admin
+    Route::middleware(RoleMiddleware::class.':shop_admin')->group(function () {
+        Route::get('/shop/dashboard', [ShopAdminController::class, 'dashboard'])->name('shop.dashboard');
+    });
 
-    // Seller Routes
-    Route::get('/seller/dashboard', [SellerController::class, 'dashboard'])->name('seller.dashboard');
+    // Seller Routes - Only accessible by seller
+    Route::middleware(RoleMiddleware::class.':seller')->group(function () {
+        Route::get('/seller/dashboard', [SellerController::class, 'dashboard'])->name('seller.dashboard');
+    });
 
-    // Accountant Routes
-    Route::get('/accountant/dashboard', [AccountantController::class, 'dashboard'])->name('accountant.dashboard');
+    // Accountant Routes - Only accessible by accountant
+    Route::middleware(RoleMiddleware::class.':accountant')->group(function () {
+        Route::get('/accountant/dashboard', [AccountantController::class, 'dashboard'])->name('accountant.dashboard');
+    });
 
     // Resource routes for shop admin
     Route::resource('products', ProductController::class);

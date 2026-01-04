@@ -30,9 +30,26 @@ class RoleMiddleware
         }
 
         if (!in_array($user->role, $roles, true)) {
-            abort(403, 'Unauthorized role');
+            // Redirect to appropriate dashboard instead of 403
+            return $this->redirectToDashboard($user);
         }
 
         return $next($request);
+    }
+
+    /**
+     * Redirect user to their appropriate dashboard
+     */
+    protected function redirectToDashboard($user): Response
+    {
+        $route = match ($user->role) {
+            'system_admin' => 'admin.dashboard',
+            'shop_admin' => 'shop.dashboard',
+            'seller' => 'seller.dashboard',
+            'accountant' => 'accountant.dashboard',
+            default => 'dashboard',
+        };
+
+        return redirect()->route($route)->with('error', 'You do not have access to that page.');
     }
 }
