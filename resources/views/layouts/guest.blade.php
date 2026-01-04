@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Shopledger') }}</title>
+        <title>{{ config('app.name', 'Shopledger') }} | @yield('title', 'Welcome')</title>
 
         <!-- SEO Meta Tags -->
         <meta name="description" content="Shopledger - Multi-shop management system for inventory, sales, purchases, and staff management. Simplify your business operations.">
@@ -15,18 +15,20 @@
 
         <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website">
-        <meta property="og:url" content="{{ url('/') }}">
+        <meta property="og:url" content="{{ url()->current() }}">
         <meta property="og:title" content="{{ config('app.name', 'Shopledger') }} - Multi-Shop Management System">
         <meta property="og:description" content="Simplify your shop management with Shopledger. Track inventory, sales, purchases, and staff all in one place.">
-        <meta property="og:image" content="{{ asset('images/logo.svg') }}">
+        <meta property="og:image" content="{{ asset('images/og-image.png') }}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
         <meta property="og:site_name" content="Shopledger">
 
         <!-- Twitter -->
         <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:url" content="{{ url('/') }}">
+        <meta name="twitter:url" content="{{ url()->current() }}">
         <meta name="twitter:title" content="{{ config('app.name', 'Shopledger') }} - Multi-Shop Management System">
         <meta name="twitter:description" content="Simplify your shop management with Shopledger. Track inventory, sales, purchases, and staff all in one place.">
-        <meta name="twitter:image" content="{{ asset('images/logo.svg') }}">
+        <meta name="twitter:image" content="{{ asset('images/og-image.png') }}">
 
         <!-- Favicon -->
         <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">

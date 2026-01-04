@@ -7,25 +7,27 @@
         <title>{{ config('app.name', 'Shopledger') }} - Multi-Shop Management System</title>
 
         <!-- SEO Meta Tags -->
-        <meta name="description" content="Shopledger - Multi-shop management system for inventory, sales, purchases, and staff management. Simplify your business operations.">
-        <meta name="keywords" content="shop management, inventory, sales, purchases, POS, Rwanda, RWF, business management">
+        <meta name="description" content="Shopledger - Rwanda's leading multi-shop management system for inventory, sales, purchases, and staff management. Simplify your business operations.">
+        <meta name="keywords" content="shop management, inventory, sales, purchases, POS, Rwanda, RWF, business management, Kigali">
         <meta name="author" content="Shopledger">
         <meta name="robots" content="index, follow">
 
         <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website">
         <meta property="og:url" content="{{ url('/') }}">
-        <meta property="og:title" content="{{ config('app.name', 'Shopledger') }} - Multi-Shop Management System">
-        <meta property="og:description" content="Simplify your shop management with Shopledger. Track inventory, sales, purchases, and staff all in one place.">
-        <meta property="og:image" content="{{ asset('images/logo.svg') }}">
+        <meta property="og:title" content="Shopledger - Multi-Shop Management System for Rwanda">
+        <meta property="og:description" content="Rwanda's leading shop management solution. Track inventory, sales, purchases, and staff with real-time analytics.">
+        <meta property="og:image" content="{{ asset('images/og-image.png') }}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
         <meta property="og:site_name" content="Shopledger">
 
         <!-- Twitter -->
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:url" content="{{ url('/') }}">
-        <meta name="twitter:title" content="{{ config('app.name', 'Shopledger') }} - Multi-Shop Management System">
-        <meta name="twitter:description" content="Simplify your shop management with Shopledger. Track inventory, sales, purchases, and staff all in one place.">
-        <meta name="twitter:image" content="{{ asset('images/logo.svg') }}">
+        <meta name="twitter:title" content="Shopledger - Multi-Shop Management System for Rwanda">
+        <meta name="twitter:description" content="Rwanda's leading shop management solution. Track inventory, sales, purchases, and staff with real-time analytics.">
+        <meta name="twitter:image" content="{{ asset('images/og-image.png') }}">
 
         <!-- Favicon -->
         <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
@@ -117,14 +119,14 @@
                                 <span class="h-2 w-2 rounded-full bg-green-400 mr-2 animate-pulse"></span>
                                 Trusted by 100+ shops in Rwanda
                             </div>
-                            
+
                             <h2 class="text-4xl lg:text-6xl font-extrabold leading-tight mb-6">
                                 Manage Your Shops
                                 <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-pink-400">
                                     Like a Pro
                                 </span>
                             </h2>
-                            
+
                             <p class="text-xl text-indigo-200 mb-8 leading-relaxed">
                                 The complete multi-shop management system. Track sales, inventory, profits, and staff - all in one powerful platform built for Rwandan businesses.
                             </p>
@@ -286,7 +288,7 @@
                     <div class="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm rounded-3xl p-12 border border-white/20">
                         <h3 class="text-3xl lg:text-4xl font-extrabold text-white mb-4">Ready to Transform Your Business?</h3>
                         <p class="text-xl text-indigo-200 mb-8">Join hundreds of shop owners who trust Shopledger to manage their business.</p>
-                        
+
                         <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                             <a href="{{ route('register') }}" class="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-400 transition transform hover:scale-105 shadow-xl">
                                 Start Free Today
