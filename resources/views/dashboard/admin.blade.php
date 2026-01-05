@@ -8,8 +8,8 @@
                     </svg>
                 </div>
                 <div>
-                    <h2 class="font-bold text-xl text-gray-800 leading-tight">System Admin Dashboard</h2>
-                    <p class="text-sm text-gray-500">Manage all shops and users</p>
+                    <h2 class="font-bold text-xl text-gray-800 leading-tight">{{ __('System Admin Dashboard') }}</h2>
+                    <p class="text-sm text-gray-500">{{ __('Manage all shops and users') }}</p>
                 </div>
             </div>
             <div class="text-right hidden md:block">
@@ -33,10 +33,10 @@
                                 </svg>
                             </div>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-500 mb-1">Total Shops</h3>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{{ __('Total Shops') }}</h3>
                         <p class="text-3xl font-bold text-gray-900">{{ number_format($totalShops) }}</p>
                         <div class="mt-3 flex items-center text-sm">
-                            <span class="text-indigo-600 font-medium">All registered shops</span>
+                            <span class="text-indigo-600 font-medium">{{ __('All registered shops') }}</span>
                         </div>
                     </div>
                     <div class="h-1 bg-gradient-to-r from-indigo-400 to-purple-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -53,14 +53,14 @@
                             </div>
                             @if($pendingShops > 0)
                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-600 animate-pulse">
-                                Action needed
+                                {{ __('Action needed') }}
                             </span>
                             @endif
                         </div>
-                        <h3 class="text-sm font-medium text-gray-500 mb-1">Pending Approval</h3>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{{ __('Pending Approval') }}</h3>
                         <p class="text-3xl font-bold {{ $pendingShops > 0 ? 'text-yellow-600' : 'text-gray-900' }}">{{ number_format($pendingShops) }}</p>
                         <div class="mt-3 flex items-center text-sm">
-                            <span class="text-yellow-600 font-medium">Awaiting review</span>
+                            <span class="text-yellow-600 font-medium">{{ __('Awaiting review') }}</span>
                         </div>
                     </div>
                     <div class="h-1 bg-gradient-to-r from-yellow-400 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -76,10 +76,10 @@
                                 </svg>
                             </div>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-500 mb-1">Approved Shops</h3>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{{ __('Approved Shops') }}</h3>
                         <p class="text-3xl font-bold text-green-600">{{ number_format($approvedShops) }}</p>
                         <div class="mt-3 flex items-center text-sm">
-                            <span class="text-green-600 font-medium">Active & running</span>
+                            <span class="text-green-600 font-medium">{{ __('Active & running') }}</span>
                         </div>
                     </div>
                     <div class="h-1 bg-gradient-to-r from-green-400 to-emerald-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -95,10 +95,10 @@
                                 </svg>
                             </div>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-500 mb-1">Total Users</h3>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{{ __('Total Users') }}</h3>
                         <p class="text-3xl font-bold text-gray-900">{{ number_format($totalUsers) }}</p>
                         <div class="mt-3 flex items-center text-sm">
-                            <span class="text-purple-600 font-medium">Registered users</span>
+                            <span class="text-purple-600 font-medium">{{ __('Registered users') }}</span>
                         </div>
                     </div>
                     <div class="h-1 bg-gradient-to-r from-purple-400 to-pink-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -114,10 +114,10 @@
                                 </svg>
                             </div>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-500 mb-1">Unassigned Users</h3>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{{ __('Unassigned Users') }}</h3>
                         <p class="text-3xl font-bold text-cyan-600">{{ number_format($unassignedUsers) }}</p>
                         <div class="mt-3 flex items-center text-sm">
-                            <span class="text-cyan-600 font-medium">Without a shop</span>
+                            <span class="text-cyan-600 font-medium">{{ __('Without a shop') }}</span>
                         </div>
                     </div>
                     <div class="h-1 bg-gradient-to-r from-cyan-400 to-teal-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -134,8 +134,8 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
-                            <p class="text-xs text-gray-500">Manage shops and users</p>
+                            <h3 class="text-lg font-semibold text-gray-900">{{ __('Quick Actions') }}</h3>
+                            <p class="text-xs text-gray-500">{{ __('Manage shops and users') }}</p>
                         </div>
                     </div>
                 </div>
@@ -149,8 +149,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="font-bold text-green-800">Create Shop</p>
-                                <p class="text-xs text-green-600">Add new shop & assign user</p>
+                                <p class="font-bold text-green-800">{{ __('Create Shop') }}</p>
+                                <p class="text-xs text-green-600">{{ __('Add new shop & assign user') }}</p>
                             </div>
                         </a>
 
@@ -162,8 +162,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="font-bold text-purple-800">All Users</p>
-                                <p class="text-xs text-purple-600">View & manage users</p>
+                                <p class="font-bold text-purple-800">{{ __('All Users') }}</p>
+                                <p class="text-xs text-purple-600">{{ __('View & manage users') }}</p>
                             </div>
                         </a>
 
@@ -175,8 +175,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="font-bold text-indigo-800">All Shops</p>
-                                <p class="text-xs text-indigo-600">View recent shops</p>
+                                <p class="font-bold text-indigo-800">{{ __('All Shops') }}</p>
+                                <p class="text-xs text-indigo-600">{{ __('View recent shops') }}</p>
                             </div>
                         </a>
 
@@ -188,10 +188,10 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="font-bold text-gray-800">System Health</p>
+                                <p class="font-bold text-gray-800">{{ __('System Health') }}</p>
                                 <p class="text-xs text-green-600 flex items-center">
                                     <span class="h-2 w-2 rounded-full bg-green-500 mr-1 animate-pulse"></span>
-                                    All systems operational
+                                    {{ __('All systems operational') }}
                                 </p>
                             </div>
                         </div>
@@ -211,12 +211,12 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-lg font-bold text-yellow-800">Shops Awaiting Approval</h3>
-                                <p class="text-xs text-yellow-600">{{ $pendingShops }} shop(s) need your attention</p>
+                                <h3 class="text-lg font-bold text-yellow-800">{{ __('Shops Awaiting Approval') }}</h3>
+                                <p class="text-xs text-yellow-600">{{ __(':count shop(s) need your attention', ['count' => $pendingShops]) }}</p>
                             </div>
                         </div>
                         <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-yellow-100 text-yellow-800">
-                            {{ $pendingShops }} pending
+                            {{ __(':count pending', ['count' => $pendingShops]) }}
                         </span>
                     </div>
                 </div>
@@ -224,10 +224,10 @@
                     <table class="min-w-full">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Shop Details</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Owner</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Submitted</th>
-                                <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Shop Details') }}</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Owner') }}</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Submitted') }}</th>
+                                <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -268,7 +268,7 @@
                                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                                 </svg>
-                                                Approve
+                                                {{ __('Approve') }}
                                             </button>
                                         </form>
                                         <form action="{{ route('admin.shops.reject', $shop) }}" method="POST" class="inline">
@@ -277,7 +277,7 @@
                                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                                 </svg>
-                                                Reject
+                                                {{ __('Reject') }}
                                             </button>
                                         </form>
                                     </div>
@@ -298,8 +298,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h4 class="text-lg font-bold text-green-800">All caught up! ✨</h4>
-                        <p class="text-sm text-green-600">No pending shop approvals at the moment.</p>
+                        <h4 class="text-lg font-bold text-green-800">{{ __('All caught up!') }} ✨</h4>
+                        <p class="text-sm text-green-600">{{ __('No pending shop approvals at the moment.') }}</p>
                     </div>
                 </div>
             </div>
@@ -316,8 +316,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-lg font-semibold text-gray-900">Recent Shops</h3>
-                                <p class="text-xs text-gray-500">Latest registered shops</p>
+                                <h3 class="text-lg font-semibold text-gray-900">{{ __('Recent Shops') }}</h3>
+                                <p class="text-xs text-gray-500">{{ __('Latest registered shops') }}</p>
                             </div>
                         </div>
                     </div>
@@ -326,10 +326,10 @@
                     <table class="min-w-full">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Shop</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Users</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Created</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Shop') }}</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Status') }}</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Users') }}</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Created') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -350,24 +350,24 @@
                                     @if($shop->status === 'approved')
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                                         <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>
-                                        Approved
+                                        {{ __('Approved') }}
                                     </span>
                                     @elseif($shop->status === 'pending')
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
                                         <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 mr-1.5 animate-pulse"></span>
-                                        Pending
+                                        {{ __('Pending') }}
                                     </span>
                                     @else
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
                                         <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
-                                        Rejected
+                                        {{ __('Rejected') }}
                                     </span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                            {{ $shop->users->count() }} users
+                                            {{ __(':count users', ['count' => $shop->users->count()]) }}
                                         </span>
                                     </div>
                                 </td>
@@ -387,7 +387,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/>
                                             </svg>
                                         </div>
-                                        <p class="text-gray-500">No shops registered yet</p>
+                                        <p class="text-gray-500">{{ __('No shops registered yet') }}</p>
                                     </div>
                                 </td>
                             </tr>

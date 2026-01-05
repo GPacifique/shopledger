@@ -12,8 +12,12 @@ use App\Http\Controllers\StatsController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\AccountantController;
 use App\Http\Controllers\SystemAdminController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
+
+// Language Switch Route
+Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
 Route::get('/', function () {
     return view('welcome');

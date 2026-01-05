@@ -8,14 +8,14 @@
                     </svg>
                 </a>
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    Staff Details
+                    {{ __('Staff Details') }}
                 </h2>
             </div>
             <a href="{{ route('staff.edit', $staff) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition">
                 <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
-                Edit
+                {{ __('Edit') }}
             </a>
         </div>
     </x-slot>
@@ -49,19 +49,19 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                         <div class="text-center">
                             <p class="text-2xl font-bold text-gray-900">{{ $staff->sales()->count() }}</p>
-                            <p class="text-sm text-gray-500">Total Sales</p>
+                            <p class="text-sm text-gray-500">{{ __('Total Sales') }}</p>
                         </div>
                         <div class="text-center">
                             <p class="text-2xl font-bold text-green-600">{{ rwf($staff->sales()->sum('total_amount')) }}</p>
-                            <p class="text-sm text-gray-500">Sales Revenue</p>
+                            <p class="text-sm text-gray-500">{{ __('Sales Revenue') }}</p>
                         </div>
                         <div class="text-center">
                             <p class="text-2xl font-bold text-gray-900">{{ $staff->created_at->diffInDays(now()) }}</p>
-                            <p class="text-sm text-gray-500">Days Active</p>
+                            <p class="text-sm text-gray-500">{{ __('Days Active') }}</p>
                         </div>
                         <div class="text-center">
                             <p class="text-2xl font-bold text-gray-900">{{ $staff->created_at->format('M d, Y') }}</p>
-                            <p class="text-sm text-gray-500">Joined</p>
+                            <p class="text-sm text-gray-500">{{ __('Joined') }}</p>
                         </div>
                     </div>
                 </div>
@@ -74,19 +74,19 @@
                         <svg class="h-5 w-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
-                        Account Information
+                        {{ __('Account Information') }}
                     </h3>
                     <dl class="space-y-3">
                         <div class="flex justify-between">
-                            <dt class="text-gray-500">Full Name</dt>
+                            <dt class="text-gray-500">{{ __('Full Name') }}</dt>
                             <dd class="font-medium text-gray-900">{{ $staff->name }}</dd>
                         </div>
                         <div class="flex justify-between">
-                            <dt class="text-gray-500">Email</dt>
+                            <dt class="text-gray-500">{{ __('Email') }}</dt>
                             <dd class="font-medium text-gray-900">{{ $staff->email }}</dd>
                         </div>
                         <div class="flex justify-between">
-                            <dt class="text-gray-500">Role</dt>
+                            <dt class="text-gray-500">{{ __('Role') }}</dt>
                             <dd>
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     {{ $staff->role === 'seller' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
@@ -95,7 +95,7 @@
                             </dd>
                         </div>
                         <div class="flex justify-between">
-                            <dt class="text-gray-500">Status</dt>
+                            <dt class="text-gray-500">{{ __('Status') }}</dt>
                             <dd>
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     {{ $staff->account_status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
@@ -111,7 +111,7 @@
                         <svg class="h-5 w-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                         </svg>
-                        Permissions
+                        {{ __('Permissions') }}
                     </h3>
                     @if($staff->role === 'seller')
                         <ul class="space-y-2">
@@ -119,25 +119,25 @@
                                 <svg class="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
-                                <span class="text-gray-700">Create new sales</span>
+                                <span class="text-gray-700">{{ __('Create new sales') }}</span>
                             </li>
                             <li class="flex items-center text-sm">
                                 <svg class="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
-                                <span class="text-gray-700">View product inventory</span>
+                                <span class="text-gray-700">{{ __('View product inventory') }}</span>
                             </li>
                             <li class="flex items-center text-sm">
                                 <svg class="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
-                                <span class="text-gray-700">View own sales history</span>
+                                <span class="text-gray-700">{{ __('View own sales history') }}</span>
                             </li>
                             <li class="flex items-center text-sm">
                                 <svg class="h-5 w-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
                                 </svg>
-                                <span class="text-gray-400">Cannot access reports</span>
+                                <span class="text-gray-400">{{ __('Cannot access reports') }}</span>
                             </li>
                         </ul>
                     @else
@@ -146,25 +146,25 @@
                                 <svg class="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
-                                <span class="text-gray-700">View all sales</span>
+                                <span class="text-gray-700">{{ __('View all sales') }}</span>
                             </li>
                             <li class="flex items-center text-sm">
                                 <svg class="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
-                                <span class="text-gray-700">View all purchases</span>
+                                <span class="text-gray-700">{{ __('View all purchases') }}</span>
                             </li>
                             <li class="flex items-center text-sm">
                                 <svg class="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
-                                <span class="text-gray-700">Access financial reports</span>
+                                <span class="text-gray-700">{{ __('Access financial reports') }}</span>
                             </li>
                             <li class="flex items-center text-sm">
                                 <svg class="h-5 w-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
                                 </svg>
-                                <span class="text-gray-400">Cannot create sales</span>
+                                <span class="text-gray-400">{{ __('Cannot create sales') }}</span>
                             </li>
                         </ul>
                     @endif
@@ -174,16 +174,16 @@
             <!-- Recent Activity -->
             <div class="bg-white overflow-hidden shadow-sm rounded-xl">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Recent Sales by {{ $staff->name }}</h3>
+                    <h3 class="text-lg font-semibold text-gray-900">{{ __('Recent Sales by') }} {{ $staff->name }}</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sale ID</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Sale ID') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Date') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Items') }}</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Amount') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -198,7 +198,7 @@
                                     {{ $sale->sale_date->format('M d, Y') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $sale->items->count() }} items
+                                    {{ $sale->items->count() }} {{ __('items') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">
                                     {{ rwf($sale->total_amount) }}
@@ -207,7 +207,7 @@
                             @empty
                             <tr>
                                 <td colspan="4" class="px-6 py-8 text-center text-gray-500">
-                                    No sales recorded yet
+                                    {{ __('No sales recorded yet') }}
                                 </td>
                             </tr>
                             @endforelse

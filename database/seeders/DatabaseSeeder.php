@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'system_admin',
             'account_status' => 'active',
+            'email_verified_at' => now(),
         ]);
 
         // Create Shop 1 Admin (without shop_id first)
@@ -35,6 +36,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'shop_admin',
             'account_status' => 'active',
+            'email_verified_at' => now(),
         ]);
 
         // Create Approved Shop 1 (created_by shopAdmin1)
@@ -57,6 +59,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'seller',
             'shop_id' => $shop1->id,
             'account_status' => 'active',
+            'email_verified_at' => now(),
         ]);
 
         User::create([
@@ -66,6 +69,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'accountant',
             'shop_id' => $shop1->id,
             'account_status' => 'active',
+            'email_verified_at' => now(),
         ]);
 
         // Create Shop 2 Admin (without shop_id first)
@@ -75,6 +79,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'shop_admin',
             'account_status' => 'active',
+            'email_verified_at' => now(),
         ]);
 
         // Create Approved Shop 2
@@ -97,6 +102,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'seller',
             'shop_id' => $shop2->id,
             'account_status' => 'active',
+            'email_verified_at' => now(),
         ]);
 
         // Create Pending Shop Admin (without shop_id first)
@@ -106,6 +112,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'shop_admin',
             'account_status' => 'active',
+            'email_verified_at' => now(),
         ]);
 
         // Create Pending Shop
@@ -126,6 +133,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'shop_admin',
             'account_status' => 'active',
+            'email_verified_at' => now(),
         ]);
 
         // Create another Pending Shop
@@ -146,6 +154,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'user',
             'account_status' => 'active',
+            'email_verified_at' => now(),
         ]);
 
         // Add suppliers for Shop 1 (using contact_name to match migration)

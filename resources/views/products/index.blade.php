@@ -2,13 +2,13 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Products
+                {{ __('Products') }}
             </h2>
             <a href="{{ route('products.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
                 <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
-                Add Product
+                {{ __('Add Product') }}
             </a>
         </div>
     </x-slot>
@@ -26,23 +26,23 @@
                 <div class="p-6">
                     <form method="GET" action="{{ route('products.index') }}" class="flex flex-wrap gap-4">
                         <div class="flex-1 min-w-[200px]">
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search products..." class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Search products...') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         </div>
                         <div>
                             <select name="stock_status" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">All Stock</option>
-                                <option value="in" {{ request('stock_status') === 'in' ? 'selected' : '' }}>In Stock (>10)</option>
-                                <option value="low" {{ request('stock_status') === 'low' ? 'selected' : '' }}>Low Stock (1-10)</option>
-                                <option value="out" {{ request('stock_status') === 'out' ? 'selected' : '' }}>Out of Stock</option>
+                                <option value="">{{ __('All Stock') }}</option>
+                                <option value="in" {{ request('stock_status') === 'in' ? 'selected' : '' }}>{{ __('In Stock') }} (>10)</option>
+                                <option value="low" {{ request('stock_status') === 'low' ? 'selected' : '' }}>{{ __('Low Stock') }} (1-10)</option>
+                                <option value="out" {{ request('stock_status') === 'out' ? 'selected' : '' }}>{{ __('Out of Stock') }}</option>
                             </select>
                         </div>
                         <div>
                             <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                                Filter
+                                {{ __('Filter') }}
                             </button>
                             @if(request('search') || request('stock_status'))
                                 <a href="{{ route('products.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300 ml-2">
-                                    Clear
+                                    {{ __('Clear') }}
                                 </a>
                             @endif
                         </div>
@@ -56,13 +56,13 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Price</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sale Price</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Margin</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('SKU') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Name') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Cost Price') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Sale Price') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Stock') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Margin') }}</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -80,11 +80,11 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($product->stock <= 0)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                            Out of Stock
+                                            {{ __('Out of Stock') }}
                                         </span>
                                     @elseif($product->stock <= 10)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            {{ $product->stock }} (Low)
+                                            {{ $product->stock }} ({{ __('Low Stock') }})
                                         </span>
                                     @else
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -101,12 +101,12 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                    <a href="{{ route('products.show', $product) }}" class="text-gray-600 hover:text-gray-900">View</a>
-                                    <a href="{{ route('products.edit', $product) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                                    <form action="{{ route('products.destroy', $product) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this product?')">
+                                    <a href="{{ route('products.show', $product) }}" class="text-gray-600 hover:text-gray-900">{{ __('View') }}</a>
+                                    <a href="{{ route('products.edit', $product) }}" class="text-indigo-600 hover:text-indigo-900">{{ __('Edit') }}</a>
+                                    <form action="{{ route('products.destroy', $product) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this product?') }}')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                        <button type="submit" class="text-red-600 hover:text-red-900">{{ __('Delete') }}</button>
                                     </form>
                                 </td>
                             </tr>
@@ -116,14 +116,14 @@
                                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                                     </svg>
-                                    <h3 class="mt-2 text-sm font-medium text-gray-900">No products</h3>
-                                    <p class="mt-1 text-sm text-gray-500">Get started by creating a new product.</p>
+                                    <h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('No products found') }}</h3>
+                                    <p class="mt-1 text-sm text-gray-500">{{ __('Get started by creating a new product.') }}</p>
                                     <div class="mt-6">
                                         <a href="{{ route('products.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                                             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                             </svg>
-                                            Add Product
+                                            {{ __('Add Product') }}
                                         </a>
                                     </div>
                                 </td>

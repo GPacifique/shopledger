@@ -11,7 +11,7 @@
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
-                        Shop Admin Dashboard
+                        {{ __('Shop Admin Dashboard') }}
                     </p>
                 </div>
             </div>
@@ -19,10 +19,10 @@
                 <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
                     {{ $shop->status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                     <span class="w-2 h-2 rounded-full mr-2 animate-pulse {{ $shop->status === 'approved' ? 'bg-green-500' : 'bg-yellow-500' }}"></span>
-                    {{ ucfirst($shop->status) }}
+                    {{ __($shop->status === 'approved' ? 'Approved' : 'Pending') }}
                 </span>
                 <div class="text-right hidden md:block">
-                    <p class="text-xs text-gray-500">Today</p>
+                    <p class="text-xs text-gray-500">{{ __('Today') }}</p>
                     <p class="text-sm font-semibold text-gray-700" id="current-time"></p>
                 </div>
             </div>
@@ -46,21 +46,21 @@
                     </div>
                     <div class="relative flex flex-col md:flex-row md:items-center md:justify-between">
                         <div class="text-white mb-4 md:mb-0">
-                            <h3 class="text-2xl font-bold mb-2">Welcome back, {{ auth()->user()->name }}! 👋</h3>
-                            <p class="text-indigo-100">Here's what's happening with your shop today.</p>
+                            <h3 class="text-2xl font-bold mb-2">{{ __('Welcome back') }}, {{ auth()->user()->name }}! 👋</h3>
+                            <p class="text-indigo-100">{{ __("Here's what's happening with your shop today.") }}</p>
                         </div>
                         <div class="flex space-x-3">
                             <a href="{{ route('sales.create') }}" class="inline-flex items-center px-5 py-2.5 bg-white text-indigo-600 rounded-xl font-semibold text-sm hover:bg-indigo-50 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                 </svg>
-                                New Sale
+                                {{ __('New Sale') }}
                             </a>
                             <a href="{{ route('purchases.create') }}" class="inline-flex items-center px-5 py-2.5 bg-white/20 text-white rounded-xl font-semibold text-sm hover:bg-white/30 transition-all transform hover:scale-105 backdrop-blur">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                                 </svg>
-                                New Purchase
+                                {{ __('New Purchase') }}
                             </a>
                         </div>
                     </div>
@@ -78,15 +78,15 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
-                            <span class="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-full">Today</span>
+                            <span class="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-full">{{ __('Today') }}</span>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-500 mb-1">Today's Sales</h3>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{{ __("Today's Sales") }}</h3>
                         <p class="text-2xl font-bold text-gray-900 counter" data-target="{{ $stats['today_sales'] }}">{{ rwf($stats['today_sales']) }}</p>
                         <div class="mt-3 flex items-center text-sm">
                             <svg class="w-4 h-4 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
                             </svg>
-                            <span class="text-green-600 font-medium">Revenue</span>
+                            <span class="text-green-600 font-medium">{{ __('Revenue') }}</span>
                         </div>
                     </div>
                     <div class="h-1 bg-gradient-to-r from-green-400 to-emerald-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -101,15 +101,15 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                                 </svg>
                             </div>
-                            <span class="text-xs font-medium text-red-600 bg-red-50 px-2.5 py-1 rounded-full">Today</span>
+                            <span class="text-xs font-medium text-red-600 bg-red-50 px-2.5 py-1 rounded-full">{{ __('Today') }}</span>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-500 mb-1">Today's Purchases</h3>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{{ __("Today's Purchases") }}</h3>
                         <p class="text-2xl font-bold text-gray-900">{{ rwf($stats['today_purchases']) }}</p>
                         <div class="mt-3 flex items-center text-sm">
                             <svg class="w-4 h-4 text-red-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
-                            <span class="text-red-600 font-medium">Expenses</span>
+                            <span class="text-red-600 font-medium">{{ __('Expenses') }}</span>
                         </div>
                     </div>
                     <div class="h-1 bg-gradient-to-r from-red-400 to-rose-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -124,12 +124,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                                 </svg>
                             </div>
-                            <a href="{{ route('products.index') }}" class="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition">View all →</a>
+                            <a href="{{ route('products.index') }}" class="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition">{{ __('View All') }} →</a>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-500 mb-1">Total Products</h3>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{{ __('Total Products') }}</h3>
                         <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['total_products']) }}</p>
                         <div class="mt-3 flex items-center text-sm">
-                            <span class="text-indigo-600 font-medium">In inventory</span>
+                            <span class="text-indigo-600 font-medium">{{ __('In inventory') }}</span>
                         </div>
                     </div>
                     <div class="h-1 bg-gradient-to-r from-indigo-400 to-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -144,12 +144,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                                 </svg>
                             </div>
-                            <a href="{{ route('staff.index') }}" class="text-xs font-medium text-purple-600 hover:text-purple-800 transition">Manage →</a>
+                            <a href="{{ route('staff.index') }}" class="text-xs font-medium text-purple-600 hover:text-purple-800 transition">{{ __('View All') }} →</a>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-500 mb-1">Staff Members</h3>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{{ __('Staff') }}</h3>
                         <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['total_staff']) }}</p>
                         <div class="mt-3 flex items-center text-sm">
-                            <span class="text-purple-600 font-medium">Active team</span>
+                            <span class="text-purple-600 font-medium">{{ __('Active team') }}</span>
                         </div>
                     </div>
                     <div class="h-1 bg-gradient-to-r from-purple-400 to-violet-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -165,7 +165,7 @@
                             <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
-                            This Month's Summary
+                            {{ __('Monthly Overview') }}
                         </h3>
                     </div>
                     <div class="p-6">
@@ -177,7 +177,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
                                         </svg>
                                     </div>
-                                    <span class="text-gray-700 font-medium">Total Sales</span>
+                                    <span class="text-gray-700 font-medium">{{ __('Total Sales') }}</span>
                                 </div>
                                 <span class="text-xl font-bold text-green-600">{{ rwf($stats['month_sales']) }}</span>
                             </div>
@@ -188,7 +188,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                                         </svg>
                                     </div>
-                                    <span class="text-gray-700 font-medium">Total Purchases</span>
+                                    <span class="text-gray-700 font-medium">{{ __('Total Purchases') }}</span>
                                 </div>
                                 <span class="text-xl font-bold text-red-600">{{ rwf($stats['month_purchases']) }}</span>
                             </div>
@@ -199,7 +199,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                                         </svg>
                                     </div>
-                                    <span class="font-semibold">Gross Profit</span>
+                                    <span class="font-semibold">{{ __('Gross Profit') }}</span>
                                 </div>
                                 <span class="text-2xl font-bold">{{ rwf($stats['month_sales'] - $stats['month_purchases']) }}</span>
                             </div>
@@ -214,7 +214,7 @@
                             <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                             </svg>
-                            Shop Information
+                            {{ __('Shop Information') }}
                         </h3>
                     </div>
                     <div class="p-6">
@@ -233,12 +233,12 @@
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
-                                    Status
+                                    {{ __('Status') }}
                                 </span>
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
                                     {{ $shop->status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                                     <span class="w-1.5 h-1.5 rounded-full mr-1.5 {{ $shop->status === 'approved' ? 'bg-green-500' : 'bg-yellow-500' }}"></span>
-                                    {{ ucfirst($shop->status) }}
+                                    {{ __($shop->status === 'approved' ? 'Approved' : 'Pending') }}
                                 </span>
                             </div>
                             <div class="flex justify-between items-center py-3 px-4 hover:bg-gray-50 rounded-xl transition">
@@ -246,7 +246,7 @@
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
-                                    Created
+                                    {{ __('Created') }}
                                 </span>
                                 <span class="font-medium text-gray-900">{{ $shop->created_at->format('M d, Y') }}</span>
                             </div>
@@ -255,7 +255,7 @@
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/>
                                     </svg>
-                                    Suppliers
+                                    {{ __('Suppliers') }}
                                 </span>
                                 <span class="font-medium text-gray-900">{{ $stats['total_suppliers'] }}</span>
                             </div>
@@ -273,7 +273,7 @@
                             <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                             </svg>
-                            Today's Sales by Payment Method
+                            {{ __("Today's Sales by Payment Method") }}
                         </h3>
                     </div>
                     <div class="p-6">
@@ -306,12 +306,12 @@
                                                 {!! $paymentIcons[$method] ?? '' !!}
                                             </svg>
                                         </div>
-                                        <span class="text-gray-700 font-medium">{{ $label }}</span>
+                                        <span class="text-gray-700 font-medium">{{ __($label) }}</span>
                                     </div>
                                     <span class="text-lg font-bold text-gray-900">{{ rwf($paymentMethodStats['today'][$method] ?? 0) }}</span>
                                 </div>
                             @empty
-                                <p class="text-gray-500 text-center py-4">No payment methods defined</p>
+                                <p class="text-gray-500 text-center py-4">{{ __('No payment methods defined') }}</p>
                             @endforelse
                         </div>
                     </div>
@@ -324,7 +324,7 @@
                             <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            This Month's Sales by Payment Method
+                            {{ __("This Month's Sales by Payment Method") }}
                         </h3>
                     </div>
                     <div class="p-6">
@@ -337,12 +337,12 @@
                                                 {!! $paymentIcons[$method] ?? '' !!}
                                             </svg>
                                         </div>
-                                        <span class="text-gray-700 font-medium">{{ $label }}</span>
+                                        <span class="text-gray-700 font-medium">{{ __($label) }}</span>
                                     </div>
                                     <span class="text-lg font-bold text-gray-900">{{ rwf($paymentMethodStats['month'][$method] ?? 0) }}</span>
                                 </div>
                             @empty
-                                <p class="text-gray-500 text-center py-4">No payment methods defined</p>
+                                <p class="text-gray-500 text-center py-4">{{ __('No payment methods defined') }}</p>
                             @endforelse
                         </div>
                     </div>
@@ -358,11 +358,11 @@
                             <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
                             </svg>
-                            Last 7 Days
+                            {{ __('Last 7 Days') }}
                         </h3>
                         <div class="flex space-x-4 text-xs">
-                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 mr-1"></span>Sales</span>
-                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-gradient-to-r from-red-400 to-rose-500 mr-1"></span>Purchases</span>
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 mr-1"></span>{{ __('Sales') }}</span>
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-gradient-to-r from-red-400 to-rose-500 mr-1"></span>{{ __('Purchases') }}</span>
                         </div>
                     </div>
                     <div class="p-6">
@@ -379,7 +379,7 @@
                             <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            Monthly Trend
+                            {{ __('Monthly Trend') }}
                         </h3>
                     </div>
                     <div class="p-6">
@@ -399,7 +399,7 @@
                             <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                             </svg>
-                            Quick Actions
+                            {{ __('Quick Actions') }}
                         </h3>
                     </div>
                     <div class="p-4 space-y-2">
@@ -409,7 +409,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                 </svg>
                             </div>
-                            <span class="ml-3 font-medium text-gray-700 group-hover:text-green-700">New Sale</span>
+                            <span class="ml-3 font-medium text-gray-700 group-hover:text-green-700">{{ __('New Sale') }}</span>
                             <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-green-500 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
@@ -420,7 +420,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                                 </svg>
                             </div>
-                            <span class="ml-3 font-medium text-gray-700 group-hover:text-red-700">New Purchase</span>
+                            <span class="ml-3 font-medium text-gray-700 group-hover:text-red-700">{{ __('New Purchase') }}</span>
                             <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-red-500 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
@@ -431,7 +431,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                                 </svg>
                             </div>
-                            <span class="ml-3 font-medium text-gray-700 group-hover:text-indigo-700">Add Product</span>
+                            <span class="ml-3 font-medium text-gray-700 group-hover:text-indigo-700">{{ __('Add Product') }}</span>
                             <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-indigo-500 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
@@ -442,7 +442,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                                 </svg>
                             </div>
-                            <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">Add Staff</span>
+                            <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">{{ __('Add Staff') }}</span>
                             <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-purple-500 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
@@ -457,10 +457,10 @@
                             <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                             </svg>
-                            Recent Sales
+                            {{ __('Recent Sales') }}
                         </h3>
                         <a href="{{ route('sales.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center group">
-                            View all
+                            {{ __('View all') }}
                             <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
@@ -470,10 +470,10 @@
                         <table class="min-w-full">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Sale ID</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Items</th>
-                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Total</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ __('Sale ID') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ __('Date') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ __('Items') }}</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">{{ __('Total') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
@@ -487,7 +487,7 @@
                                     <td class="px-6 py-4 text-sm text-gray-500">{{ $sale->sale_date->format('M d, Y') }}</td>
                                     <td class="px-6 py-4">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                            {{ $sale->items->count() }} items
+                                            {{ $sale->items->count() }} {{ __('items') }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-right">
@@ -500,12 +500,12 @@
                                         <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                         </svg>
-                                        <p class="text-gray-500 mb-2">No sales yet</p>
+                                        <p class="text-gray-500 mb-2">{{ __('No sales yet') }}</p>
                                         <a href="{{ route('sales.create') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
                                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                             </svg>
-                                            Create your first sale
+                                            {{ __('Create your first sale') }}
                                         </a>
                                     </td>
                                 </tr>

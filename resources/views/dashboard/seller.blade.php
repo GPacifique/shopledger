@@ -8,12 +8,12 @@
                     </svg>
                 </div>
                 <div>
-                    <h2 class="font-bold text-xl text-gray-800 leading-tight">Seller Dashboard</h2>
+                    <h2 class="font-bold text-xl text-gray-800 leading-tight">{{ __('Seller Dashboard') }}</h2>
                     <p class="text-sm text-gray-500">{{ $shop->name }}</p>
                 </div>
             </div>
             <div class="text-right hidden md:block">
-                <p class="text-xs text-gray-500">Welcome back</p>
+                <p class="text-xs text-gray-500">{{ __('Welcome back') }}</p>
                 <p class="text-sm font-semibold text-gray-700">{{ auth()->user()->name }}</p>
             </div>
         </div>
@@ -36,14 +36,14 @@
                     </div>
                     <div class="relative flex flex-col md:flex-row md:items-center md:justify-between">
                         <div class="text-white mb-6 md:mb-0">
-                            <h3 class="text-3xl font-bold mb-2">Ready to make a sale? 🛒</h3>
-                            <p class="text-blue-100 text-lg">Create new sales quickly and easily.</p>
+                            <h3 class="text-3xl font-bold mb-2">{{ __('Ready to make a sale?') }} 🛒</h3>
+                            <p class="text-blue-100 text-lg">{{ __('Create new sales quickly and easily.') }}</p>
                         </div>
                         <a href="{{ route('sales.create') }}" class="inline-flex items-center px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold text-lg hover:bg-indigo-50 transition-all transform hover:scale-105 shadow-xl hover:shadow-2xl group">
                             <svg class="w-6 h-6 mr-3 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                             </svg>
-                            New Sale
+                            {{ __('New Sale') }}
                             <svg class="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                             </svg>
@@ -68,17 +68,17 @@
                                     <svg class="w-3 h-3 mr-1 animate-pulse" fill="currentColor" viewBox="0 0 8 8">
                                         <circle cx="4" cy="4" r="3"/>
                                     </svg>
-                                    Live
+                                    {{ __('Live') }}
                                 </span>
                             </div>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-500 mb-2">Today's Sales</h3>
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">{{ __("Today's Sales") }}</h3>
                         <p class="text-3xl font-bold text-gray-900 mb-2" id="todaySales">{{ rwf($todaySales) }}</p>
                         <div class="flex items-center text-sm text-green-600">
                             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
                             </svg>
-                            <span class="font-medium">Revenue earned today</span>
+                            <span class="font-medium">{{ __('Revenue earned today') }}</span>
                         </div>
                     </div>
                     <div class="h-1.5 bg-gradient-to-r from-green-400 to-emerald-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -95,17 +95,17 @@
                             </div>
                             <div class="text-right">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    Today
+                                    {{ __('Today') }}
                                 </span>
                             </div>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-500 mb-2">Transactions</h3>
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">{{ __('Transactions') }}</h3>
                         <p class="text-3xl font-bold text-gray-900 mb-2" id="todayCount">{{ $todaySalesCount }}</p>
                         <div class="flex items-center text-sm text-blue-600">
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="font-medium">Sales completed</span>
+                            <span class="font-medium">{{ __('Sales completed') }}</span>
                         </div>
                     </div>
                     <div class="h-1.5 bg-gradient-to-r from-blue-400 to-indigo-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -122,12 +122,12 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900">My Recent Sales</h3>
-                            <p class="text-xs text-gray-500">Your latest transactions</p>
+                            <h3 class="text-lg font-semibold text-gray-900">{{ __('My Recent Sales') }}</h3>
+                            <p class="text-xs text-gray-500">{{ __('Your latest transactions') }}</p>
                         </div>
                     </div>
                     <a href="{{ route('sales.index') }}" class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 group">
-                        View all
+                        {{ __('View all') }}
                         <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
@@ -137,11 +137,11 @@
                     <table class="min-w-full">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Sale ID</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Items</th>
-                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Sale ID') }}</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Date') }}</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Items') }}</th>
+                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Total') }}</th>
+                                <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -163,7 +163,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                        {{ $sale->items->count() }} items
+                                        {{ __(':count items', ['count' => $sale->items->count()]) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
@@ -175,7 +175,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
-                                        View
+                                        {{ __('View') }}
                                     </a>
                                 </td>
                             </tr>
@@ -188,13 +188,13 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                             </svg>
                                         </div>
-                                        <h4 class="text-lg font-semibold text-gray-900 mb-1">No sales yet</h4>
-                                        <p class="text-gray-500 mb-4">Start by creating your first sale</p>
+                                        <h4 class="text-lg font-semibold text-gray-900 mb-1">{{ __('No sales yet') }}</h4>
+                                        <p class="text-gray-500 mb-4">{{ __('Start by creating your first sale') }}</p>
                                         <a href="{{ route('sales.create') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:scale-105">
                                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                             </svg>
-                                            Create Sale
+                                            {{ __('Create Sale') }}
                                         </a>
                                     </div>
                                 </td>
@@ -214,8 +214,8 @@
                         </svg>
                     </div>
                     <div class="ml-4">
-                        <h4 class="text-sm font-semibold text-amber-800">Pro Tip</h4>
-                        <p class="text-sm text-amber-700 mt-1">Use keyboard shortcut <kbd class="px-2 py-0.5 bg-white rounded text-xs font-mono shadow-sm">Ctrl + N</kbd> to quickly create a new sale from anywhere!</p>
+                        <h4 class="text-sm font-semibold text-amber-800">{{ __('Pro Tip') }}</h4>
+                        <p class="text-sm text-amber-700 mt-1">{{ __('Use keyboard shortcut') }} <kbd class="px-2 py-0.5 bg-white rounded text-xs font-mono shadow-sm">Ctrl + N</kbd> {{ __('to quickly create a new sale from anywhere!') }}</p>
                     </div>
                 </div>
             </div>

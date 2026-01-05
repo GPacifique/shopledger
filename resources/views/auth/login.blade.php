@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="text-center mb-8">
-        <h2 class="text-2xl font-bold text-gray-800">Welcome Back!</h2>
-        <p class="text-gray-500 mt-1">Sign in to your account</p>
+        <h2 class="text-2xl font-bold text-gray-800">{{ __('Welcome Back!') }}</h2>
+        <p class="text-gray-500 mt-1">{{ __('Sign in to your account') }}</p>
     </div>
 
     <!-- Session Status -->
@@ -56,9 +56,9 @@
 
     <div class="mt-6 text-center">
         <p class="text-gray-600">
-            Don't have an account?
+            {{ __('Don\'t have an account?') }}
             <a href="{{ route('register') }}" class="text-indigo-600 hover:text-indigo-800 font-semibold">
-                Register now
+                {{ __('Register now') }}
             </a>
         </p>
     </div>

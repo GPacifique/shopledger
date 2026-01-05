@@ -46,7 +46,10 @@
             </div>
 
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <div class="hidden sm:flex sm:items-center sm:ms-6 sm:gap-4">
+                <!-- Language Switcher -->
+                <x-language-switcher />
+
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -137,6 +140,20 @@
                 <x-responsive-nav-link :href="route('profile.edit')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
+
+                <!-- Language Switcher for Mobile -->
+                <div class="px-4 py-2">
+                    <div class="text-sm font-medium text-gray-500 mb-2">{{ __('Language') }}</div>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach(['en' => '🇬🇧', 'fr' => '🇫🇷', 'rw' => '🇷🇼', 'sw' => '🇹🇿'] as $code => $flag)
+                            <a href="{{ route('language.switch', $code) }}"
+                               class="inline-flex items-center px-3 py-1 rounded-full text-sm {{ app()->getLocale() === $code ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-700' }}">
+                                <span class="mr-1">{{ $flag }}</span>
+                                {{ $code === 'en' ? 'EN' : ($code === 'fr' ? 'FR' : ($code === 'rw' ? 'RW' : 'SW')) }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">

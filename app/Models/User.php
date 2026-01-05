@@ -24,6 +24,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'role',
         'shop_id',
         'account_status',
+        'locale',
     ];
 
     /**

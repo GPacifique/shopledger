@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="text-center mb-8">
-        <h2 class="text-2xl font-bold text-gray-800">Create Account</h2>
-        <p class="text-gray-500 mt-1">Start managing your shop today</p>
+        <h2 class="text-2xl font-bold text-gray-800">{{ __('Create Account') }}</h2>
+        <p class="text-gray-500 mt-1">{{ __('Start managing your shop today') }}</p>
     </div>
 
     <form method="POST" action="{{ route('register') }}">
@@ -58,40 +58,40 @@
 
     <div class="mt-6 text-center">
         <p class="text-gray-600">
-            Already have an account?
+            {{ __('Already have an account?') }}
             <a href="{{ route('login') }}" class="text-indigo-600 hover:text-indigo-800 font-semibold">
-                Sign in
+                {{ __('Sign in') }}
             </a>
         </p>
     </div>
 
     <!-- Features Summary -->
     <div class="mt-6 pt-6 border-t border-gray-200">
-        <p class="text-xs text-gray-500 text-center mb-3">What you'll get:</p>
+        <p class="text-xs text-gray-500 text-center mb-3">{{ __('What you\'ll get:') }}</p>
         <div class="grid grid-cols-2 gap-2 text-xs text-gray-600">
             <div class="flex items-center">
                 <svg class="w-4 h-4 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                 </svg>
-                Sales Tracking
+                {{ __('Sales Tracking') }}
             </div>
             <div class="flex items-center">
                 <svg class="w-4 h-4 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                 </svg>
-                Inventory
+                {{ __('Inventory') }}
             </div>
             <div class="flex items-center">
                 <svg class="w-4 h-4 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                 </svg>
-                Staff Roles
+                {{ __('Staff Roles') }}
             </div>
             <div class="flex items-center">
                 <svg class="w-4 h-4 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                 </svg>
-                Profit Reports
+                {{ __('Profit Reports') }}
             </div>
         </div>
     </div>
