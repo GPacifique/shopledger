@@ -49,6 +49,23 @@ class ShopAdminController extends Controller
             ->whereYear('purchase_date', $today->year)
             ->sum('total_amount');
 
+        // Payment method stats - Today
+        $paymentMethodStats = [
+            'today' => Sale::where('shop_id', $shop->id)
+                ->whereDate('sale_date', $today)
+                ->selectRaw('payment_method, SUM(total_amount) as total, COUNT(*) as count')
+                ->groupBy('payment_method')
+                ->pluck('total', 'payment_method')
+                ->toArray(),
+            'month' => Sale::where('shop_id', $shop->id)
+                ->whereMonth('sale_date', $today->month)
+                ->whereYear('sale_date', $today->year)
+                ->selectRaw('payment_method, SUM(total_amount) as total, COUNT(*) as count')
+                ->groupBy('payment_method')
+                ->pluck('total', 'payment_method')
+                ->toArray(),
+        ];
+
         // Recent sales
         $recentSales = Sale::where('shop_id', $shop->id)
             ->with('items.product')
@@ -84,6 +101,7 @@ class ShopAdminController extends Controller
         return view('dashboard.shop-admin', compact(
             'shop',
             'stats',
+            'paymentMethodStats',
             'recentSales',
             'recentPurchases',
             'lowStockProducts',

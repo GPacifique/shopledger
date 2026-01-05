@@ -264,6 +264,91 @@
                 </div>
             </div>
 
+            <!-- Payment Method Stats -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Today's Payment Methods -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            Today's Sales by Payment Method
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-3">
+                            @php
+                                $paymentIcons = [
+                                    'cash' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>',
+                                    'momo' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>',
+                                    'bank' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>',
+                                    'card' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>',
+                                ];
+                                $paymentColors = [
+                                    'cash' => 'from-green-400 to-emerald-500',
+                                    'momo' => 'from-yellow-400 to-orange-500',
+                                    'bank' => 'from-blue-400 to-indigo-500',
+                                    'card' => 'from-purple-400 to-violet-500',
+                                ];
+                                $paymentBgColors = [
+                                    'cash' => 'from-green-50 to-emerald-50',
+                                    'momo' => 'from-yellow-50 to-orange-50',
+                                    'bank' => 'from-blue-50 to-indigo-50',
+                                    'card' => 'from-purple-50 to-violet-50',
+                                ];
+                            @endphp
+                            @forelse(\App\Models\Sale::PAYMENT_METHODS as $method => $label)
+                                <div class="flex justify-between items-center p-4 bg-gradient-to-r {{ $paymentBgColors[$method] ?? 'from-gray-50 to-gray-100' }} rounded-xl hover:shadow-md transition-shadow">
+                                    <div class="flex items-center">
+                                        <div class="h-10 w-10 rounded-lg bg-gradient-to-br {{ $paymentColors[$method] ?? 'from-gray-400 to-gray-500' }} flex items-center justify-center mr-3 shadow">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                {!! $paymentIcons[$method] ?? '' !!}
+                                            </svg>
+                                        </div>
+                                        <span class="text-gray-700 font-medium">{{ $label }}</span>
+                                    </div>
+                                    <span class="text-lg font-bold text-gray-900">{{ rwf($paymentMethodStats['today'][$method] ?? 0) }}</span>
+                                </div>
+                            @empty
+                                <p class="text-gray-500 text-center py-4">No payment methods defined</p>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Payment Methods -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            This Month's Sales by Payment Method
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-3">
+                            @forelse(\App\Models\Sale::PAYMENT_METHODS as $method => $label)
+                                <div class="flex justify-between items-center p-4 bg-gradient-to-r {{ $paymentBgColors[$method] ?? 'from-gray-50 to-gray-100' }} rounded-xl hover:shadow-md transition-shadow">
+                                    <div class="flex items-center">
+                                        <div class="h-10 w-10 rounded-lg bg-gradient-to-br {{ $paymentColors[$method] ?? 'from-gray-400 to-gray-500' }} flex items-center justify-center mr-3 shadow">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                {!! $paymentIcons[$method] ?? '' !!}
+                                            </svg>
+                                        </div>
+                                        <span class="text-gray-700 font-medium">{{ $label }}</span>
+                                    </div>
+                                    <span class="text-lg font-bold text-gray-900">{{ rwf($paymentMethodStats['month'][$method] ?? 0) }}</span>
+                                </div>
+                            @empty
+                                <p class="text-gray-500 text-center py-4">No payment methods defined</p>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <!-- Daily Sales vs Purchases Chart -->
@@ -375,7 +460,7 @@
                             Recent Sales
                         </h3>
                         <a href="{{ route('sales.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center group">
-                            View all 
+                            View all
                             <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
@@ -461,8 +546,8 @@
             const now = new Date();
             const el = document.getElementById('current-time');
             if (el) {
-                el.textContent = now.toLocaleTimeString('en-US', { 
-                    hour: '2-digit', minute: '2-digit', hour12: true 
+                el.textContent = now.toLocaleTimeString('en-US', {
+                    hour: '2-digit', minute: '2-digit', hour12: true
                 });
             }
         }
@@ -511,7 +596,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
+                    plugins: {
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
@@ -522,8 +607,8 @@
                         }
                     },
                     scales: {
-                        y: { 
-                            beginAtZero: true, 
+                        y: {
+                            beginAtZero: true,
                             grid: { color: 'rgba(0,0,0,0.05)' },
                             ticks: {
                                 callback: function(value) {
@@ -562,7 +647,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
+                    plugins: {
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
@@ -573,8 +658,8 @@
                         }
                     },
                     scales: {
-                        y: { 
-                            beginAtZero: true, 
+                        y: {
+                            beginAtZero: true,
                             grid: { color: 'rgba(0,0,0,0.05)' },
                             ticks: {
                                 callback: function(value) {

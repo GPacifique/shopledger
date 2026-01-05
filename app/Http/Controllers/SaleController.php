@@ -44,6 +44,7 @@ class SaleController extends Controller
     {
         $request->validate([
             'sale_date' => 'required|date',
+            'payment_method' => 'required|in:cash,momo,bank,card',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -70,6 +71,7 @@ class SaleController extends Controller
             $sale = Sale::create([
                 'shop_id' => $shopId,
                 'sale_date' => $request->sale_date,
+                'payment_method' => $request->payment_method,
                 'created_by' => $user->id,
                 'total_amount' => 0,
             ]);

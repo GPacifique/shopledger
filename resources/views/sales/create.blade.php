@@ -38,12 +38,25 @@
 
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg mb-6">
                     <div class="p-6">
-                        <div class="max-w-xs">
-                            <label for="sale_date" class="block text-sm font-medium text-gray-700">Sale Date *</label>
-                            <input type="date" name="sale_date" id="sale_date" value="{{ old('sale_date', date('Y-m-d')) }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            @error('sale_date')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="sale_date" class="block text-sm font-medium text-gray-700">Sale Date *</label>
+                                <input type="date" name="sale_date" id="sale_date" value="{{ old('sale_date', date('Y-m-d')) }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                @error('sale_date')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="payment_method" class="block text-sm font-medium text-gray-700">Payment Method *</label>
+                                <select name="payment_method" id="payment_method" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    @foreach(\App\Models\Sale::PAYMENT_METHODS as $value => $label)
+                                        <option value="{{ $value }}" {{ old('payment_method', 'cash') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                @error('payment_method')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -155,10 +168,10 @@
             const toast = document.getElementById('stockToast');
             const message = document.getElementById('stockToastMessage');
             message.textContent = `"${productName}" has only ${available} units available. You requested ${requested}.`;
-            
+
             toast.classList.remove('hidden', 'translate-x-full');
             toast.classList.add('translate-x-0');
-            
+
             // Auto-hide after 5 seconds
             if (toastTimeout) clearTimeout(toastTimeout);
             toastTimeout = setTimeout(hideStockToast, 5000);
@@ -206,7 +219,7 @@
 
             if (select.value) {
                 stockInfo.textContent = `Available: ${stock}`;
-                
+
                 if (quantity > stock) {
                     stockInfo.classList.remove('text-gray-500');
                     stockInfo.classList.add('text-red-600', 'font-semibold');
@@ -255,7 +268,7 @@
                 const option = select.options[select.selectedIndex];
                 const stock = parseInt(option.dataset.stock) || 0;
                 const quantity = parseInt(row.querySelector('.quantity-input').value) || 0;
-                
+
                 if (quantity > stock) {
                     hasStockError = true;
                     const productName = option.text.split(' (Stock:')[0];

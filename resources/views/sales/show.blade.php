@@ -72,7 +72,7 @@
 
                 <!-- Sale Details -->
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <div>
                             <p class="text-xs text-gray-500 uppercase tracking-wider">Date</p>
                             <p class="font-medium text-gray-900">{{ $sale->sale_date->format('M d, Y') }}</p>
@@ -80,6 +80,10 @@
                         <div>
                             <p class="text-xs text-gray-500 uppercase tracking-wider">Time</p>
                             <p class="font-medium text-gray-900">{{ $sale->created_at->format('h:i A') }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase tracking-wider">Payment</p>
+                            <p class="font-medium text-gray-900">{{ \App\Models\Sale::PAYMENT_METHODS[$sale->payment_method] ?? ucfirst($sale->payment_method) }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-gray-500 uppercase tracking-wider">Cashier</p>
