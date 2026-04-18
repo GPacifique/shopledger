@@ -17,6 +17,8 @@ use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\ExpenseCategoryController;
+
 
 Route::resource('expenses', ExpenseController::class);
 
@@ -75,6 +77,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(RoleMiddleware::class.':shop_admin')->group(function () {
         Route::get('/shop/dashboard', [ShopAdminController::class, 'dashboard'])->name('shop.dashboard');
     });
+    
+Route::middleware(['auth'])->group(function () {
+
+    Route::resource('expensecategories', ExpenseCategoryController::class);
+    
+});
 
     // Seller Routes - Only accessible by seller
     Route::middleware(RoleMiddleware::class.':seller')->group(function () {
