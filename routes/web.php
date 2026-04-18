@@ -16,6 +16,9 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExpenseController;
+
+Route::resource('expenses', ExpenseController::class);
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 // Language Switch Route

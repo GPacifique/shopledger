@@ -9,7 +9,7 @@
                class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
                 Back
             </a>
-        </div> 
+        </div>
     </x-slot>
 
     <div class="py-8">
