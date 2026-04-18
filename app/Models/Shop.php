@@ -10,8 +10,15 @@ class Shop extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'status', 'created_by', 'approved_by', 'approved_at',
+        'name',
+        'slug',
+        'status',
+        'created_by',
+        'approved_by',
+        'approved_at',
     ];
+
+    // Relationships
 
     public function users()
     {
@@ -36,5 +43,11 @@ class Shop extends Model
     public function sales()
     {
         return $this->hasMany(Sale::class);
+    }
+
+    // ✅ ADD THIS (for your expense module)
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
     }
 }
