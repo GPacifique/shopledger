@@ -2,35 +2,6 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <div class="flex items-center space-x-4">
-                <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                    {{ strtoupper(substr($shop->name, 0, 2)) }}
-                </div>
-
-                <div>
-                    <h2 class="font-bold text-xl text-gray-800">{{ $shop->name }}</h2>
-                    <p class="text-sm text-gray-500">Financial Dashboard</p>
-                </div>
-            </div>
-        </div>
-    </x-slot>
-
-
-    @php
-        $salesToday = $stats['today_sales'] ?? 0;
-        $purchasesToday = $stats['today_purchases'] ?? 0;
-        $expensesToday = $stats['today_expenses'] ?? 0;
-
-        $salesMonth = $stats['month_sales'] ?? 0;
-        $purchasesMonth = $stats['month_purchases'] ?? 0;
-        $expensesMonth = $stats['month_expenses'] ?? 0;
-
-        $grossProfit = $salesMonth - $purchasesMonth;
-        $netProfit = $salesMonth - ($purchasesMonth + $expensesMonth);
-    @endphp
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-4">
                 <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg transform hover:scale-105 transition-transform">
                     {{ strtoupper(substr($shop->name, 0, 2)) }}
                 </div>
@@ -95,7 +66,46 @@
                     </div>
                 </div>
             </div>
+<div class="col-span-1 lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- DAILY -->
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-gray-500">Daily Net Profit</h3>
+        <p class="text-xl  font-bold">
+            RWF {{ number_format($dailyNetProfit, 0) }}
+        </p>
+        <small class="text-gray-400">
+            Sales: {{ number_format($dailySales, 0) }} |
+            Purchases: {{ number_format($dailyPurchases, 0) }} |
+            Expenses: {{ number_format($dailyExpenses, 0) }}
+        </small>
+    </div>
 
+    <!-- WEEKLY -->
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-gray-500">Weekly Net Profit</h3>
+        <p class="text-xl font-bold">
+            RWF {{ number_format($weeklyNetProfit, 0) }}
+        </p>
+        <small class="text-gray-400">
+            Sales: {{ number_format($weeklySales, 0) }} |
+            Purchases: {{ number_format($weeklyPurchases, 0) }} |
+            Expenses: {{ number_format($weeklyExpenses, 0) }}
+        </small>
+    </div>
+    <!-- YEARLY -->
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-gray-500">Yearly Net Profit</h3>
+        <p class="text-xl font-bold">
+            RWF {{ number_format($yearlyNetProfit, 0) }}
+        </p>
+        <small class="text-gray-400">
+            Sales: {{ number_format($yearlySales, 0) }} |
+            Purchases: {{ number_format($yearlyPurchases, 0) }} |
+            Expenses: {{ number_format($yearlyExpenses, 0) }}
+        </small>
+    </div>
+
+</div>
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <!-- Today's Sales -->
@@ -454,24 +464,24 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
                         </a>
-                        <a href="{{ route('products.create') }}" class="flex items-center p-3 rounded-xl hover:bg-indigo-50 transition-all group">
+                        <a href="{{ route('expenses.create') }}" class="flex items-center p-3 rounded-xl hover:bg-indigo-50 transition-all group">
                             <div class="h-10 w-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-indigo-400 group-hover:to-blue-500 group-hover:text-white transition-all shadow-sm">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                                 </svg>
                             </div>
-                            <span class="ml-3 font-medium text-gray-700 group-hover:text-indigo-700">{{ __('Add Product') }}</span>
+                            <span class="ml-3 font-medium text-gray-700 group-hover:text-indigo-700">{{ __('Add Expense') }}</span>
                             <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-indigo-500 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
                         </a>
-                        <a href="{{ route('staff.create') }}" class="flex items-center p-3 rounded-xl hover:bg-purple-50 transition-all group">
+                        <a href="{{ route('expensecategories.create') }}" class="flex items-center p-3 rounded-xl hover:bg-purple-50 transition-all group">
                             <div class="h-10 w-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-purple-400 group-hover:to-violet-500 group-hover:text-white transition-all shadow-sm">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                                 </svg>
                             </div>
-                            <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">{{ __('Add Staff') }}</span>
+                            <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">{{ __('Add Expense Category') }}</span>
                             <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-purple-500 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
@@ -702,110 +712,4 @@
             });
         }
     </script>
-</x-app-layout>
-
-    <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8">
-
-        {{-- TOP CARDS --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-
-            {{-- SALES TODAY --}}
-            <div class="bg-white p-6 rounded-2xl shadow border">
-                <p class="text-gray-500 text-sm">Today Sales</p>
-                <p class="text-2xl font-bold text-green-600">{{ rwf($salesToday) }}</p>
-            </div>
-
-            {{-- PURCHASES TODAY --}}
-            <div class="bg-white p-6 rounded-2xl shadow border">
-                <p class="text-gray-500 text-sm">Today Purchases</p>
-                <p class="text-2xl font-bold text-red-600">{{ rwf($purchasesToday) }}</p>
-            </div>
-
-            {{-- EXPENSES TODAY --}}
-            <div class="bg-white p-6 rounded-2xl shadow border">
-                <p class="text-gray-500 text-sm">Today Expenses</p>
-                <p class="text-2xl font-bold text-yellow-600">{{ rwf($expensesToday) }}</p>
-            </div>
-
-            {{-- GROSS PROFIT --}}
-            <div class="bg-white p-6 rounded-2xl shadow border">
-                <p class="text-gray-500 text-sm">Gross Profit</p>
-                <p class="text-2xl font-bold text-indigo-600">{{ rwf($grossProfit) }}</p>
-            </div>
-
-            {{-- NET PROFIT --}}
-            <div class="bg-white p-6 rounded-2xl shadow border">
-                <p class="text-gray-500 text-sm">Net Profit</p>
-                <p class="text-2xl font-bold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                    {{ rwf($netProfit) }}
-                </p>
-            </div>
-
-        </div>
-
-        {{-- MONTHLY SUMMARY --}}
-        <div class="bg-white rounded-2xl shadow p-6 mb-8">
-            <h3 class="text-lg font-semibold mb-4">Monthly Financial Summary</h3>
-
-            <div class="space-y-4">
-
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Sales</span>
-                    <span class="font-bold text-green-600">{{ rwf($salesMonth) }}</span>
-                </div>
-
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Purchases</span>
-                    <span class="font-bold text-red-600">{{ rwf($purchasesMonth) }}</span>
-                </div>
-
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Expenses</span>
-                    <span class="font-bold text-yellow-600">{{ rwf($expensesMonth) }}</span>
-                </div>
-
-                <hr>
-
-                <div class="flex justify-between">
-                    <span class="text-gray-800 font-semibold">Gross Profit</span>
-                    <span class="font-bold text-indigo-600">{{ rwf($grossProfit) }}</span>
-                </div>
-
-                <div class="flex justify-between">
-                    <span class="text-gray-800 font-semibold">Net Profit</span>
-                    <span class="font-bold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                        {{ rwf($netProfit) }}
-                    </span>
-                </div>
-
-            </div>
-        </div>
-
-        {{-- DIFFERENCE ANALYSIS --}}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
-            <div class="bg-white p-6 rounded-2xl shadow">
-                <p class="text-gray-500">Sales vs Purchases</p>
-                <p class="text-xl font-bold text-indigo-600">
-                    {{ rwf($salesMonth - $purchasesMonth) }}
-                </p>
-            </div>
-
-            <div class="bg-white p-6 rounded-2xl shadow">
-                <p class="text-gray-500">Sales vs Expenses</p>
-                <p class="text-xl font-bold text-yellow-600">
-                    {{ rwf($salesMonth - $expensesMonth) }}
-                </p>
-            </div>
-
-            <div class="bg-white p-6 rounded-2xl shadow">
-                <p class="text-gray-500">Total Cost (Purchases + Expenses)</p>
-                <p class="text-xl font-bold text-red-600">
-                    {{ rwf($purchasesMonth + $expensesMonth) }}
-                </p>
-            </div>
-
-        </div>
-
-    </div>
 </x-app-layout>

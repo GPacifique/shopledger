@@ -13,6 +13,9 @@ class ExpenseController extends Controller
         $shop = auth()->user()->shop;
 
         $expenses = Expense::where('shop_id', $shop->id)
+        ->with('category')
+        ->orderBy('expense_date', 'desc')
+        ->orderBy('created_at', 'desc')
             ->latest()
             ->paginate(15);
 
