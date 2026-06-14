@@ -68,40 +68,40 @@
             </div>
 <div class="col-span-1 lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     <!-- DAILY -->
-    <div class="p-4 bg-white shadow rounded">
-        <h3 class="text-gray-500">Daily Net Profit</h3>
+    <div class="p-4 bg-green shadow rounded">
+        <h3 class="text-green-500 text-2xl font-bold">{{ __('Daily Net Profit') }}</h3>
         <p class="text-xl  font-bold">
             RWF {{ number_format($dailyNetProfit, 0) }}
         </p>
         <small class="text-gray-400">
-            Sales: {{ number_format($dailySales, 0) }} |
-            Purchases: {{ number_format($dailyPurchases, 0) }} |
-            Expenses: {{ number_format($dailyExpenses, 0) }}
+            {{ __('Sales')}}: {{ number_format($dailySales, 0) }} |
+           {{ __(' Purchases')}}: {{ number_format($dailyPurchases, 0) }} |
+            {{ __('Expenses')}}: {{ number_format($dailyExpenses, 0) }}
         </small>
     </div>
 
     <!-- WEEKLY -->
-    <div class="p-4 bg-white shadow rounded">
-        <h3 class="text-gray-500">Weekly Net Profit</h3>
+    <div class="p-4 bg-green shadow rounded">
+        <h3 class="text-green-500 text-2xl font-bold">{{ __('Weekly Net Profit') }}</h3>
         <p class="text-xl font-bold">
             RWF {{ number_format($weeklyNetProfit, 0) }}
         </p>
         <small class="text-gray-400">
-            Sales: {{ number_format($weeklySales, 0) }} |
-            Purchases: {{ number_format($weeklyPurchases, 0) }} |
-            Expenses: {{ number_format($weeklyExpenses, 0) }}
+            {{ __('Sales')}}: {{ number_format($weeklySales, 0) }} |
+            {{ __('Purchases')}}: {{ number_format($weeklyPurchases, 0) }} |
+            {{ __('Expenses')}}: {{ number_format($weeklyExpenses, 0) }}
         </small>
     </div>
     <!-- YEARLY -->
-    <div class="p-4 bg-white shadow rounded">
-        <h3 class="text-gray-500">Yearly Net Profit</h3>
+    <div class="p-4 bg-green shadow rounded">
+        <h3 class="text-green-500 text-2xl font-bold">{{ __('Yearly Net Profit') }}</h3>
         <p class="text-xl font-bold">
             RWF {{ number_format($yearlyNetProfit, 0) }}
         </p>
         <small class="text-gray-400">
-            Sales: {{ number_format($yearlySales, 0) }} |
-            Purchases: {{ number_format($yearlyPurchases, 0) }} |
-            Expenses: {{ number_format($yearlyExpenses, 0) }}
+            {{ __('Sales')}}: {{ number_format($yearlySales, 0) }} |
+            {{ __('Purchases')}}: {{ number_format($yearlyPurchases, 0) }} |
+            {{ __('Expenses')}}: {{ number_format($yearlyExpenses, 0) }}
         </small>
     </div>
 
@@ -387,7 +387,37 @@
                     </div>
                 </div>
             </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
+    <!-- Sales By Category -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900">
+               {{ __('Sales by Category') }}
+            </h3>
+        </div>
+        <div class="p-6">
+            <div class="h-80">
+                <canvas id="salesCategoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expenses By Category -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900">
+               {{ __(' Expenses by Category') }}
+            </h3>
+        </div>
+        <div class="p-6">
+            <div class="h-80">
+                <canvas id="expenseCategoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
             <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <!-- Daily Sales vs Purchases Chart -->
@@ -580,6 +610,92 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Sales Category Pie Chart
+const salesCategoryCtx = document.getElementById('salesCategoryChart');
+
+if (salesCategoryCtx) {
+    new Chart(salesCategoryCtx, {
+        type: 'pie',
+        data: {
+            labels: {!! json_encode($salesCategoryData->pluck('category')) !!},
+            datasets: [{
+                data: {!! json_encode($salesCategoryData->pluck('total')) !!},
+                backgroundColor: [
+                    '#3B82F6',
+                    '#10B981',
+                    '#F59E0B',
+                    '#EF4444',
+                    '#8B5CF6',
+                    '#EC4899',
+                    '#14B8A6',
+                    '#F97316'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label +
+                                ': RWF ' +
+                                context.raw.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Expense Category Pie Chart
+const expenseCategoryCtx = document.getElementById('expenseCategoryChart');
+
+if (expenseCategoryCtx) {
+    new Chart(expenseCategoryCtx, {
+        type: 'pie',
+        data: {
+            labels: {!! json_encode($expenseCategoryData->pluck('category')) !!},
+            datasets: [{
+                data: {!! json_encode($expenseCategoryData->pluck('total')) !!},
+                backgroundColor: [
+                    '#EF4444',
+                    '#F97316',
+                    '#F59E0B',
+                    '#84CC16',
+                    '#06B6D4',
+                    '#3B82F6',
+                    '#8B5CF6',
+                    '#EC4899'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label +
+                                ': RWF ' +
+                                context.raw.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
         // Update current time
         function updateTime() {
             const now = new Date();

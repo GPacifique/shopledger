@@ -64,13 +64,13 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-xl font-bold text-white">Shopledger</h3>
+                            <h3 class="text-xl font-bold text-white">MahWi</h3>
                             <p class="text-indigo-200 text-xs">Empowering Rwandan Businesses</p>
                         </div>
                     </div>
                     <p class="text-indigo-200 text-sm leading-relaxed max-w-md">
-                        The complete multi-shop management system designed for Rwandan entrepreneurs. 
-                        Track sales, manage inventory, and grow your business with confidence.
+                        The complete Saas CRUD system designed for entrepreneurs. 
+                        Track sales,Purchases,Expenses, manage inventory, and grow your business with confidence.
                     </p>
                 </div>
 
@@ -120,7 +120,7 @@
             <!-- Bottom Bar -->
             <div class="mt-10 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between">
                 <p class="text-indigo-200 text-sm mb-4 md:mb-0">
-                    © {{ date('Y') }} Shopledger. Made with ❤️ in Rwanda
+                    © {{ date('Y') }} MahWi. Made with ❤️ in Rwanda
                 </p>
                 <div class="flex items-center space-x-4">
                     <span class="text-indigo-300 text-xs flex items-center">
@@ -173,7 +173,7 @@
                     </svg>
                 </div>
                 <div>
-                    <span class="text-gray-800 font-bold">Shopledger</span>
+                    <span class="text-gray-800 font-bold">MahWi</span>
                     <span class="text-gray-400 mx-2">|</span>
                     <span class="text-gray-500 text-sm">Multi-Shop Management</span>
                 </div>

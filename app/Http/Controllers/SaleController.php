@@ -49,6 +49,7 @@ class SaleController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
+            'payment_status' => 'nullable|in:paid,unpaid',
         ]);
 
         $user = $request->user();
@@ -74,6 +75,7 @@ class SaleController extends Controller
                 'payment_method' => $request->payment_method,
                 'created_by' => $user->id,
                 'total_amount' => 0,
+                'payment_status' => $request->payment_status,
             ]);
 
             $total = 0;
@@ -86,7 +88,7 @@ class SaleController extends Controller
                     'product_id' => $product->id,
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
-                    'cost_price_at_sale' => $product->cost_price,
+                    'cost_price_at_sale' => $product->buying_price,
                     'line_total' => $line,
                 ]);
 
@@ -141,5 +143,44 @@ class SaleController extends Controller
         if ($sale->shop_id !== $request->user()->shop_id && !$request->user()->isSystemAdmin()) {
             abort(403);
         }
+    }
+    public function print(Sale $sale)
+    {
+        $sale->load(['items.product', 'creator', 'shop']);
+        return view('sales.print', compact('sale'));
+    }
+    public function export(Sale $sale)
+    {
+        $sale->load(['items.product', 'creator', 'shop']);
+        // Implement export logic (e.g., generate PDF or Excel)
+        return response()->json(['message' => 'Export functionality not implemented yet.']);
+    }
+    public function updatePaymentStatus(Request $request, Sale $sale)
+    {
+        $this->authorizeSale($request, $sale);
+
+        $request->validate([
+            'payment_status' => 'required|in:paid,unpaid',
+        ]);
+
+        $sale->payment_status = $request->payment_status;
+        $sale->save();
+
+        return redirect()->route('sales.show', $sale)
+            ->with('success', 'Payment status updated successfully.');
+    }
+    public function updatePaymentMethod(Request $request, Sale $sale)
+    {
+        $this->authorizeSale($request, $sale);
+
+        $request->validate([
+            'payment_method' => 'required|in:cash,momo,bank,card',
+        ]);
+
+        $sale->payment_method = $request->payment_method;
+        $sale->save();
+
+        return redirect()->route('sales.show', $sale)
+            ->with('success', 'Payment method updated successfully.');
     }
 }

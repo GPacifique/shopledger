@@ -57,7 +57,6 @@ class ExpenseCategoryController extends Controller
      */
     public function edit(ExpenseCategory $expenseCategory)
     {
-        $this->authorizeCategory($expenseCategory);
 
         return view('expensecategories.edit', [
             'category' => $expenseCategory
@@ -69,7 +68,6 @@ class ExpenseCategoryController extends Controller
      */
     public function update(Request $request, ExpenseCategory $expenseCategory)
     {
-        $this->authorizeCategory($expenseCategory);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -86,26 +84,19 @@ class ExpenseCategoryController extends Controller
     /**
      * Delete category
      */
-    public function destroy(ExpenseCategory $expenseCategory)
-    {
-        $this->authorizeCategory($expenseCategory);
-
-        $expenseCategory->delete();
-
-        return redirect()
-            ->route('expensecategories.index')
-            ->with('success', 'Category deleted successfully.');
+  public function destroy(ExpenseCategory $expenseCategory)
+{
+    if ($expenseCategory->expenses()->exists()) {
+        return back()->withErrors([
+            'error' => 'Cannot delete category because it is used in expenses.'
+        ]);
     }
 
-    /**
-     * Ensure category belongs to current shop
-     */
-    private function authorizeCategory(ExpenseCategory $expenseCategory)
-    {
-        $shopId = auth()->user()->shop->id;
+    $expenseCategory->delete();
 
-        if ($expenseCategory->shop_id !== $shopId) {
-            abort(403, 'Unauthorized action.');
-        }
-    }
+    return redirect()
+        ->route('expensecategories.index')
+        ->with('success', 'Category deleted successfully.');
+}
+  
 }

@@ -50,10 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    public function shop()
-    {
-        return $this->belongsTo(Shop::class);
-    }
+    
 
     public function sales()
     {
@@ -79,4 +76,8 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->role === 'seller';
     }
+   public function shop()
+{
+    return $this->belongsTo(Shop::class, 'shop_id');
+}
 }

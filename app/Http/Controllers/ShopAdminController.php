@@ -10,7 +10,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\SaleItem;
+use App\Models\ExpenseCategory;
 class ShopAdminController extends Controller
 {
     public function dashboard()
@@ -38,7 +39,31 @@ $weeklyNetProfit = (clone $salesQuery)->whereBetween('sale_date', [now()->startO
 $yearlySales = (clone $salesQuery)->whereYear('sale_date', now()->year)->sum('total_amount');
     $yearlyPurchases = (clone $purchaseQuery)->whereYear('purchase_date', now()->year)->sum('total_amount');
     $yearlyExpenses = (clone $expenseQuery)->whereYear('expense_date', now()->year)->sum('amount');
-     $yearlyNetProfit = $yearlySales - $yearlyPurchases - $yearlyExpenses;      
+     $yearlyNetProfit = $yearlySales - $yearlyPurchases - $yearlyExpenses;  
+     $paidSales = (clone $salesQuery)->where('payment_status', 'paid')->sum('total_amount');
+    $unpaidSales = (clone $salesQuery)->where('payment_status', 'unpaid')->sum('total_amount');
+    $partialSales = (clone $salesQuery)->where('payment_status', 'partial')->sum('total_amount');   
+    $totalSales = $paidSales + $unpaidSales + $partialSales;
+     $paymentMethodStats = (clone $salesQuery)
+        ->selectRaw('payment_method, SUM(total_amount) as total, COUNT(*) as count')
+        ->groupBy('payment_method')
+        ->pluck('total', 'payment_method')
+        ->toArray();  
+        $totalunpaidSales = (clone $salesQuery)->where('payment_status', 'unpaid')->sum('total_amount');
+        $totalpartialSales = (clone $salesQuery)->where('payment_status', 'partial')->sum('total_amount');
+        $totalpaidSales = (clone $salesQuery)->where('payment_status', 'paid')->sum('total_amount');
+         $totalSales = $totalunpaidSales + $totalpartialSales + $totalpaidSales;
+         $paymentStatusStats = [
+        'paid' => $totalpaidSales,
+        'unpaid' => $totalunpaidSales,
+        'partial' => $totalpartialSales
+    ];
+
+         $paymentMethodStats = (clone $salesQuery)
+        ->selectRaw('payment_method, SUM(total_amount) as total, COUNT(*) as count')
+        ->groupBy('payment_method')
+        ->pluck('total', 'payment_method')
+        ->toArray();            
 if (!$shop) {
             return view('dashboard.user', compact('shop'));
         }
@@ -54,6 +79,19 @@ if (!$shop) {
         'dailyExpenses' => $dailyExpenses,
         'dailyNetProfit' => $dailyNetProfit,
         'weeklyNetProfit' => $weeklyNetProfit,
+        'weeklySales' => $weeklySales,
+        'weeklyPurchases' => $weeklyPurchases,
+        'weeklyExpenses' => $weeklyExpenses,
+        'yearlyNetProfit' => $yearlyNetProfit,
+        'yearlySales' => $yearlySales,
+        'yearlyPurchases' => $yearlyPurchases,
+        'yearlyExpenses' => $yearlyExpenses,
+         'paymentStatusStats' => $paymentStatusStats,
+         'paymentMethodStats' => $paymentMethodStats,
+         'totalSales' => $totalSales,
+         'paidSales' => $paidSales,
+         'unpaidSales' => $unpaidSales,
+         'partialSales' => $partialSales,
         ];
         // Today's stats
         $today =Carbon::today();
@@ -122,10 +160,32 @@ if (!$shop) {
 
         // Chart data - Last 6 months
         $monthlyChartData = $this->getMonthlyChartData($shop->id, 6);
+// Sales by Product Category
+$salesCategoryData = SaleItem::query()
+    ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+    ->join('products', 'sale_items.product_id', '=', 'products.id')
+    ->join('categories', 'products.category_id', '=', 'categories.id')
+    ->where('sales.shop_id', $shopId)
+    ->selectRaw('categories.name as category, SUM(sale_items.quantity * sale_items.unit_price) as total')
+    ->groupBy('categories.id', 'categories.name')
+    ->orderByDesc('total')
+    ->get();
+
+
+// Expenses by Expense Category
+$expenseCategoryData = Expense::query()
+    ->join('expense_categories', 'expenses.category_id', '=', 'expense_categories.id')
+    ->where('expenses.shop_id', $shopId)
+    ->selectRaw('expense_categories.name as category, SUM(expenses.amount) as total')
+    ->groupBy('expense_categories.id', 'expense_categories.name')
+    ->orderByDesc('total')
+    ->get();
 
        return view('dashboard.shop-admin', compact(
     'shop',
     'stats',
+    'salesCategoryData',
+    'expenseCategoryData',
     'paymentMethodStats',
     'recentSales',
     'recentPurchases',

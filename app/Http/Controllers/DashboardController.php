@@ -215,7 +215,6 @@ protected function userDashboard(Request $request)
             'monthSales' => $monthSales,
             'monthPurchases' => $monthPurchases,
             'monthExpenses' => $monthExpenses,
-
             // Profit
             'grossProfit' => $grossProfit,
             'netProfit' => $netProfit,

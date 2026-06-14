@@ -22,6 +22,6 @@
 
     <!-- Shopledger Text -->
     <text x="52" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="currentColor">
-        Shop<tspan fill="currentColor" opacity="0.7">ledger</tspan>
+        Mah<tspan fill="currentColor" opacity="0.7">Wi</tspan>
     </text>
 </svg>

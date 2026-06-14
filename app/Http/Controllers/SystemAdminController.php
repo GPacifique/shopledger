@@ -4,100 +4,388 @@ namespace App\Http\Controllers;
 
 use App\Models\Shop;
 use App\Models\User;
+use App\Models\Sale;
+use App\Models\Product;
+use App\Models\Expense;
+use App\Models\SubscriptionPlan;
+use App\Models\ShopSubscription;
+use App\Models\SubscriptionPayment;
+use App\Models\SystemUsageLog;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SystemAdminController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN DASHBOARD
+    |--------------------------------------------------------------------------
+    */
     public function dashboard()
     {
         $totalShops = Shop::count();
         $pendingShops = Shop::where('status', 'pending')->count();
         $approvedShops = Shop::where('status', 'approved')->count();
+        $suspendedShops = Shop::where('status', 'suspended')->count();
+
         $totalUsers = User::count();
-        $unassignedUsers = User::whereNull('shop_id')->where('role', 'user')->count();
+        $totalProducts = Product::count();
 
-        $pendingShopsList = Shop::where('status', 'pending')
-            ->with('users')
-            ->orderByDesc('created_at')
-            ->take(10)
-            ->get();
+        $totalSales = Sale::sum('total_amount');
+        $totalExpenses = Expense::sum('amount');
+        $netRevenue = $totalSales - $totalExpenses;
 
-        $recentShops = Shop::with('users')
-            ->orderByDesc('created_at')
-            ->take(10)
-            ->get();
+        // Prevent crash if tables don't exist yet
+        $subscriptionRevenue = 0;
+        $monthlySubscriptionRevenue = 0;
+        $recentPayments = collect();
+        $activeSubscriptions = 0;
+        $expiredSubscriptions = 0;
+        $shopSubscriptions = collect();
+
+        if (Schema::hasTable('subscription_payments')) {
+            $subscriptionRevenue = SubscriptionPayment::where('status', 'approved')->sum('amount');
+
+            $monthlySubscriptionRevenue = SubscriptionPayment::whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->where('status', 'approved')
+                ->sum('amount');
+
+            $recentPayments = SubscriptionPayment::with('shop')
+                ->latest()
+                ->take(10)
+                ->get();
+        }
+
+        if (Schema::hasTable('shop_subscriptions')) {
+            $activeSubscriptions = ShopSubscription::where('status', 'active')->count();
+
+            $expiredSubscriptions = ShopSubscription::whereDate('end_date', '<', now())->count();
+
+            $shopSubscriptions = ShopSubscription::latest()->take(10)->get();
+        }
+
+        $recentShops = Shop::latest()->take(10)->get();
+
+        $unassignedUsers = User::whereDoesntHave('shop')->count();
 
         return view('dashboard.admin', compact(
-            'totalShops', 'pendingShops', 'approvedShops', 'totalUsers',
-            'pendingShopsList', 'recentShops', 'unassignedUsers'
+            'totalShops',
+            'unassignedUsers',
+            'pendingShops',
+            'approvedShops',
+            'suspendedShops',
+            'totalUsers',
+            'totalProducts',
+            'totalSales',
+            'totalExpenses',
+            'netRevenue',
+            'subscriptionRevenue',
+            'monthlySubscriptionRevenue',
+            'activeSubscriptions',
+            'expiredSubscriptions',
+            'recentShops',
+            'recentPayments',
+            'shopSubscriptions'
         ));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | APPROVE SHOP
+    |--------------------------------------------------------------------------
+    */
     public function approveShop(Shop $shop)
     {
-        $shop->status = 'approved';
-        $shop->approved_by = auth()->id();
-        $shop->approved_at = now();
-        $shop->save();
+        $shop->update([
+            'status' => 'approved',
+            'approved_by' => auth()->id(),
+            'approved_at' => now()
+        ]);
 
-        return back()->with('success', 'Shop approved successfully.');
+        return back()->with('success', 'Shop approved successfully');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | REJECT SHOP
+    |--------------------------------------------------------------------------
+    */
     public function rejectShop(Shop $shop)
     {
-        $shop->status = 'rejected';
-        $shop->save();
+        $shop->update(['status' => 'rejected']);
 
-        return back()->with('success', 'Shop rejected.');
+        return back()->with('success', 'Shop rejected successfully');
     }
 
-    public function createShop()
+    /*
+    |--------------------------------------------------------------------------
+    | SUSPEND SHOP
+    |--------------------------------------------------------------------------
+    */
+    public function suspendShop(Shop $shop)
     {
-        $unassignedUsers = User::whereNull('shop_id')
-            ->where('role', 'user')
-            ->orderBy('name')
-            ->get();
+        $shop->update(['status' => 'suspended']);
 
-        return view('admin.shops.create', compact('unassignedUsers'));
+        return back()->with('success', 'Shop suspended successfully');
     }
 
-    public function storeShop(Request $request)
+    /*
+    |--------------------------------------------------------------------------
+    | REACTIVATE SHOP
+    |--------------------------------------------------------------------------
+    */
+    public function reactivateShop(Shop $shop)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:500',
-            'phone' => 'nullable|string|max:20',
-            'user_id' => 'required|exists:users,id',
-            'status' => 'required|in:pending,approved',
-        ]);
+        $shop->update(['status' => 'approved']);
 
-        $shop = Shop::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name) . '-' . Str::random(5),
-            'address' => $request->address,
-            'phone' => $request->phone,
-            'status' => $request->status,
-            'created_by' => auth()->id(),
-            'approved_by' => $request->status === 'approved' ? auth()->id() : null,
-            'approved_at' => $request->status === 'approved' ? now() : null,
-        ]);
-
-        // Assign user as shop_admin
-        $user = User::findOrFail($request->user_id);
-        $user->shop_id = $shop->id;
-        $user->role = 'shop_admin';
-        $user->save();
-
-        return redirect()->route('admin.dashboard')->with('success', 'Shop created and assigned to ' . $user->name . ' successfully.');
+        return back()->with('success', 'Shop reactivated successfully');
     }
 
-    public function listUsers()
+    /*
+    |--------------------------------------------------------------------------
+    | VIEW ALL SUBSCRIPTIONS
+    |--------------------------------------------------------------------------
+    */
+    public function subscriptions()
     {
-        $users = User::with('shop')
-            ->orderByDesc('created_at')
+        $subscriptions = ShopSubscription::with(['shop', 'subscriptionPlan'])
+            ->latest()
             ->paginate(20);
 
-        return view('admin.users.index', compact('users'));
+        return view('admin.subscriptions.index', compact('subscriptions'));
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPROVE SUBSCRIPTION PAYMENT
+    |--------------------------------------------------------------------------
+    */
+    public function approvePayment($id)
+    {
+        $payment = SubscriptionPayment::findOrFail($id);
+
+        $payment->update([
+            'status' => 'approved',
+            'approved_by' => auth()->id()
+        ]);
+
+        $subscription = $payment->shopSubscription;
+
+        $duration = $subscription->subscriptionPlan->billing_cycle === 'yearly' ? 12 : 1;
+
+        $subscription->update([
+            'status' => 'active',
+            'payment_status' => 'paid',
+            'start_date' => now(),
+            'end_date' => now()->addMonths($duration)
+        ]);
+
+        return back()->with('success', 'Payment approved successfully');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | REJECT PAYMENT
+    |--------------------------------------------------------------------------
+    */
+    public function rejectPayment($id)
+    {
+        $payment = SubscriptionPayment::findOrFail($id);
+
+        $payment->update(['status' => 'rejected']);
+
+        return back()->with('success', 'Payment rejected');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | VIEW PAYMENTS
+    |--------------------------------------------------------------------------
+    */
+    public function payments()
+    {
+        $payments = SubscriptionPayment::with(['shop', 'subscription'])
+            ->latest()
+            ->paginate(20);
+
+        return view('admin.payments.index', compact('payments'));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SYSTEM USAGE ANALYTICS
+    |--------------------------------------------------------------------------
+    */
+    public function analytics()
+    {
+        $logs = SystemUsageLog::with('shop')->latest()->paginate(50);
+
+        $mostActiveShops = SystemUsageLog::selectRaw('shop_id, COUNT(*) as total_actions')
+            ->groupBy('shop_id')
+            ->with('shop')
+            ->orderByDesc('total_actions')
+            ->take(10)
+            ->get();
+
+        $dailyActivities = SystemUsageLog::selectRaw('DATE(created_at) as date, COUNT(*) as total')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        return view('admin.analytics.index', compact('logs', 'mostActiveShops', 'dailyActivities'));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | REVENUE REPORT
+    |--------------------------------------------------------------------------
+    */
+    public function revenueReport()
+    {
+        $monthlyRevenue = SubscriptionPayment::selectRaw(
+                'MONTH(created_at) as month, YEAR(created_at) as year, SUM(amount) as total'
+            )
+            ->where('status', 'approved')
+            ->groupBy('month', 'year')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+
+        return view('admin.reports.revenue', compact('monthlyRevenue'));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | DOWNLOAD REVENUE REPORT PDF
+    |--------------------------------------------------------------------------
+    */
+    public function downloadRevenuePdf()
+    {
+        $payments = SubscriptionPayment::where('status', 'approved')
+            ->with('shop')
+            ->latest()
+            ->get();
+
+        $totalRevenue = $payments->sum('amount');
+
+        $pdf = Pdf::loadView('admin.reports.revenue-pdf', compact('payments', 'totalRevenue'));
+
+        return $pdf->download('platform-revenue-report.pdf');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | EXPIRED SUBSCRIPTIONS
+    |--------------------------------------------------------------------------
+    */
+    public function expiredSubscriptions()
+    {
+        $subscriptions = ShopSubscription::with(['shop', 'subscriptionPlan'])
+            ->whereDate('end_date', '<', now())
+            ->paginate(20);
+
+        return view('admin.subscriptions.expired', compact('subscriptions'));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE SHOP (FORM)
+    |--------------------------------------------------------------------------
+    */
+   public function createShop()
+{
+    $unassignedUsers = User::whereDoesntHave('shop')->get();
+    $subscriptionPlans = SubscriptionPlan::all();
+
+    return view('admin.shops.create', compact('unassignedUsers', 'subscriptionPlans'));
+}
+
+public function storeShop(Request $request)
+{
+    $validated = $request->validate([
+        'business_name'        => 'required|string|max:255',
+        'business_type'        => 'required|string|max:255',
+        'registration_number'  => 'required|string|max:255|unique:shops,registration_number',
+        'tin_number'           => 'nullable|string|max:255',
+        'email'                => 'required|email|unique:shops,email',
+        'phone'                => 'nullable|string|max:255',
+        'country'              => 'required|string|max:255',
+        'city'                 => 'required|string|max:255',
+        'address'              => 'required|string',
+        'logo'                 => 'nullable|image|max:2048',
+        'subscriptionplan_id'  => 'nullable|exists:subscriptionplans,id',
+        'user_id'              => 'required|exists:users,id',
+        'status'               => 'required|in:pending,approved,rejected',
+    ]);
+
+    $validated['slug'] = \Illuminate\Support\Str::slug($validated['business_name']) . '-' . \Illuminate\Support\Str::random(6);
+    $validated['created_by'] = $validated['user_id'];
+    unset($validated['user_id']);
+
+    if ($validated['status'] === 'approved') {
+        $validated['approved_by'] = auth()->id();
+        $validated['approved_at'] = now();
+    }
+
+    if ($request->hasFile('logo')) {
+        $validated['logo'] = $request->file('logo')->store('shop-logos', 'public');
+    }
+
+    Shop::create($validated);
+
+    return redirect()->route('admin.shops.index')->with('success', 'Shop created successfully.');
+}
+public function shopsIndex()
+{
+    $shops = Shop::with(['creator', 'subscriptionPlan'])
+        ->latest()
+        ->paginate(20);
+
+    return view('admin.shops.index', compact('shops'));
+}
+/*
+|--------------------------------------------------------------------------
+| LIST USERS
+|--------------------------------------------------------------------------
+*/
+public function listUsers(Request $request)
+{
+    $users = User::with('shop')
+        ->when($request->search, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        })
+        ->when($request->role, function ($query, $role) {
+            $query->where('role', $role);
+        })
+        ->latest()
+        ->paginate(20);
+
+    return view('admin.users.index', compact('users'));
+}
+/*
+|--------------------------------------------------------------------------
+| SYSTEM SETTINGS
+|--------------------------------------------------------------------------
+*/
+public function settings()
+{
+    return view('admin.settings');
+}
+
+public function updateSettings(Request $request)
+{
+    // validate and persist settings as needed for your schema
+    $request->validate([
+        // e.g. 'site_name' => 'required|string|max:255',
+    ]);
+
+    return back()->with('success', 'Settings updated successfully.');
+}
 }

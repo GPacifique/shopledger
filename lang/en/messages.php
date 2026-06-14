@@ -125,8 +125,12 @@ return [
     'shop_phone' => 'Phone',
     'shop_email' => 'Email',
     'shop_settings' => 'Shop Settings',
-
+'Expenses by Category'=>'Expenses by Category',
     // Reports
+    'Net Profit' => 'Net Profit',
+    'Daily Net Profit' => 'Daily Net Profit',
+    'Weekly Net Profit' => 'Weekly Net Profit',
+    'Yearly Net Profit' => 'Yearly Net Profit',
     'daily_report' => 'Daily Report',
     'weekly_report' => 'Weekly Report',
     'monthly_report' => 'Monthly Report',

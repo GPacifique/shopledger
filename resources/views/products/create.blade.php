@@ -43,6 +43,14 @@
                     </div>
 
                     <div>
+                        <label for="barcode" class="block text-sm font-medium text-gray-700">{{ __('Barcode') }}</label>
+                        <input type="text" name="barcode" id="barcode" value="{{ old('barcode') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="{{ __('Optional') }}">
+                        @error('barcode')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
                         <label for="description" class="block text-sm font-medium text-gray-700">{{ __('Description') }}</label>
                         <textarea name="description" id="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="{{ __('Optional product description') }}">{{ old('description') }}</textarea>
                         @error('description')
@@ -52,36 +60,97 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label for="cost_price" class="block text-sm font-medium text-gray-700">{{ __('Cost Price') }} *</label>
-                            <div class="mt-1 relative rounded-md shadow-sm">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">RWF</span>
-                                </div>
-                                <input type="number" name="cost_price" id="cost_price" value="{{ old('cost_price') }}" step="1" min="0" required class="pl-12 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0">
-                            </div>
-                            @error('cost_price')
+                            <label for="category_id" class="block text-sm font-medium text-gray-700">{{ __('Category') }} *</label>
+                            <select name="category_id" id="category_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">{{ __('Select a category') }}</option>
+                                @foreach ($categories as $category)
+                                    <option value="{{ $category->id }}" @selected(old('category_id') == $category->id)>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('category_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div>
-                            <label for="sale_price" class="block text-sm font-medium text-gray-700">{{ __('Sale Price') }} *</label>
+                            <label for="supplier_id" class="block text-sm font-medium text-gray-700">{{ __('Supplier') }} *</label>
+                            <select name="supplier_id" id="supplier_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">{{ __('Select a supplier') }}</option>
+                                @foreach ($suppliers as $supplier)
+                                    <option value="{{ $supplier->id }}" @selected(old('supplier_id') == $supplier->id)>
+                                        {{ $supplier->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('supplier_id')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="buying_price" class="block text-sm font-medium text-gray-700">{{ __('Buying Price') }} *</label>
                             <div class="mt-1 relative rounded-md shadow-sm">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <span class="text-gray-500 sm:text-sm">RWF</span>
                                 </div>
-                                <input type="number" name="sale_price" id="sale_price" value="{{ old('sale_price') }}" step="1" min="0" required class="pl-12 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0">
+                                <input type="number" name="buying_price" id="buying_price" value="{{ old('buying_price') }}" step="1" min="0" required class="pl-12 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0">
                             </div>
-                            @error('sale_price')
+                            @error('buying_price')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="selling_price" class="block text-sm font-medium text-gray-700">{{ __('Selling Price') }} *</label>
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">RWF</span>
+                                </div>
+                                <input type="number" name="selling_price" id="selling_price" value="{{ old('selling_price') }}" step="1" min="0" required class="pl-12 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0">
+                            </div>
+                            @error('selling_price')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="stock" class="block text-sm font-medium text-gray-700">{{ __('Initial Stock') }}</label>
+                            <input type="number" name="stock" id="stock" value="{{ old('stock', 0) }}" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0">
+                            @error('stock')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="minimum_stock" class="block text-sm font-medium text-gray-700">{{ __('Minimum Stock') }}</label>
+                            <input type="number" name="minimum_stock" id="minimum_stock" value="{{ old('minimum_stock', 0) }}" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0">
+                            @error('minimum_stock')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
 
                     <div>
-                        <label for="stock" class="block text-sm font-medium text-gray-700">{{ __('Initial Stock') }}</label>
-                        <input type="number" name="stock" id="stock" value="{{ old('stock', 0) }}" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0">
-                        @error('stock')
+                        <label for="expiry_date" class="block text-sm font-medium text-gray-700">{{ __('Expiry Date') }}</label>
+                        <input type="date" name="expiry_date" id="expiry_date" value="{{ old('expiry_date') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        @error('expiry_date')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700">{{ __('Status') }}</label>
+                        <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="active" @selected(old('status', 'active') == 'active')>{{ __('Active') }}</option>
+                            <option value="inactive" @selected(old('status') == 'inactive')>{{ __('Inactive') }}</option>
+                        </select>
+                        @error('status')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>

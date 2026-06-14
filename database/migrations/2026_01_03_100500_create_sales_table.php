@@ -12,6 +12,8 @@ return new class extends Migration {
             $table->foreignId('shop_id')->constrained('shops')->cascadeOnDelete();
             $table->date('sale_date');
             $table->decimal('total_amount', 14, 2)->default(0);
+            $table->enum('payment_method', ['cash', 'card', 'mobile'])->default('cash');
+            $table->enum('payment_status', ['paid', 'unpaid'])->nullable();
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
         });

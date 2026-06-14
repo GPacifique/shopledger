@@ -38,8 +38,38 @@
                                         <dd class="mt-1 text-sm text-gray-900">{{ $product->name }}</dd>
                                     </div>
                                     <div>
+                                        <dt class="text-sm font-medium text-gray-500">{{ __('Category') }}</dt>
+                                        <dd class="mt-1 text-sm text-gray-900">{{ $product->category->name ?? '—' }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500">{{ __('Supplier') }}</dt>
+                                        <dd class="mt-1 text-sm text-gray-900">{{ $product->supplier->name ?? '—' }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500">{{ __('Barcode') }}</dt>
+                                        <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $product->barcode ?: __('None') }}</dd>
+                                    </div>
+                                    <div>
                                         <dt class="text-sm font-medium text-gray-500">{{ __('Description') }}</dt>
                                         <dd class="mt-1 text-sm text-gray-900">{{ $product->description ?: __('No description') }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500">{{ __('Expiry Date') }}</dt>
+                                        <dd class="mt-1 text-sm text-gray-900">{{ $product->expiry_date?->format('M d, Y') ?? __('N/A') }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500">{{ __('Status') }}</dt>
+                                        <dd class="mt-1">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $product->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                                {{ ucfirst($product->status) }}
+                                            </span>
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500">{{ __('QR Code') }}</dt>
+                                        <dd class="mt-1">
+                                            <img src="{{ route('products.qr-code', $product) }}" alt="QR Code" class="w-32 h-32 border rounded">
+                                        </dd>
                                     </div>
                                     <div>
                                         <dt class="text-sm font-medium text-gray-500">{{ __('Created') }}</dt>
@@ -59,18 +89,18 @@
                                 <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Pricing & Stock') }}</h3>
                                 <dl class="space-y-4">
                                     <div class="bg-gray-50 rounded-lg p-4">
-                                        <dt class="text-sm font-medium text-gray-500">{{ __('Cost Price') }}</dt>
-                                        <dd class="mt-1 text-2xl font-semibold text-gray-900">{{ rwf($product->cost_price) }}</dd>
+                                        <dt class="text-sm font-medium text-gray-500">{{ __('Buying Price') }}</dt>
+                                        <dd class="mt-1 text-2xl font-semibold text-gray-900">{{ rwf($product->buying_price) }}</dd>
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4">
-                                        <dt class="text-sm font-medium text-gray-500">{{ __('Sale Price') }}</dt>
-                                        <dd class="mt-1 text-2xl font-semibold text-green-600">{{ rwf($product->sale_price) }}</dd>
+                                        <dt class="text-sm font-medium text-gray-500">{{ __('Selling Price') }}</dt>
+                                        <dd class="mt-1 text-2xl font-semibold text-green-600">{{ rwf($product->selling_price) }}</dd>
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4">
                                         <dt class="text-sm font-medium text-gray-500">{{ __('Profit Margin') }}</dt>
                                         @php
-                                            $margin = $product->cost_price > 0 ? (($product->sale_price - $product->cost_price) / $product->cost_price) * 100 : 0;
-                                            $profit = $product->sale_price - $product->cost_price;
+                                            $margin = $product->buying_price > 0 ? (($product->selling_price - $product->buying_price) / $product->buying_price) * 100 : 0;
+                                            $profit = $product->selling_price - $product->buying_price;
                                         @endphp
                                         <dd class="mt-1">
                                             <span class="text-2xl font-semibold {{ $margin > 0 ? 'text-green-600' : 'text-red-600' }}">{{ number_format($margin, 1) }}%</span>
@@ -85,7 +115,7 @@
                                                 <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                                     {{ __('Out of Stock') }}
                                                 </span>
-                                            @elseif($product->stock <= 10)
+                                            @elseif($product->stock <= $product->minimum_stock)
                                                 <span class="text-2xl font-semibold text-yellow-600">{{ $product->stock }}</span>
                                                 <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                                     {{ __('Low Stock') }}
@@ -99,9 +129,13 @@
                                         </dd>
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4">
+                                        <dt class="text-sm font-medium text-gray-500">{{ __('Minimum Stock') }}</dt>
+                                        <dd class="mt-1 text-2xl font-semibold text-gray-900">{{ $product->minimum_stock }}</dd>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4">
                                         <dt class="text-sm font-medium text-gray-500">{{ __('Stock Value') }}</dt>
-                                        <dd class="mt-1 text-2xl font-semibold text-gray-900">{{ rwf($product->stock * $product->cost_price) }}</dd>
-                                        <dd class="text-sm text-gray-500">{{ __('Potential sales') }}: {{ rwf($product->stock * $product->sale_price) }}</dd>
+                                        <dd class="mt-1 text-2xl font-semibold text-gray-900">{{ rwf($product->stock * $product->buying_price) }}</dd>
+                                        <dd class="text-sm text-gray-500">{{ __('Potential sales') }}: {{ rwf($product->stock * $product->selling_price) }}</dd>
                                     </div>
                                 </dl>
                             </div>

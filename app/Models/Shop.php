@@ -10,7 +10,17 @@ class Shop extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'business_name',
+        'business_type',
+        'registration_number',
+        'tin_number',
+        'email',
+        'phone',
+        'country',
+        'city',
+        'address',
+        'logo',
+        'subscriptionplan_id',
         'slug',
         'status',
         'created_by',
@@ -18,36 +28,32 @@ class Shop extends Model
         'approved_at',
     ];
 
-    // Relationships
+    protected $casts = [
+        'approved_at' => 'datetime',
+    ];
 
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function subscriptionPlan()
+    {
+        return $this->belongsTo(SubscriptionPlan::class, 'subscriptionplan_id');
+    }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(ShopSubscription::class);
+    }
     public function users()
-    {
-        return $this->hasMany(User::class);
-    }
+{
+    return $this->hasMany(User::class, 'shop_id');
+}
 
-    public function suppliers()
-    {
-        return $this->hasMany(Supplier::class);
-    }
-
-    public function products()
-    {
-        return $this->hasMany(Product::class);
-    }
-
-    public function purchases()
-    {
-        return $this->hasMany(Purchase::class);
-    }
-
-    public function sales()
-    {
-        return $this->hasMany(Sale::class);
-    }
-
-    // ✅ ADD THIS (for your expense module)
-    public function expenses()
-    {
-        return $this->hasMany(Expense::class);
-    }
 }

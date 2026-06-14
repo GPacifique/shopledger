@@ -16,6 +16,7 @@ class Expense extends Model
         'expense_date',
         'reference',
         'description',
+        'status',
         'attachment',
         'created_by',
     ];
@@ -51,5 +52,6 @@ class Expense extends Model
     {
         return $query->whereMonth('expense_date', now()->month)
                      ->whereYear('expense_date', now()->year);
+    
     }
 }

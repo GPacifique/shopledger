@@ -32,27 +32,60 @@
                     </div>
                 </div>
 
-                <form action="{{ route('admin.shops.store') }}" method="POST" class="p-6 space-y-6">
+                <form action="{{ route('admin.shops.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
                     @csrf
 
-                    <!-- Shop Name -->
+                    <!-- Business Name -->
                     <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Shop Name *</label>
-                        <input type="text" name="name" id="name" value="{{ old('name') }}" required
+                        <label for="business_name" class="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
+                        <input type="text" name="business_name" id="business_name" value="{{ old('business_name') }}" required
                             class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition"
-                            placeholder="Enter shop name">
-                        @error('name')
+                            placeholder="Enter business name">
+                        @error('business_name')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Address -->
+                    <!-- Business Type -->
                     <div>
-                        <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                        <textarea name="address" id="address" rows="3"
+                        <label for="business_type" class="block text-sm font-medium text-gray-700 mb-2">Business Type *</label>
+                        <input type="text" name="business_type" id="business_type" value="{{ old('business_type') }}" required
                             class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition"
-                            placeholder="Enter shop address">{{ old('address') }}</textarea>
-                        @error('address')
+                            placeholder="e.g. Retail, Restaurant, Pharmacy">
+                        @error('business_type')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Registration Number -->
+                    <div>
+                        <label for="registration_number" class="block text-sm font-medium text-gray-700 mb-2">Registration Number *</label>
+                        <input type="text" name="registration_number" id="registration_number" value="{{ old('registration_number') }}" required
+                            class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition"
+                            placeholder="Business registration number">
+                        @error('registration_number')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- TIN Number -->
+                    <div>
+                        <label for="tin_number" class="block text-sm font-medium text-gray-700 mb-2">TIN Number</label>
+                        <input type="text" name="tin_number" id="tin_number" value="{{ old('tin_number') }}"
+                            class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition"
+                            placeholder="Tax identification number">
+                        @error('tin_number')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                        <input type="email" name="email" id="email" value="{{ old('email') }}" required
+                            class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition"
+                            placeholder="shop@example.com">
+                        @error('email')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -64,6 +97,66 @@
                             class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition"
                             placeholder="+250 7XX XXX XXX">
                         @error('phone')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Country & City -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="country" class="block text-sm font-medium text-gray-700 mb-2">Country *</label>
+                            <input type="text" name="country" id="country" value="{{ old('country') }}" required
+                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition"
+                                placeholder="Country">
+                            @error('country')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="city" class="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                            <input type="text" name="city" id="city" value="{{ old('city') }}" required
+                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition"
+                                placeholder="City">
+                            @error('city')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Address -->
+                    <div>
+                        <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+                        <textarea name="address" id="address" rows="3" required
+                            class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition"
+                            placeholder="Enter shop address">{{ old('address') }}</textarea>
+                        @error('address')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Logo -->
+                    <div>
+                        <label for="logo" class="block text-sm font-medium text-gray-700 mb-2">Shop Logo</label>
+                        <input type="file" name="logo" id="logo" accept="image/*"
+                            class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition">
+                        @error('logo')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Subscription Plan -->
+                    <div>
+                        <label for="subscriptionplan_id" class="block text-sm font-medium text-gray-700 mb-2">Subscription Plan</label>
+                        <select name="subscriptionplan_id" id="subscriptionplan_id"
+                            class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition">
+                            <option value="">No plan assigned</option>
+                            @foreach($subscriptionPlans as $plan)
+                                <option value="{{ $plan->id }}" {{ old('subscriptionplan_id') == $plan->id ? 'selected' : '' }}>
+                                    {{ $plan->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('subscriptionplan_id')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>

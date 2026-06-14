@@ -25,7 +25,9 @@ return new class extends Migration
             // 🔖 Optional tracking fields
             $table->string('reference')->nullable();
             $table->text('description')->nullable();
+//statusactive/inactive
 
+            $table->enum('status', ['paid', 'unpaid'])->default('unpaid');
             // 📎 File attachment (receipt, invoice, etc.)
             $table->string('attachment')->nullable();
 

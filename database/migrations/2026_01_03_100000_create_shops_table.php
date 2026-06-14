@@ -9,7 +9,17 @@ return new class extends Migration {
     {
         Schema::create('shops', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('business_name');
+            $table->string('business_type');
+            $table->string('registration_number')->unique();
+            $table->string('tin_number')->nullable();
+            $table->string('email')->unique();
+            $table->string('phone')->nullable();
+            $table->string('country');
+            $table->string('city');
+            $table->text('address');
+            $table->string('logo')->nullable();
+            $table->foreignId('subscriptionplan_id')->nullable()->constrained('subscriptionplans');
             $table->string('slug')->unique();
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->foreignId('created_by')->constrained('users');

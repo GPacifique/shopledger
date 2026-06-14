@@ -58,8 +58,8 @@
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('SKU') }}</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Name') }}</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Cost Price') }}</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Sale Price') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Buying Price') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Selling Price') }}</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Stock') }}</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Margin') }}</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
@@ -75,8 +75,8 @@
                                         <div class="text-sm text-gray-500 truncate max-w-xs">{{ Str::limit($product->description, 50) }}</div>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ rwf($product->cost_price) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ rwf($product->sale_price) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ rwf($product->buying_price) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ rwf($product->selling_price) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($product->stock <= 0)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -94,7 +94,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     @php
-                                        $margin = $product->cost_price > 0 ? (($product->sale_price - $product->cost_price) / $product->cost_price) * 100 : 0;
+                                        $margin = $product->buying_price > 0 ? (($product->selling_price - $product->buying_price) / $product->buying_price) * 100 : 0;
                                     @endphp
                                     <span class="{{ $margin > 0 ? 'text-green-600' : 'text-red-600' }}">
                                         {{ number_format($margin, 1) }}%
@@ -102,6 +102,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                     <a href="{{ route('products.show', $product) }}" class="text-gray-600 hover:text-gray-900">{{ __('View') }}</a>
+                                    <a href="{{ route('products.qr-code', $product) }}" target="_blank" class="text-blue-600 hover:text-blue-900">{{ __('QR') }}</a>
                                     <a href="{{ route('products.edit', $product) }}" class="text-indigo-600 hover:text-indigo-900">{{ __('Edit') }}</a>
                                     <form action="{{ route('products.destroy', $product) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this product?') }}')">
                                         @csrf

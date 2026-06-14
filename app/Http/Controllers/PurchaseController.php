@@ -83,7 +83,7 @@ class PurchaseController extends Controller
                 ]);
 
                 $product->stock += (int) $item['quantity'];
-                $product->cost_price = $item['unit_cost'];
+                $product->buying_price = $item['unit_cost'];
                 $product->save();
 
                 $total += $line;

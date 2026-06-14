@@ -29,15 +29,15 @@ return [
     'error' => 'Ikosa',
     'warning' => 'Umuburo',
     'info' => 'Amakuru',
-
+'Expenses by Category' => 'Ibikoresha by\'ibicuruzwa',
     // Navigation
     'products' => 'Ibicuruzwa',
     'suppliers' => 'Abaranguza',
     'purchases' => 'Ibyaranguwe',
-    'sales' => 'Ibyagurishijwe',
+    'sales' => 'Ibyacurujwe',
     'staff' => 'Abakozi',
     'reports' => 'Raporo',
-    'inventory' => 'Ububiko',
+    'inventory' => 'sitoke',
     'stock' => 'sitoki',
 
     // Authentication
@@ -55,7 +55,7 @@ return [
     'product_name' => 'Izina ry\'igicuruzwa',
     'product_description' => 'Ibisobanuro',
     'product_price' => 'Igiciro',
-    'product_quantity' => 'Umubare',
+    'product_quantity' => 'ingano',
     'product_sku' => 'SKU',
     'product_category' => 'Icyiciro',
     'add_product' => 'Ongeraho igicuruzwa',
@@ -71,7 +71,7 @@ return [
     // Sales
     'sale' => 'igicuruzwa',
     'new_sale' => 'ibicuruzwa bishya',
-    'sale_date' => 'Itariki yo kugurisha',
+    'sale_date' => 'Itariki byagurishijwe',
     'sale_total' => 'Igiteranyo',
     'sale_items' => 'Ibicuruzwa',
     'sale_customer' => 'Umukiriya',
@@ -88,8 +88,8 @@ return [
     'new_purchase' => 'ibyaranguwe bishya',
     'purchase_date' => 'Itariki yo kugura',
     'purchase_total' => 'Igiteranyo',
-    'purchase_items' => 'Ibicuruzwa',
-    'purchase_supplier' => 'Utanga ibicuruzwa',
+    'purchase_items' => 'Ibyaranguwe',
+    'purchase_supplier' => 'Utanga ibyaranguwe',
     'purchase_created' => 'ibyaranguwe byanditswe neza.',
     'purchase_deleted' => 'ibyaranguwe byasibwe neza.',
 
@@ -127,16 +127,19 @@ return [
     'shop_settings' => 'Igenamiterere ry\'iduka',
 
     // Reports
+    'Daily Net Profit' => 'Inyungu y\'umunsi',
+    'Weekly Net Profit' => 'Inyungu y\'icyumweru',
+    'Yearly Net Profit' => 'Inyungu y\'umwaka',
     'daily_report' => 'Raporo y\'umunsi',
     'weekly_report' => 'Raporo y\'icyumweru',
     'monthly_report' => 'Raporo y\'ukwezi',
-    'sales_report' => 'Raporo y\'ibyo wagurishije',
-    'inventory_report' => 'Raporo y\'ububiko',
+    'sales_report' => 'Raporo y\'ibyacurujwe',
+    'inventory_report' => 'Raporo y\'sitoke',
     'profit_report' => 'Raporo y\'inyungu',
-    'total_sales' => 'Ibyo wagurishije byose',
-    'total_purchases' => 'Ibyo waranguye byose',
+    'total_sales' => 'Ibyacurujwe byose',
+    'total_purchases' => 'Ibyaranguwe byose',
     'total_profit' => 'Inyungu yose',
-    'total_revenue' => 'Amafaranga yose',
+    'total_revenue' => 'Ibyinjiye byose',
 
     // Language
     'language' => 'Ururimi',

@@ -10,7 +10,7 @@ class Sale extends Model
     use HasFactory;
 
     protected $fillable = [
-        'shop_id', 'sale_date', 'total_amount', 'payment_method', 'created_by',
+        'shop_id', 'sale_date', 'total_amount', 'payment_method','payment_status', 'created_by',
     ];
 
     public const PAYMENT_METHODS = [
