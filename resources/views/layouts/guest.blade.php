@@ -5,10 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Shopledger') }} | @yield('title', 'Welcome')</title>
-
-        <!-- SEO Meta Tags -->
-        <meta name="description" content="Shopledger - Multi-shop management system for inventory, sales, purchases, and staff management. Simplify your business operations.">
+        <title>{{ config('app.name', 'MahWi') }} | @yield('title', 'Welcome')</title>
+<!-- SEO Meta Tags -->
+        <meta name="description" content="Mahwi - Multi-shop management system for inventory, sales, purchases, and staff management. Simplify your business operations.">
         <meta name="keywords" content="shop management, inventory, sales, purchases, POS, Rwanda, RWF, business management">
         <meta name="author" content="Shopledger">
         <meta name="robots" content="index, follow">
@@ -32,6 +31,47 @@
 
         <!-- Favicon -->
         <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon-16.png') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
+
+        <!-- Theme Color -->
+        <meta name="theme-color" content="#6366f1">
+        <meta name="msapplication-TileColor" content="#6366f1">
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        <!-- Scripts -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js">
+        </script>
+        <!-- SEO Meta Tags -->
+        <meta name="description" content="MahWi - Multi-shop management system for inventory, sales, purchases, and staff management. Simplify your business operations.">
+        <meta name="keywords" content="shop management, inventory, sales, purchases, POS, Rwanda, RWF, business management">
+        <meta name="author" content="MahWi Team">
+        <meta name="robots" content="index, follow">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ url()->current() }}">
+        <meta property="og:title" content="{{ config('app.name', 'MahWi') }} - Multi-Shop Management System">
+        <meta property="og:description" content="Simplify your shop management with MahWi. Track inventory, sales, purchases, and staff all in one place.">
+        <meta property="og:image" content="{{ asset('images/og-image.png') }}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:site_name" content="MahWi">
+
+        <!-- Twitter -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:url" content="{{ url()->current() }}">
+        <meta name="twitter:title" content="{{ config('app.name', 'MahWi') }} - Multi-Shop Management System">
+        <meta name="twitter:description" content="Simplify your shop management with MahWi. Track inventory, sales, purchases, and staff all in one place.">
+        <meta name="twitter:image" content="{{ asset('images/og-image.png') }}">
+
+        <!-- Favicon -->
+        <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
         <link rel="apple-touch-icon" href="{{ asset('images/logo.svg') }}">
 
         <!-- Theme Color -->
@@ -41,7 +81,7 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -113,7 +153,7 @@
 
                     <!-- Features -->
                     <div class="space-y-6">
-                        <h2 class="text-2xl font-bold mb-6">Why Choose Shopledger?</h2>
+                        <h2 class="text-2xl font-bold mb-6">Why Choose MahWi?</h2>
 
                         <div class="space-y-4">
                             <div class="flex items-start space-x-4 bg-white/10 backdrop-blur-sm rounded-xl p-4 transform hover:scale-105 transition">
@@ -240,11 +280,7 @@
             </div>
         </div>
 
-        <!-- Floating WhatsApp Button -->
-        <a href="https://wa.me/250786163963?text=Hello%2C%20I%20need%20help%20with%20MahWi" target="_blank" class="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group">
-            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207 -.242 -.579 -.487 -.5 -.669 -.51 -.173 -.008 -.371 -.01 -.57 -.01 -.198 0 -.52 .074 -.792 .372 -.272 .297 -1.04 1.016 -1.04 2.479 0 1.462 
-            </span>
-        </a>
+       
+        <x-whatsapp-float />
     </body>
 </html>

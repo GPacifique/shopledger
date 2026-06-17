@@ -30,7 +30,7 @@ class SystemAdminController extends Controller
         $pendingShops = Shop::where('status', 'pending')->count();
         $approvedShops = Shop::where('status', 'approved')->count();
         $suspendedShops = Shop::where('status', 'suspended')->count();
-
+ $pendingShopsList = Shop::where('status', 'pending')->latest()->get();
         $totalUsers = User::count();
         $totalProducts = Product::count();
 
@@ -80,6 +80,7 @@ class SystemAdminController extends Controller
             'suspendedShops',
             'totalUsers',
             'totalProducts',
+            'pendingShopsList',
             'totalSales',
             'totalExpenses',
             'netRevenue',

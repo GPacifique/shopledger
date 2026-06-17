@@ -8,7 +8,7 @@
         <title>{{ config('app.name', 'Shopledger') }} | @yield('title', 'Dashboard')</title>
 
         <!-- SEO Meta Tags -->
-        <meta name="description" content="Shopledger - Multi-shop management system for inventory, sales, purchases, and staff management. Simplify your business operations.">
+        <meta name="description" content="Mahwi - Multi-shop management system for inventory, sales, purchases, and staff management. Simplify your business operations.">
         <meta name="keywords" content="shop management, inventory, sales, purchases, POS, Rwanda, RWF, business management">
         <meta name="author" content="Shopledger">
         <meta name="robots" content="index, follow">
@@ -43,10 +43,11 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js">
+        </script>
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 flex flex-col">
@@ -65,7 +66,7 @@
             <main class="flex-grow">
                 {{ $slot }}
             </main>
-
+<x-whatsapp-float />
             <!-- Motivational Footer -->
             <x-footer variant="light" />
         </div>

@@ -33,7 +33,9 @@ Route::get('/shops/create', [SystemAdminController::class, 'createShop'])->name(
 Route::post('/shops', [SystemAdminController::class, 'storeShop'])->name('shops.store');
     Route::post('/settings', [SystemAdminController::class, 'updateSettings'])->name('settings.update');
 });
-
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
 
 Route::resource('expenses', ExpenseController::class);
 Route::resource('expensecategories',ExpenseCategoryController::class);

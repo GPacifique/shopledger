@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 class Supplier extends Model
 {
@@ -17,4 +18,13 @@ class Supplier extends Model
     {
         return $this->belongsTo(Shop::class);
     }
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+    public function purchases()
+    {
+        return $this->hasMany(Purchase::class);
+    }
+   
 }
