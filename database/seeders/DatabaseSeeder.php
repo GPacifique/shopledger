@@ -41,7 +41,17 @@ class DatabaseSeeder extends Seeder
 
         // Create Approved Shop 1 (created_by shopAdmin1)
         $shop1 = Shop::create([
-            'name' => 'Tech Store',
+            'business_name' => 'Tech Store',
+            'business_type' => 'electronics',
+            'registration_number' => '123456789',
+            'tin_number' => '987654321',
+            'email' => 'info@techstore.com',
+            'phone' => '555-1234',
+            'country' => 'USA',
+            'city' => 'Tech City',
+            'address' => '456 Tech Avenue',
+            'logo' => 'techstore_logo.png',
+            'subscription_plan' => 'premium',
             'slug' => 'tech-store',
             'status' => 'approved',
             'created_by' => $shopAdmin1->id,
@@ -84,7 +94,17 @@ class DatabaseSeeder extends Seeder
 
         // Create Approved Shop 2
         $shop2 = Shop::create([
-            'name' => 'Fashion Hub',
+            'business_name' => 'Fashion Hub',
+            'business_type' => 'fashion',
+            'registration_number' => '987654321',
+            'tin_number' => '123456789',
+            'email' => 'info@fashionhub.com',
+            'phone' => '555-5678',
+            'country' => 'USA',
+            'city' => 'Fashion City',
+            'address' => '789 Fashion Street',
+            'logo' => 'fashionhub_logo.png',
+            'subscription_plan' => 'premium',
             'slug' => 'fashion-hub',
             'status' => 'approved',
             'created_by' => $shopAdmin2->id,

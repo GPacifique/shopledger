@@ -66,46 +66,7 @@
                     </div>
                 </div>
             </div>
-<div class="col-span-1 lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <!-- DAILY -->
-    <div class="p-4 bg-green shadow rounded">
-        <h3 class="text-green-500 text-2xl font-bold">{{ __('Daily Net Profit') }}</h3>
-        <p class="text-xl  font-bold">
-            RWF {{ number_format($dailyNetProfit, 0) }}
-        </p>
-        <small class="text-gray-400">
-            {{ __('Sales')}}: {{ number_format($dailySales, 0) }} |
-           {{ __(' Purchases')}}: {{ number_format($dailyPurchases, 0) }} |
-            {{ __('Expenses')}}: {{ number_format($dailyExpenses, 0) }}
-        </small>
-    </div>
 
-    <!-- WEEKLY -->
-    <div class="p-4 bg-green shadow rounded">
-        <h3 class="text-green-500 text-2xl font-bold">{{ __('Weekly Net Profit') }}</h3>
-        <p class="text-xl font-bold">
-            RWF {{ number_format($weeklyNetProfit, 0) }}
-        </p>
-        <small class="text-gray-400">
-            {{ __('Sales')}}: {{ number_format($weeklySales, 0) }} |
-            {{ __('Purchases')}}: {{ number_format($weeklyPurchases, 0) }} |
-            {{ __('Expenses')}}: {{ number_format($weeklyExpenses, 0) }}
-        </small>
-    </div>
-    <!-- YEARLY -->
-    <div class="p-4 bg-green shadow rounded">
-        <h3 class="text-green-500 text-2xl font-bold">{{ __('Yearly Net Profit') }}</h3>
-        <p class="text-xl font-bold">
-            RWF {{ number_format($yearlyNetProfit, 0) }}
-        </p>
-        <small class="text-gray-400">
-            {{ __('Sales')}}: {{ number_format($yearlySales, 0) }} |
-            {{ __('Purchases')}}: {{ number_format($yearlyPurchases, 0) }} |
-            {{ __('Expenses')}}: {{ number_format($yearlyExpenses, 0) }}
-        </small>
-    </div>
-
-</div>
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <!-- Today's Sales -->
@@ -387,37 +348,7 @@
                     </div>
                 </div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
-    <!-- Sales By Category -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-900">
-               {{ __('Sales by Category') }}
-            </h3>
-        </div>
-        <div class="p-6">
-            <div class="h-80">
-                <canvas id="salesCategoryChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Expenses By Category -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-900">
-               {{ __(' Expenses by Category') }}
-            </h3>
-        </div>
-        <div class="p-6">
-            <div class="h-80">
-                <canvas id="expenseCategoryChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-</div>
             <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <!-- Daily Sales vs Purchases Chart -->
@@ -494,24 +425,24 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
                         </a>
-                        <a href="{{ route('expenses.create') }}" class="flex items-center p-3 rounded-xl hover:bg-indigo-50 transition-all group">
+                        <a href="{{ route('products.create') }}" class="flex items-center p-3 rounded-xl hover:bg-indigo-50 transition-all group">
                             <div class="h-10 w-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-indigo-400 group-hover:to-blue-500 group-hover:text-white transition-all shadow-sm">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                                 </svg>
                             </div>
-                            <span class="ml-3 font-medium text-gray-700 group-hover:text-indigo-700">{{ __('Add Expense') }}</span>
+                            <span class="ml-3 font-medium text-gray-700 group-hover:text-indigo-700">{{ __('Add Product') }}</span>
                             <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-indigo-500 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
                         </a>
-                        <a href="{{ route('expensecategories.create') }}" class="flex items-center p-3 rounded-xl hover:bg-purple-50 transition-all group">
+                        <a href="{{ route('staff.create') }}" class="flex items-center p-3 rounded-xl hover:bg-purple-50 transition-all group">
                             <div class="h-10 w-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-purple-400 group-hover:to-violet-500 group-hover:text-white transition-all shadow-sm">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                                 </svg>
                             </div>
-                            <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">{{ __('Add Expense Category') }}</span>
+                            <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">{{ __('Add Staff') }}</span>
                             <svg class="w-4 h-4 ml-auto text-gray-400 group-hover:text-purple-500 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
@@ -610,92 +541,6 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Sales Category Pie Chart
-const salesCategoryCtx = document.getElementById('salesCategoryChart');
-
-if (salesCategoryCtx) {
-    new Chart(salesCategoryCtx, {
-        type: 'pie',
-        data: {
-            labels: {!! json_encode($salesCategoryData->pluck('category')) !!},
-            datasets: [{
-                data: {!! json_encode($salesCategoryData->pluck('total')) !!},
-                backgroundColor: [
-                    '#3B82F6',
-                    '#10B981',
-                    '#F59E0B',
-                    '#EF4444',
-                    '#8B5CF6',
-                    '#EC4899',
-                    '#14B8A6',
-                    '#F97316'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.label +
-                                ': RWF ' +
-                                context.raw.toLocaleString();
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Expense Category Pie Chart
-const expenseCategoryCtx = document.getElementById('expenseCategoryChart');
-
-if (expenseCategoryCtx) {
-    new Chart(expenseCategoryCtx, {
-        type: 'pie',
-        data: {
-            labels: {!! json_encode($expenseCategoryData->pluck('category')) !!},
-            datasets: [{
-                data: {!! json_encode($expenseCategoryData->pluck('total')) !!},
-                backgroundColor: [
-                    '#EF4444',
-                    '#F97316',
-                    '#F59E0B',
-                    '#84CC16',
-                    '#06B6D4',
-                    '#3B82F6',
-                    '#8B5CF6',
-                    '#EC4899'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.label +
-                                ': RWF ' +
-                                context.raw.toLocaleString();
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
         // Update current time
         function updateTime() {
             const now = new Date();

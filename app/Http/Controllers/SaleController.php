@@ -121,6 +121,29 @@ class SaleController extends Controller
         return view('sales.show', compact('sale', 'profit'));
     }
 
+    public function edit(Request $request, Sale $sale)
+    {
+        $this->authorizeSale($request, $sale);
+
+        return view('sales.edit', compact('sale'));
+    }
+
+    public function update(Request $request, Sale $sale)
+    {
+        $this->authorizeSale($request, $sale);
+
+        $validated = $request->validate([
+            'sale_date' => 'required|date',
+            'payment_method' => 'required|in:cash,momo,bank,card',
+            'payment_status' => 'nullable|in:paid,unpaid',
+        ]);
+
+        $sale->update($validated);
+
+        return redirect()->route('sales.show', $sale)
+            ->with('success', 'Sale updated successfully.');
+    }
+
     public function destroy(Request $request, Sale $sale)
     {
         $this->authorizeSale($request, $sale);

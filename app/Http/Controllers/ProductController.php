@@ -100,7 +100,13 @@ class ProductController extends Controller
     {
         $this->authorizeProduct($request, $product);
 
-        return view('products.edit', compact('product'));
+        $shopId = $request->user()->shop_id;
+
+        return view('products.edit', [
+            'product' => $product,
+            'categories' => Category::where('shop_id', $shopId)->orderBy('name')->get(),
+            'suppliers' => Supplier::where('shop_id', $shopId)->orderBy('name')->get(),
+        ]);
     }
 
     public function update(Request $request, Product $product)

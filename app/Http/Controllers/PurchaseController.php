@@ -48,6 +48,10 @@ class PurchaseController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge([
+            'supplier_id' => $request->filled('supplier_id') ? $request->supplier_id : null,
+        ]);
+
         $request->validate([
             'supplier_id' => 'nullable|exists:suppliers,id',
             'purchase_date' => 'required|date',

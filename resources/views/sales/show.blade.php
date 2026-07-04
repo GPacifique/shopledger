@@ -229,16 +229,24 @@
                         {{ $sale->created_at->format('M d, Y \a\t h:i A') }}
                     </span>
                 </p>
-                <form action="{{ route('sales.destroy', $sale) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to delete this sale? This will restore all stock.') }}')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 transition">
+                <div class="flex items-center space-x-3">
+                    <a href="{{ route('sales.edit', $sale) }}" class="inline-flex items-center px-4 py-2 border border-amber-300 rounded-lg shadow-sm text-sm font-medium text-amber-700 bg-white hover:bg-amber-50 transition">
+                        <svg class="-ml-1 mr-2 h-4 w-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-9.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 6.5-6.5z"/>
+                        </svg>
+                        {{ __('Edit Sale') }}
+                    </a>
+                    <form action="{{ route('sales.destroy', $sale) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to delete this sale? This will restore all stock.') }}')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 transition">
                         <svg class="-ml-1 mr-2 h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
                         {{ __('Delete Sale') }}
                     </button>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
