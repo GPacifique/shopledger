@@ -150,6 +150,19 @@ if (!$shop) {
             ->take(5)
             ->get();
 
+        $outOfStockProducts = Product::where('shop_id', $shop->id)
+            ->where('stock', '<=', 0)
+            ->orderBy('name')
+            ->take(5)
+            ->get();
+
+        $expiringProducts = Product::where('shop_id', $shop->id)
+            ->whereNotNull('expiry_date')
+            ->whereBetween('expiry_date', [now()->startOfDay(), now()->addDays(30)->endOfDay()])
+            ->orderBy('expiry_date')
+            ->take(5)
+            ->get();
+
         // Staff members
         $staff = User::where('shop_id', $shop->id)
             ->where('id', '!=', $user->id)
@@ -190,6 +203,8 @@ $expenseCategoryData = Expense::query()
     'recentSales',
     'recentPurchases',
     'lowStockProducts',
+    'outOfStockProducts',
+    'expiringProducts',
     'staff',
     'chartData',
     'monthlyChartData',

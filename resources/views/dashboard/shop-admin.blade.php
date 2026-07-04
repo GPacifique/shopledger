@@ -31,6 +31,45 @@
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @if($outOfStockProducts->isNotEmpty() || $expiringProducts->isNotEmpty())
+                <div class="fixed right-4 top-20 z-50 w-[min(92vw,24rem)] rounded-2xl border border-amber-200 bg-white/95 shadow-2xl backdrop-blur">
+                    <div class="flex items-center justify-between border-b border-amber-100 px-4 py-3">
+                        <div>
+                            <p class="text-sm font-semibold text-amber-700">{{ __('Inventory Alerts') }}</p>
+                            <p class="text-xs text-amber-600">{{ __('Products needing attention') }}</p>
+                        </div>
+                        <span class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                            {{ $outOfStockProducts->count() + $expiringProducts->count() }}
+                        </span>
+                    </div>
+                    <div class="max-h-72 space-y-2 overflow-y-auto p-4">
+                        @if($outOfStockProducts->isNotEmpty())
+                            <div class="rounded-xl border border-red-100 bg-red-50 p-3">
+                                <p class="text-sm font-semibold text-red-700">{{ __('Out of stock') }}</p>
+                                @foreach($outOfStockProducts as $product)
+                                    <div class="mt-2 flex items-center justify-between text-sm text-red-600">
+                                        <span>{{ $product->name }}</span>
+                                        <span class="font-medium">0 {{ __('in stock') }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @if($expiringProducts->isNotEmpty())
+                            <div class="rounded-xl border border-orange-100 bg-orange-50 p-3">
+                                <p class="text-sm font-semibold text-orange-700">{{ __('Expiring soon') }}</p>
+                                @foreach($expiringProducts as $product)
+                                    <div class="mt-2 flex items-center justify-between text-sm text-orange-600">
+                                        <span>{{ $product->name }}</span>
+                                        <span class="font-medium">{{ $product->expiry_date->format('M d, Y') }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             <!-- Welcome Banner -->
             <div class="mb-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
                 <div class="relative px-6 py-8 sm:px-10 sm:py-10">
