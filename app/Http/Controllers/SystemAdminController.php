@@ -16,6 +16,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Auth;
 
 class SystemAdminController extends Controller
 {
@@ -103,7 +104,7 @@ class SystemAdminController extends Controller
     {
         $shop->update([
             'status' => 'approved',
-            'approved_by' => auth()->id(),
+            'approved_by' => Auth::id(),
             'approved_at' => now()
         ]);
 
@@ -171,7 +172,7 @@ class SystemAdminController extends Controller
 
         $payment->update([
             'status' => 'approved',
-            'approved_by' => auth()->id()
+            'approved_by' => Auth::id()
         ]);
 
         $subscription = $payment->shopSubscription;
@@ -328,7 +329,7 @@ public function storeShop(Request $request)
     unset($validated['user_id']);
 
     if ($validated['status'] === 'approved') {
-        $validated['approved_by'] = auth()->id();
+        $validated['approved_by'] = Auth::id();
         $validated['approved_at'] = now();
     }
 
