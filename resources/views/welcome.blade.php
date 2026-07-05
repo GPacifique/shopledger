@@ -4,18 +4,18 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{{ config('app.name', 'Shopledger') }} - Multi-Shop Management System</title>
+        <title>{{ config('app.name', 'MahWi') }} - Multi-Shop Management System</title>
 
         <!-- SEO Meta Tags -->
-        <meta name="description" content="Shopledger - Rwanda's leading multi-shop management system for inventory, sales, purchases, and staff management. Simplify your business operations.">
+        <meta name="description" content="MahWI - Rwanda's leading multi-shop management system for inventory, sales, purchases, and staff management. Simplify your business operations.">
         <meta name="keywords" content="shop management, inventory, sales, purchases, POS, Rwanda, RWF, business management, Kigali">
-        <meta name="author" content="Shopledger">
+        <meta name="author" content="MahWi">
         <meta name="robots" content="index, follow">
 
         <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website">
         <meta property="og:url" content="{{ url('/') }}">
-        <meta property="og:title" content="Shopledger - Multi-Shop Management System for Rwanda">
+        <meta property="og:title" content="MahWi - Multi-Shop Management System for Rwanda">
         <meta property="og:description" content="Rwanda's leading shop management solution. Track inventory, sales, purchases, and staff with real-time analytics.">
         <meta property="og:image" content="{{ asset('images/og-image.png') }}">
         <meta property="og:image:width" content="1200">
@@ -25,7 +25,7 @@
         <!-- Twitter -->
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:url" content="{{ url('/') }}">
-        <meta name="twitter:title" content="Shopledger - Multi-Shop Management System for Rwanda">
+        <meta name="twitter:title" content="MahWi - Multi-Shop Management System for Rwanda">
         <meta name="twitter:description" content="Rwanda's leading shop management solution. Track inventory, sales, purchases, and staff with real-time analytics.">
         <meta name="twitter:image" content="{{ asset('images/og-image.png') }}">
 
@@ -82,7 +82,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h1 class="text-2xl font-extrabold text-white tracking-tight">Shopledger</h1>
+                            <h1 class="text-2xl font-extrabold text-white tracking-tight">MahWI</h1>
                             <p class="text-indigo-200 text-xs">Multi-Shop Management</p>
                         </div>
                     </div>
