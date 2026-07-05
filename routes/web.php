@@ -142,6 +142,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/admin/shops/create', [SystemAdminController::class, 'createShop'])->name('admin.shops.create');
         Route::post('/admin/shops', [SystemAdminController::class, 'storeShop'])->name('admin.shops.store');
         Route::get('/admin/users', [SystemAdminController::class, 'listUsers'])->name('admin.users.index');
+        Route::get('/admin/users/{user}/edit', [SystemAdminController::class, 'editUser'])->name('admin.users.edit');
+        Route::put('/admin/users/{user}', [SystemAdminController::class, 'updateUser'])->name('admin.users.update');
     });
 
     // Shop Admin Routes - Only accessible by shop_admin

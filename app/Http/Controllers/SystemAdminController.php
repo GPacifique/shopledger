@@ -371,6 +371,35 @@ public function listUsers(Request $request)
 
     return view('admin.users.index', compact('users'));
 }
+
+public function editUser(User $user)
+{
+    $shops = Shop::orderBy('business_name')->get();
+
+    return view('admin.users.edit', compact('user', 'shops'));
+}
+
+public function updateUser(Request $request, User $user)
+{
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+        'role' => ['required', 'in:system_admin,shop_admin,manager,seller,accountant,user'],
+        'shop_id' => ['nullable', 'exists:shops,id'],
+        'account_status' => ['required', 'in:active,suspended'],
+        'locale' => ['nullable', 'string', 'max:5'],
+    ]);
+
+    if ($request->filled('password')) {
+        $validated['password'] = bcrypt($request->password);
+    } else {
+        unset($validated['password']);
+    }
+
+    $user->update($validated);
+
+    return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+}
 /*
 |--------------------------------------------------------------------------
 | SYSTEM SETTINGS

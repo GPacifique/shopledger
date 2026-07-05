@@ -161,17 +161,23 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    @if($user->shop_id)
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                            <span class="h-2 w-2 rounded-full bg-green-500 mr-1"></span>
-                                            Assigned
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                                            <span class="h-2 w-2 rounded-full bg-yellow-500 mr-1 animate-pulse"></span>
-                                            Unassigned
-                                        </span>
-                                    @endif
+                                    <div class="flex items-center justify-center space-x-2">
+                                        @if($user->shop_id)
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                                <span class="h-2 w-2 rounded-full bg-green-500 mr-1"></span>
+                                                Assigned
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                                <span class="h-2 w-2 rounded-full bg-yellow-500 mr-1 animate-pulse"></span>
+                                                Unassigned
+                                            </span>
+                                        @endif
+
+                                        <a href="{{ route('admin.users.edit', $user) }}" class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition">
+                                            Edit
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
