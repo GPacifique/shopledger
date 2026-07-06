@@ -24,7 +24,7 @@
         <meta property="og:image" content="{{ asset('images/og-logo.png') }}">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
-        <meta property="og:site_name" content="Shopledger">
+        <meta property="og:site_name" content="Multi-Shop Management System">
 
         <!-- Twitter -->
         <meta name="twitter:card" content="summary_large_image">
@@ -34,10 +34,10 @@
         <meta name="twitter:image" content="{{ asset('images/og-logo.png') }}">
 
         <!-- Favicon / Logo -->
-        <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/og-logo.png') }}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/og-logo.png') }}">
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/og-logo.png') }}">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.png') }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo.png') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo.png') }}">
 
         <!-- Theme Color -->
         <meta name="theme-color" content="#6366f1">
