@@ -38,9 +38,9 @@
                   data-i18n-stock-error="{{ __('Cannot complete sale: One or more items exceed available stock. Please adjust quantities.') }}">
                 @csrf
 
-                <!-- Sale Date / Payment Method -->
+                <!-- Sale Date / Payment Method / Customer -->
                 <div class="bg-white shadow-sm rounded-lg mb-6 p-4 sm:p-6">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <x-form.field name="sale_date" :label="__('Sale Date')" required>
                             <input type="date" name="sale_date" id="sale_date"
                                    value="{{ old('sale_date', date('Y-m-d')) }}" required
@@ -53,6 +53,18 @@
                                 @foreach(\App\Models\Sale::PAYMENT_METHODS as $value => $label)
                                     <option value="{{ $value }}" {{ old('payment_method', 'cash') === $value ? 'selected' : '' }}>
                                         {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </x-form.field>
+
+                        <x-form.field name="customer_id" :label="__('Customer')">
+                            <select name="customer_id" id="customer_id"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2.5 px-3 text-base">
+                                <option value="">{{ __('Walk-in customer') }}</option>
+                                @foreach($customers as $customer)
+                                    <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
+                                        {{ $customer->name }} {{ $customer->phone ? '('.$customer->phone.')' : '' }}
                                     </option>
                                 @endforeach
                             </select>

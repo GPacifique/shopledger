@@ -51,9 +51,15 @@ class Shop extends Model
     {
         return $this->hasMany(ShopSubscription::class);
     }
+
+    public function customers()
+    {
+        return $this->hasMany(Customer::class);
+    }
+
     public function users()
-{
-    return $this->hasMany(User::class, 'shop_id');
-}
+    {
+        return $this->hasMany(User::class, 'shop_id');
+    }
 
 }

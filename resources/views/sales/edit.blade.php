@@ -28,6 +28,19 @@
                     </div>
 
                     <div>
+                        <label for="customer_id" class="block text-sm font-medium text-gray-700">{{ __('Customer') }}</label>
+                        <select name="customer_id" id="customer_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">{{ __('Walk-in customer') }}</option>
+                            @foreach(\App\Models\Customer::where('shop_id', $sale->shop_id)->orderBy('name')->get() as $customer)
+                                <option value="{{ $customer->id }}" @selected(old('customer_id', $sale->customer_id) == $customer->id)> {{ $customer->name }} {{ $customer->phone ? '('.$customer->phone.')' : '' }}</option>
+                            @endforeach
+                        </select>
+                        @error('customer_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
                         <label for="payment_method" class="block text-sm font-medium text-gray-700">{{ __('Payment Method') }} *</label>
                         <select name="payment_method" id="payment_method" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             @foreach(\App\Models\Sale::PAYMENT_METHODS as $value => $label)

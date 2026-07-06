@@ -26,6 +26,9 @@
                         <x-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
                             {{ __('Suppliers') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
+                            {{ __('Customers') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">
                             {{ __('Purchases') }}
                         </x-nav-link>
@@ -116,6 +119,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
                     {{ __('Suppliers') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
+                    {{ __('Customers') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">
                     {{ __('Purchases') }}

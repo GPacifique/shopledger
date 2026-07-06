@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +15,7 @@ class SaleController extends Controller
     public function index(Request $request)
     {
         $shopId = $request->user()->shop_id;
-        $query = Sale::with(['items', 'creator'])
+        $query = Sale::with(['items', 'creator', 'customer'])
             ->where('shop_id', $shopId);
 
         if ($request->filled('date_from')) {
@@ -29,20 +31,22 @@ class SaleController extends Controller
         return view('sales.index', compact('sales'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $shopId = auth()->user()->shop_id;
+        $shopId = $request->user()->shop_id;
         $products = Product::where('shop_id', $shopId)
             ->where('stock', '>', 0)
             ->orderBy('name')
             ->get();
+        $customers = Customer::where('shop_id', $shopId)->orderBy('name')->get();
 
-        return view('sales.create', compact('products'));
+        return view('sales.create', compact('products', 'customers'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
+            'customer_id' => 'nullable|exists:customers,id',
             'sale_date' => 'required|date',
             'payment_method' => 'required|in:cash,momo,bank,card',
             'items' => 'required|array|min:1',
@@ -71,6 +75,7 @@ class SaleController extends Controller
         $sale = DB::transaction(function () use ($request, $user, $shopId) {
             $sale = Sale::create([
                 'shop_id' => $shopId,
+                'customer_id' => $request->filled('customer_id') ? $request->customer_id : null,
                 'sale_date' => $request->sale_date,
                 'payment_method' => $request->payment_method,
                 'created_by' => $user->id,
@@ -111,12 +116,12 @@ class SaleController extends Controller
     public function show(Request $request, Sale $sale)
     {
         $this->authorizeSale($request, $sale);
-        $sale->load(['items.product', 'creator', 'shop']);
+        $sale->load(['items.product', 'creator', 'shop', 'customer']);
 
         // Calculate profit
-        $profit = $sale->items->sum(function ($item) {
-            return $item->line_total - ($item->cost_price_at_sale * $item->quantity);
-        });
+        $profit = $sale->items->reduce(function ($carry, $item) {
+            return $carry + ($item->line_total - ($item->cost_price_at_sale * $item->quantity));
+        }, 0);
 
         return view('sales.show', compact('sale', 'profit'));
     }
@@ -133,6 +138,7 @@ class SaleController extends Controller
         $this->authorizeSale($request, $sale);
 
         $validated = $request->validate([
+            'customer_id' => 'nullable|exists:customers,id',
             'sale_date' => 'required|date',
             'payment_method' => 'required|in:cash,momo,bank,card',
             'payment_status' => 'nullable|in:paid,unpaid',
@@ -167,16 +173,31 @@ class SaleController extends Controller
             abort(403);
         }
     }
-    public function print(Sale $sale)
+    public function print(Request $request, Sale $sale)
     {
-        $sale->load(['items.product', 'creator', 'shop']);
-        return view('sales.print', compact('sale'));
+        $this->authorizeSale($request, $sale);
+        $sale->load(['items.product', 'creator', 'shop', 'customer']);
+
+        $profit = $sale->items->reduce(function ($carry, $item) {
+            return $carry + ($item->line_total - ($item->cost_price_at_sale * $item->quantity));
+        }, 0);
+
+        return view('sales.show', compact('sale', 'profit'));
     }
-    public function export(Sale $sale)
+
+    public function export(Request $request, Sale $sale)
     {
-        $sale->load(['items.product', 'creator', 'shop']);
-        // Implement export logic (e.g., generate PDF or Excel)
-        return response()->json(['message' => 'Export functionality not implemented yet.']);
+        $this->authorizeSale($request, $sale);
+        $sale->load(['items.product', 'creator', 'shop', 'customer']);
+
+        $profit = $sale->items->reduce(function ($carry, $item) {
+            return $carry + ($item->line_total - ($item->cost_price_at_sale * $item->quantity));
+        }, 0);
+
+        $pdf = Pdf::loadView('sales.show', compact('sale', 'profit'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download('sale-' . $sale->id . '.pdf');
     }
     public function updatePaymentStatus(Request $request, Sale $sale)
     {

@@ -10,7 +10,7 @@ class Sale extends Model
     use HasFactory;
 
     protected $fillable = [
-        'shop_id', 'sale_date', 'total_amount', 'payment_method','payment_status', 'created_by',
+        'shop_id', 'customer_id', 'sale_date', 'total_amount', 'payment_method','payment_status', 'created_by',
     ];
 
     public const PAYMENT_METHODS = [
@@ -27,6 +27,11 @@ class Sale extends Model
     public function shop()
     {
         return $this->belongsTo(Shop::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     public function items()

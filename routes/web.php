@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopAdminController;
 use App\Http\Controllers\ShopController;
 Use App\Http\Controllers\SubscriptionPlanController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ProductController;
@@ -102,7 +103,7 @@ Route::prefix('admin')->middleware(['auth','system.admin'])->group(function () {
 });
 
 Route::get('/dashboard', function () {
-    $user = auth()->user();
+    $user = Auth::user();
 
     // System admin dashboard
     if ($user->role === 'system_admin') {
@@ -165,8 +166,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products', ProductController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
     Route::get('products/{product}/qr-code', [ProductController::class, 'qrCode'])->name('products.qr-code');
     Route::resource('suppliers', SupplierController::class);
+    Route::resource('customers', CustomerController::class);
     Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
     Route::get('purchases/{purchase}/download', [PurchaseController::class, 'downloadPdf'])->name('purchases.download');
+    Route::get('sales/{sale}/print', [SaleController::class, 'print'])->name('sales.print');
+    Route::get('sales/{sale}/export', [SaleController::class, 'export'])->name('sales.export');
     Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     Route::resource('staff', StaffController::class);
 

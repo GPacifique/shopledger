@@ -21,6 +21,12 @@
                     </svg>
                     {{ __('Print') }}
                 </button>
+                <a href="{{ route('sales.export', $sale) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition">
+                    <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    {{ __('Download PDF') }}
+                </a>
                 <a href="{{ route('sales.create') }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition">
                     <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -46,12 +52,23 @@
 
             <!-- Print Header (Shop Info) - Only visible when printing -->
             <div class="hidden print:block mb-6 text-center border-b-2 border-gray-300 pb-4">
-                <h1 class="text-2xl font-bold text-gray-900">{{ $sale->shop->name ?? __('Shop Name') }}</h1>
+                <h1 class="text-2xl font-bold text-gray-900">{{ $sale->shop->business_name ?? __('Shop Name') }}</h1>
                 <p class="text-gray-600">{{ $sale->shop->address ?? '' }}</p>
                 @if($sale->shop->phone ?? null)
                     <p class="text-gray-600">{{ __('Tel') }}: {{ $sale->shop->phone }}</p>
                 @endif
                 <p class="text-gray-600 mt-2">{{ __('Served by') }}: <span class="font-medium">{{ $sale->creator->name ?? __('Unknown') }}</span></p>
+                @if($sale->customer)
+                    <p class="text-gray-600 mt-1">{{ __('Customer') }}: <span class="font-medium">{{ $sale->customer->name }}</span></p>
+                    @if($sale->customer->phone)
+                        <p class="text-gray-600">{{ __('Phone') }}: {{ $sale->customer->phone }}</p>
+                    @endif
+                    @if($sale->customer->email)
+                        <p class="text-gray-600">{{ __('Email') }}: {{ $sale->customer->email }}</p>
+                    @endif
+                @else
+                    <p class="text-gray-600 mt-1">{{ __('Customer') }}: <span class="font-medium">{{ __('Walk-in customer') }}</span></p>
+                @endif
             </div>
 
             <!-- Sale Receipt Card -->
@@ -88,6 +105,10 @@
                         <div>
                             <p class="text-xs text-gray-500 uppercase tracking-wider">{{ __('Cashier') }}</p>
                             <p class="font-medium text-gray-900">{{ $sale->creator->name ?? __('Unknown') }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase tracking-wider">{{ __('Customer') }}</p>
+                            <p class="font-medium text-gray-900">{{ $sale->customer->name ?? __('Walk-in customer') }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-gray-500 uppercase tracking-wider">{{ __('Items') }}</p>
