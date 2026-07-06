@@ -105,6 +105,46 @@
                     </div>
                 </div>
             </div>
+            <div class="col-span-1 lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- DAILY -->
+    <div class="p-4 bg-green shadow rounded">
+        <h3 class="text-green-500 text-2xl font-bold">{{ __('Daily Net Profit') }}</h3>
+        <p class="text-xl  font-bold">
+            RWF {{ number_format($dailyNetProfit, 0) }}
+        </p>
+        <small class="text-gray-400">
+            {{ __('Sales')}}: {{ number_format($dailySales, 0) }} |
+           {{ __(' Purchases')}}: {{ number_format($dailyPurchases, 0) }} |
+            {{ __('Expenses')}}: {{ number_format($dailyExpenses, 0) }}
+        </small>
+    </div>
+
+    <!-- WEEKLY -->
+    <div class="p-4 bg-green shadow rounded">
+        <h3 class="text-green-500 text-2xl font-bold">{{ __('Weekly Net Profit') }}</h3>
+        <p class="text-xl font-bold">
+            RWF {{ number_format($weeklyNetProfit, 0) }}
+        </p>
+        <small class="text-gray-400">
+            {{ __('Sales')}}: {{ number_format($weeklySales, 0) }} |
+            {{ __('Purchases')}}: {{ number_format($weeklyPurchases, 0) }} |
+            {{ __('Expenses')}}: {{ number_format($weeklyExpenses, 0) }}
+        </small>
+    </div>
+    <!-- YEARLY -->
+    <div class="p-4 bg-green shadow rounded">
+        <h3 class="text-green-500 text-2xl font-bold">{{ __('Yearly Net Profit') }}</h3>
+        <p class="text-xl font-bold">
+            RWF {{ number_format($yearlyNetProfit, 0) }}
+        </p>
+        <small class="text-gray-400">
+            {{ __('Sales')}}: {{ number_format($yearlySales, 0) }} |
+            {{ __('Purchases')}}: {{ number_format($yearlyPurchases, 0) }} |
+            {{ __('Expenses')}}: {{ number_format($yearlyExpenses, 0) }}
+        </small>
+    </div>
+
+</div>
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -387,6 +427,37 @@
                     </div>
                 </div>
             </div>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+    <!-- Sales By Category -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900">
+               {{ __('Sales by Category') }}
+            </h3>
+        </div>
+        <div class="p-6">
+            <div class="h-80">
+                <canvas id="salesCategoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expenses By Category -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900">
+               {{ __(' Expenses by Category') }}
+            </h3>
+        </div>
+        <div class="p-6">
+            <div class="h-80">
+                <canvas id="expenseCategoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
 
             <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -580,6 +651,320 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const el = document.getElementById('current-time');
+            if (el) {
+                el.textContent = now.toLocaleTimeString('en-US', {
+                    hour: '2-digit', minute: '2-digit', hour12: true
+                });
+            }
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Chart.js config
+        Chart.defaults.font.family = 'Figtree, system-ui, sans-serif';
+        Chart.defaults.plugins.legend.display = false;
+
+        // Daily Chart - Last 7 Days Sales vs Purchases
+        const dailyCtx = document.getElementById('dailyChart');
+        if (dailyCtx) {
+            new Chart(dailyCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: {!! json_encode($chartData['labels'] ?? []) !!},
+                    datasets: [{
+                        label: 'Sales',
+                        data: {!! json_encode($chartData['sales'] ?? []) !!},
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }, {
+                        label: 'Purchases',
+                        data: {!! json_encode($chartData['purchases'] ?? []) !!},
+                        borderColor: '#EF4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#EF4444',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': RWF ' + context.raw.toLocaleString();
+                                }
+                            }
+                        }
+
+                                // Sales by Category (Doughnut)
+                                const salesCategoryCtx = document.getElementById('salesCategoryChart');
+                                if (salesCategoryCtx) {
+                                    const salesCategoryLabels = {!! json_encode($salesCategoryData->pluck('category')->toArray() ?? []) !!};
+                                    const salesCategoryValues = {!! json_encode($salesCategoryData->pluck('total')->map(function($v){ return (float) $v; })->toArray() ?? []) !!};
+                                    const colors = [
+                                        '#10B981','#F59E0B','#EF4444','#6366F1','#06B6D4','#8B5CF6','#F97316','#14B8A6'
+                                    ];
+                                    new Chart(salesCategoryCtx.getContext('2d'), {
+                                        type: 'doughnut',
+                                        data: {
+                                            labels: salesCategoryLabels,
+                                            datasets: [{
+                                                data: salesCategoryValues,
+                                                backgroundColor: salesCategoryLabels.map((_, i) => colors[i % colors.length]),
+                                                hoverOffset: 8
+                                            }]
+                                        },
+                                        options: {
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                legend: { position: 'right' },
+                                                tooltip: {
+                                                    callbacks: {
+                                                        label: function(context) {
+                                                            return context.label + ': RWF ' + Number(context.raw).toLocaleString();
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+
+                                // Expenses by Category (Doughnut)
+                                const expenseCategoryCtx = document.getElementById('expenseCategoryChart');
+                                if (expenseCategoryCtx) {
+                                    const expenseCategoryLabels = {!! json_encode($expenseCategoryData->pluck('category')->toArray() ?? []) !!};
+                                    const expenseCategoryValues = {!! json_encode($expenseCategoryData->pluck('total')->map(function($v){ return (float) $v; })->toArray() ?? []) !!};
+                                    new Chart(expenseCategoryCtx.getContext('2d'), {
+                                        type: 'doughnut',
+                                        data: {
+                                            labels: expenseCategoryLabels,
+                                            datasets: [{
+                                                data: expenseCategoryValues,
+                                                backgroundColor: expenseCategoryLabels.map((_, i) => colors[i % colors.length]),
+                                                hoverOffset: 8
+                                            }]
+                                        },
+                                        options: {
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                legend: { position: 'right' },
+                                                tooltip: {
+                                                    callbacks: {
+                                                        label: function(context) {
+                                                            return context.label + ': RWF ' + Number(context.raw).toLocaleString();
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: {
+                                callback: function(value) {
+                                    return 'RWF ' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: { grid: { display: false } }
+                    },
+                    interaction: { intersect: false, mode: 'index' }
+                }
+            });
+        }
+
+        // Monthly Chart - Last 6 Months Sales vs Purchases
+        const monthlyCtx = document.getElementById('monthlyChart');
+        if (monthlyCtx) {
+            new Chart(monthlyCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode($monthlyChartData['labels'] ?? []) !!},
+                    datasets: [{
+                        label: 'Sales',
+                        data: {!! json_encode($monthlyChartData['sales'] ?? []) !!},
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }, {
+                        label: 'Purchases',
+                        data: {!! json_encode($monthlyChartData['purchases'] ?? []) !!},
+                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': RWF ' + context.raw.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: {
+                                callback: function(value) {
+                                    return 'RWF ' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    </script>
+    <!-- Custom Styles -->
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .animate-fade-in { animation: fade-in 0.6s ease-out forwards; }
+        .animate-slide-in { animation: slide-in 0.6s ease-out forwards; }
+        .stat-card { animation: fade-in 0.5s ease-out forwards; opacity: 0; }
+        .animate-pulse-slow { animation: pulse-slow 3s ease-in-out infinite; }
+    </style>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Sales Category Pie Chart
+const salesCategoryCtx = document.getElementById('salesCategoryChart');
+
+if (salesCategoryCtx) {
+    new Chart(salesCategoryCtx, {
+        type: 'pie',
+        data: {
+            labels: {!! json_encode($salesCategoryData->pluck('category')) !!},
+            datasets: [{
+                data: {!! json_encode($salesCategoryData->pluck('total')) !!},
+                backgroundColor: [
+                    '#3B82F6',
+                    '#10B981',
+                    '#F59E0B',
+                    '#EF4444',
+                    '#8B5CF6',
+                    '#EC4899',
+                    '#14B8A6',
+                    '#F97316'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                           return context.label +
+    ': RWF ' +
+    Number(context.raw).toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    });
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Expense Category Pie Chart
+const expenseCategoryCtx = document.getElementById('expenseCategoryChart');
+
+if (expenseCategoryCtx) {
+    new Chart(expenseCategoryCtx, {
+        type: 'pie',
+        data: {
+            labels: {!! json_encode($expenseCategoryData->pluck('category')) !!},
+            datasets: [{
+                data: {!! json_encode($expenseCategoryData->pluck('total')) !!},
+                backgroundColor: [
+                    '#EF4444',
+                    '#F97316',
+                    '#F59E0B',
+                    '#84CC16',
+                    '#06B6D4',
+                    '#3B82F6',
+                    '#8B5CF6',
+                    '#EC4899'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                           return context.label +
+    ': RWF ' +
+    Number(context.raw).toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    });
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
         // Update current time
         function updateTime() {
             const now = new Date();
