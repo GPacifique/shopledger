@@ -182,7 +182,7 @@ class SaleController extends Controller
             return $carry + ($item->line_total - ($item->cost_price_at_sale * $item->quantity));
         }, 0);
 
-        return view('sales.show', compact('sale', 'profit'));
+        return view('sales.receipt', compact('sale', 'profit'));
     }
 
     public function export(Request $request, Sale $sale)
@@ -194,8 +194,8 @@ class SaleController extends Controller
             return $carry + ($item->line_total - ($item->cost_price_at_sale * $item->quantity));
         }, 0);
 
-        $pdf = Pdf::loadView('sales.show', compact('sale', 'profit'))
-            ->setPaper('a4', 'portrait');
+        $pdf = Pdf::loadView('sales.receipt', compact('sale', 'profit'))
+            ->setPaper([0,0,280,800], 'portrait');
 
         return $pdf->download('sale-' . $sale->id . '.pdf');
     }
