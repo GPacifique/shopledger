@@ -106,7 +106,11 @@
                                 <div class="lg:col-span-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                                     <label class="text-sm font-medium text-gray-700 sm:w-12 sm:flex-shrink-0">{{ __('Quantity') }} *</label>
                                     <div class="w-full">
-                                        <input type="number" :name="`items[${index}][quantity]`" min="1" required
+                                        <input type="number"
+                                               :name="`items[${index}][quantity]`"
+                                               min="0.00001"
+                                               step="0.00001"
+                                               required
                                                x-model.number="item.quantity"
                                                :class="item.quantity > item.stock ? 'border-red-500 ring-red-500 bg-red-50' : ''"
                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2.5 px-3 text-base">

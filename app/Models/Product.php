@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use chillerlan\QRCode\Output\QRMarkupSVG;
 use chillerlan\QRCode\Common\EccLevel;
-
+ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Product extends Model
 {
     use HasFactory;
@@ -36,9 +36,9 @@ class Product extends Model
     protected $casts = [
         'buying_price' => 'decimal:2',
         'selling_price' => 'decimal:2',
-        'quantity' => 'integer',
-        'stock' => 'integer',
-        'minimum_stock' => 'integer',
+        'quantity' => 'decimal:5',
+        'stock' => 'decimal:5',
+        'minimum_stock' => 'decimal:5',
         'expiry_date' => 'date',
     ];
 
@@ -87,4 +87,15 @@ class Product extends Model
 
         return (new QRCode($options))->render($data);
     }
+   
+
+public function purchaseItems(): HasMany
+{
+    return $this->hasMany(PurchaseItem::class);
+}
+
+public function saleItems(): HasMany
+{
+    return $this->hasMany(SaleItem::class);
+}
 }

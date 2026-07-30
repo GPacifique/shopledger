@@ -141,6 +141,210 @@
                             </div>
                         </div>
                     </div>
+                    <div class="mt-10 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-5">
+
+    <div class="bg-blue-50 rounded-lg p-5">
+        <p class="text-gray-500 text-sm">Purchased</p>
+        <h2 class="text-3xl font-bold text-blue-700">
+            {{ number_format($totalPurchased,2) }}
+        </h2>
+    </div>
+
+    <div class="bg-green-50 rounded-lg p-5">
+        <p class="text-gray-500 text-sm">Sold</p>
+        <h2 class="text-3xl font-bold text-green-700">
+            {{ number_format($totalSold,2) }}
+        </h2>
+    </div>
+
+    <div class="bg-yellow-50 rounded-lg p-5">
+        <p class="text-gray-500 text-sm">Stock</p>
+        <h2 class="text-3xl font-bold text-yellow-700">
+            {{ number_format($product->stock,2) }}
+        </h2>
+    </div>
+
+    <div class="bg-purple-50 rounded-lg p-5">
+        <p class="text-gray-500 text-sm">Purchase Value</p>
+        <h2 class="text-xl font-bold text-purple-700">
+            {{ rwf($totalPurchaseCost) }}
+        </h2>
+    </div>
+
+    <div class="bg-indigo-50 rounded-lg p-5">
+        <p class="text-gray-500 text-sm">Sales Value</p>
+        <h2 class="text-xl font-bold text-indigo-700">
+            {{ rwf($totalSales) }}
+        </h2>
+    </div>
+
+    <div class="bg-emerald-50 rounded-lg p-5">
+        <p class="text-gray-500 text-sm">Profit</p>
+        <h2 class="text-xl font-bold text-emerald-700">
+            {{ rwf($grossProfit) }}
+        </h2>
+    </div>
+
+</div>
+<!--purchase history-->
+<div class="mt-10 bg-white shadow rounded-lg">
+
+    <div class="px-6 py-4 border-b">
+        <h2 class="text-lg font-semibold">
+            Purchase History
+        </h2>
+    </div>
+
+    <div class="overflow-x-auto">
+
+        <table class="min-w-full divide-y divide-gray-200">
+
+            <thead class="bg-gray-50">
+
+            <tr>
+
+                <th>Date</th>
+                <th>Supplier</th>
+                <th>Quantity</th>
+                <th>Unit Cost</th>
+                <th>Total</th>
+                <th>User</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            @forelse($purchaseItems as $item)
+
+                <tr class="border-b">
+
+                    <td>{{ $item->purchase->purchase_date }}</td>
+
+                    <td>{{ $item->purchase->supplier->name ?? '-' }}</td>
+
+                    <td>{{ number_format($item->quantity,2) }}</td>
+
+                    <td>{{ rwf($item->unit_cost) }}</td>
+
+                    <td>{{ rwf($item->line_total) }}</td>
+
+                    <td>{{ $item->purchase->creator->name ?? '-' }}</td>
+
+                </tr>
+
+            @empty
+
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        No purchases found.
+                    </td>
+                </tr>
+
+            @endforelse
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <div class="p-4">
+
+        {{ $purchaseItems->links() }}
+
+    </div>
+
+</div>
+<!--Sales history -->
+<div class="mt-10 bg-white shadow rounded-lg">
+
+    <div class="px-6 py-4 border-b">
+
+        <h2 class="text-lg font-semibold">
+            Sales History
+        </h2>
+
+    </div>
+
+    <div class="overflow-x-auto">
+
+        <table class="min-w-full divide-y divide-gray-200">
+
+            <thead class="bg-gray-50">
+
+            <tr>
+
+                <th>Date</th>
+
+                <th>Customer</th>
+
+                <th>Qty</th>
+
+                <th>Price</th>
+
+                <th>Total</th>
+
+                <th>Profit</th>
+
+                <th>Cashier</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            @forelse($saleItems as $item)
+
+            <tr class="border-b">
+
+                <td>{{ $item->sale->sale_date }}</td>
+
+                <td>{{ $item->sale->customer->name ?? 'Walk-in Customer' }}</td>
+
+                <td>{{ number_format($item->quantity,2) }}</td>
+
+                <td>{{ rwf($item->unit_price) }}</td>
+
+                <td>{{ rwf($item->line_total) }}</td>
+
+                <td class="text-green-700 font-semibold">
+                    {{ rwf(($item->unit_price-$item->cost_price_at_sale)*$item->quantity) }}
+                </td>
+
+                <td>{{ $item->sale->creator->name ?? '-' }}</td>
+
+            </tr>
+
+            @empty
+
+            <tr>
+
+                <td colspan="7" class="text-center py-5">
+
+                    No sales found.
+
+                </td>
+
+            </tr>
+
+            @endforelse
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <div class="p-4">
+
+        {{ $saleItems->links() }}
+
+    </div>
+
+</div>
 
                     <!-- Actions -->
                     <div class="mt-8 pt-6 border-t border-gray-200 flex justify-between">

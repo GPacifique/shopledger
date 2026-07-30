@@ -20,6 +20,35 @@
                     {{ session('success') }}
                 </div>
             @endif
+            <!-- Inventory Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5">
+                    <p class="text-sm font-medium text-gray-500">{{ __('Total Products') }}</p>
+                    <p class="mt-1 text-2xl font-semibold text-gray-900">{{ number_format($totalProducts) }}</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5">
+                    <p class="text-sm font-medium text-gray-500">{{ __('Total Stock (Units)') }}</p>
+                    <p class="mt-1 text-2xl font-semibold text-gray-900">{{ format_qty($totalStockUnits) }}</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5">
+                    <p class="text-sm font-medium text-gray-500">{{ __('Stock Value (Cost)') }}</p>
+                    <p class="mt-1 text-2xl font-semibold text-blue-600">{{ number_format($stockValueCost) }}</p>
+                    <p class="text-xs text-gray-400">RWF</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5">
+                    <p class="text-sm font-medium text-gray-500">{{ __('Stock Value (Retail)') }}</p>
+                    <p class="mt-1 text-2xl font-semibold text-green-600">{{ number_format($stockValueRetail) }}</p>
+                    <p class="text-xs text-gray-400">RWF</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5">
+                    <p class="text-sm font-medium text-gray-500">{{ __('Low / Out of Stock') }}</p>
+                    <p class="mt-1 text-2xl font-semibold text-red-600">{{ number_format($lowStockCount) }} / {{ number_format($outOfStockCount) }}</p>
+                </div>
+            </div>
 
             <!-- Filters -->
             <div class="bg-white overflow-hidden shadow-sm rounded-lg mb-6">
@@ -31,8 +60,8 @@
                         <div>
                             <select name="stock_status" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">{{ __('All Stock') }}</option>
-                                <option value="in" {{ request('stock_status') === 'in' ? 'selected' : '' }}>{{ __('In Stock') }} (>10)</option>
-                                <option value="low" {{ request('stock_status') === 'low' ? 'selected' : '' }}>{{ __('Low Stock') }} (1-10)</option>
+                                <option value="in" {{ request('stock_status') === 'in' ? 'selected' : '' }}>{{ __('In Stock') }}</option>
+                                <option value="low" {{ request('stock_status') === 'low' ? 'selected' : '' }}>{{ __('Low Stock') }}</option>
                                 <option value="out" {{ request('stock_status') === 'out' ? 'selected' : '' }}>{{ __('Out of Stock') }}</option>
                             </select>
                         </div>
@@ -82,13 +111,13 @@
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                             {{ __('Out of Stock') }}
                                         </span>
-                                    @elseif($product->stock <= 10)
+                                    @elseif($product->stock <= $product->minimum_stock)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            {{ $product->stock }} ({{ __('Low Stock') }})
+                                            {{ format_qty($product->stock) }} ({{ __('Low Stock') }})
                                         </span>
                                     @else
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            {{ $product->stock }}
+                                            {{ format_qty($product->stock) }}
                                         </span>
                                     @endif
                                 </td>

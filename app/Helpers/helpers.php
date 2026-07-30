@@ -28,3 +28,12 @@ if (!function_exists('format_currency')) {
         return $symbol . ' ' . number_format($amount, $decimals);
     }
 }
+if (! function_exists('format_qty')) {
+    function format_qty($value, int $maxDecimals = 5): string
+    {
+        $formatted = number_format((float) $value, $maxDecimals, '.', ',');
+        // Trim trailing zeros, then a trailing dot if nothing's left after it
+        $formatted = rtrim($formatted, '0');
+        return rtrim($formatted, '.');
+    }
+}

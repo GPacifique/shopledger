@@ -114,7 +114,17 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="stock" class="block text-sm font-medium text-gray-700">{{ __('Stock Quantity') }} *</label>
-                            <input type="number" name="stock" id="stock" value="{{ old('stock', $product->stock) }}" min="0" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <input
+            type="number"
+            name="stock"
+            id="stock"
+            value="{{ old('stock', 0) }}"
+            min="0"
+            step="0.01"
+            inputmode="decimal"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="0.00"
+        >
                             @error('stock')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -122,7 +132,17 @@
 
                         <div>
                             <label for="minimum_stock" class="block text-sm font-medium text-gray-700">{{ __('Minimum Stock') }}</label>
-                            <input type="number" name="minimum_stock" id="minimum_stock" value="{{ old('minimum_stock', $product->minimum_stock) }}" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                             <input
+            type="number"
+            name="minimum_stock"
+            id="minimum_stock"
+            value="{{ old('minimum_stock', 0) }}"
+            min="0"
+            step="0.01"
+            inputmode="decimal"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="0.00"
+        >
                             @error('minimum_stock')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror

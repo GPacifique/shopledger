@@ -31,7 +31,7 @@ Alpine.data('saleForm', () => ({
         const select = event.target;
         const option = select.options[select.selectedIndex];
         item.unitPrice = parseFloat(option.dataset.price) || 0;
-        item.stock = parseInt(option.dataset.stock) || 0;
+        item.stock = parseFloat(option.dataset.stock) || 0;
 
         if (item.quantity > item.stock) {
             this.showToast(option.dataset.name, item.quantity, item.stock);

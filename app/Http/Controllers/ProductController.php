@@ -7,40 +7,58 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use chillerlan\QRCode\QRCode;
-
+use App\Models\PurchaseItem;
+use App\Models\SaleItem;
+use Illuminate\Support\Facades\DB;
 class ProductController extends Controller
 {
-    public function index(Request $request)
-    {
-        $shopId = $request->user()->shop_id;
-        $query = Product::where('shop_id', $shopId);
+   public function index(Request $request)
+{
+    $shopId = $request->user()->shop_id;
+    $query = Product::where('shop_id', $shopId);
 
-        // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-
-        // Filter by stock status
-        if ($request->filled('stock_status')) {
-            if ($request->stock_status === 'low') {
-                $query->where('stock', '<=', 10)->where('stock', '>', 0);
-            } elseif ($request->stock_status === 'out') {
-                $query->where('stock', '<=', 0);
-            } elseif ($request->stock_status === 'in') {
-                $query->where('stock', '>', 10);
-            }
-        }
-
-        $products = $query->orderBy('name')->paginate(15)->withQueryString();
-
-        return view('products.index', compact('products'));
+    // Search functionality
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('sku', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%");
+        });
     }
 
+    // Filter by stock status — now relative to each product's own minimum_stock
+    if ($request->filled('stock_status')) {
+        if ($request->stock_status === 'low') {
+            $query->whereColumn('stock', '<=', 'minimum_stock')->where('stock', '>', 0);
+        } elseif ($request->stock_status === 'out') {
+            $query->where('stock', '<=', 0);
+        } elseif ($request->stock_status === 'in') {
+            $query->whereColumn('stock', '>', 'minimum_stock');
+        }
+    }
+
+    $statsQuery = clone $query;
+
+    $totalProducts    = (clone $statsQuery)->count();
+    $totalStockUnits  = (clone $statsQuery)->sum('stock');
+    $stockValueCost   = (clone $statsQuery)->sum(DB::raw('stock * buying_price'));
+    $stockValueRetail = (clone $statsQuery)->sum(DB::raw('stock * selling_price'));
+    $lowStockCount    = (clone $statsQuery)->whereColumn('stock', '<=', 'minimum_stock')->where('stock', '>', 0)->count();
+    $outOfStockCount  = (clone $statsQuery)->where('stock', '<=', 0)->count();
+    $expiringSoonCount = (clone $statsQuery)
+        ->whereNotNull('expiry_date')
+        ->whereBetween('expiry_date', [now(), now()->addDays(30)])
+        ->count();
+
+    $products = $query->orderBy('name')->paginate(15)->withQueryString();
+
+    return view('products.index', compact(
+        'products', 'totalProducts', 'totalStockUnits',
+        'stockValueCost', 'stockValueRetail', 'lowStockCount',
+        'outOfStockCount', 'expiringSoonCount'
+    ));
+}
    public function create()
 {
     $shopId = request()->user()->shop_id;
@@ -68,12 +86,12 @@ class ProductController extends Controller
             ],
             'buying_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
-            'quantity' => 'nullable|integer|min:0',
-            'stock' => 'nullable|integer|min:0',
-            'minimum_stock' => 'nullable|integer|min:0',
+            'quantity' => 'nullable|numeric|min:0.01',
+            'stock' => 'nullable|numeric|min:0.01',
+            'minimum_stock' => 'nullable|numeric|min:0.01',
             'expiry_date' => 'nullable|date',
             'category_id' => 'required|exists:categories,id',
-            'supplier_id' => 'required|exists:suppliers,id',
+            'supplier_id' => 'nullable|exists:suppliers,id',
             'status' => 'nullable|in:active,inactive',
         ]);
 
@@ -89,12 +107,66 @@ class ProductController extends Controller
             ->with('success', 'Product created successfully.');
     }
 
-    public function show(Request $request, Product $product)
-    {
-        $this->authorizeProduct($request, $product);
+    
 
-        return view('products.show', compact('product'));
-    }
+public function show(Request $request, Product $product)
+{
+    $this->authorizeProduct($request, $product);
+
+    $product->load([
+        'category',
+        'supplier',
+    ]);
+
+    $purchaseItems = PurchaseItem::with([
+            'purchase.supplier',
+            'purchase.creator',
+        ])
+        ->where('product_id', $product->id)
+        ->latest()
+        ->paginate(10, ['*'], 'purchases');
+
+    $saleItems = SaleItem::with([
+            'sale.customer',
+            'sale.creator',
+        ])
+        ->where('product_id', $product->id)
+        ->latest()
+        ->paginate(10, ['*'], 'sales');
+
+    $totalPurchased = PurchaseItem::where('product_id', $product->id)->sum('quantity');
+
+    $totalPurchaseCost = PurchaseItem::where('product_id', $product->id)->sum('line_total');
+
+    $totalSold = SaleItem::where('product_id', $product->id)->sum('quantity');
+
+    $totalSales = SaleItem::where('product_id', $product->id)->sum('line_total');
+
+    $grossProfit = SaleItem::where('product_id', $product->id)
+        ->selectRaw('SUM((unit_price-cost_price_at_sale)*quantity) as profit')
+        ->value('profit');
+
+    $lastPurchase = PurchaseItem::where('product_id',$product->id)
+        ->latest()
+        ->first();
+
+    $lastSale = SaleItem::where('product_id',$product->id)
+        ->latest()
+        ->first();
+
+    return view('products.show', compact(
+        'product',
+        'purchaseItems',
+        'saleItems',
+        'totalPurchased',
+        'totalPurchaseCost',
+        'totalSold',
+        'totalSales',
+        'grossProfit',
+        'lastPurchase',
+        'lastSale'
+    ));
+}
 
     public function edit(Request $request, Product $product)
     {
@@ -128,12 +200,12 @@ class ProductController extends Controller
             ],
             'buying_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
-            'quantity' => 'nullable|integer|min:0',
-            'stock' => 'required|integer|min:0',
-            'minimum_stock' => 'nullable|integer|min:0',
+            'quantity' => 'nullable|numeric|min:0.01',
+            'stock' => 'required|numeric|min:0.01',
+            'minimum_stock' => 'nullable|numeric|min:0.01',
             'expiry_date' => 'nullable|date',
             'category_id' => 'required|exists:categories,id',
-            'supplier_id' => 'required|exists:suppliers,id',
+            'supplier_id' => 'nullable|exists:suppliers,id',
             'status' => 'nullable|in:active,inactive',
         ]);
 

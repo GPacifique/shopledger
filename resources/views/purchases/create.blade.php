@@ -72,7 +72,7 @@
                     <div class="p-6">
                         <div class="flex justify-between items-center text-lg">
                             <span class="font-medium text-gray-900">{{ __('Total Amount') }}:</span>
-                            <span id="grandTotal" class="text-2xl font-bold text-red-600">RWF 0</span>
+                            <span id="grandTotal" class="text-2xl font-bold text-red-600">RWF 0.00</span>
                         </div>
                     </div>
                 </div>
@@ -103,15 +103,26 @@
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Quantity') }} *</label>
-                    <input type="number" name="items[__INDEX__][quantity]" min="1" value="1" required class="quantity-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" oninput="updateItemTotal(this)">
+                    <input
+    type="number"
+    name="items[__INDEX__][quantity]"
+    min="0.01"
+    step="0.01"
+    inputmode="decimal"
+    value="1.00"
+    required
+    class="quantity-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+    placeholder="0.00"
+    oninput="updateItemTotal(this)"
+>
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Unit Cost (RWF)') }} *</label>
-                    <input type="number" name="items[__INDEX__][unit_cost]" min="0" step="1" required class="cost-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" oninput="updateItemTotal(this)">
+                    <input type="number" name="items[__INDEX__][unit_cost]" min="0.01" step="0.01" required class="cost-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" oninput="updateItemTotal(this)">
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Line Total') }}</label>
-                    <div class="line-total mt-2 text-lg font-semibold text-gray-900">RWF 0</div>
+                    <div class="line-total mt-2 text-lg font-semibold text-gray-900">RWF 0.00</div>
                 </div>
                 <div class="col-span-1 flex items-end">
                     <button type="button" onclick="removeItem(this)" class="mb-1 p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded">
@@ -126,6 +137,10 @@
 
     <script>
         let itemIndex = 0;
+
+        function formatAmount(value) {
+            return 'RWF ' + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
 
         function addItem() {
             const template = document.getElementById('itemTemplate').innerHTML;
@@ -147,21 +162,21 @@
 
         function updateItemTotal(element) {
             const row = element.closest('.item-row');
-            const quantity = parseInt(row.querySelector('.quantity-input').value) || 0;
+            const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
             const cost = parseFloat(row.querySelector('.cost-input').value) || 0;
             const total = quantity * cost;
-            row.querySelector('.line-total').textContent = 'RWF ' + total.toLocaleString();
+            row.querySelector('.line-total').textContent = formatAmount(total);
             updateGrandTotal();
         }
 
         function updateGrandTotal() {
             let total = 0;
             document.querySelectorAll('.item-row').forEach(row => {
-                const quantity = parseInt(row.querySelector('.quantity-input').value) || 0;
+                const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
                 const cost = parseFloat(row.querySelector('.cost-input').value) || 0;
                 total += quantity * cost;
             });
-            document.getElementById('grandTotal').textContent = 'RWF ' + total.toLocaleString();
+            document.getElementById('grandTotal').textContent = formatAmount(total);
         }
 
         // Auto-fill cost when product is selected
@@ -170,7 +185,7 @@
                 const option = e.target.options[e.target.selectedIndex];
                 const cost = option.dataset.cost || 0;
                 const row = e.target.closest('.item-row');
-                row.querySelector('.cost-input').value = cost;
+                row.querySelector('.cost-input').value = parseFloat(cost).toFixed(2);
                 updateItemTotal(e.target);
             }
         });

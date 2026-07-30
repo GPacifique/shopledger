@@ -20,6 +20,42 @@
                     {{ session('success') }}
                 </div>
             @endif
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5">
+                    <p class="text-sm font-medium text-gray-500">{{ __('Total Sales') }}</p>
+                    <p class="mt-1 text-2xl font-semibold text-gray-900">{{ number_format($totalSales) }}</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5">
+                    <p class="text-sm font-medium text-gray-500">{{ __('Revenue') }}</p>
+                    <p class="mt-1 text-2xl font-semibold text-green-600">{{ number_format($totalRevenue) }}</p>
+                    <p class="text-xs text-gray-400">RWF</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5">
+                    <p class="text-sm font-medium text-gray-500">{{ __('Profit') }}</p>
+                    <p class="mt-1 text-2xl font-semibold text-blue-600">{{ number_format($totalProfit) }}</p>
+                    <p class="text-xs text-gray-400">RWF</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5">
+                    <p class="text-sm font-medium text-gray-500">{{ __('Avg. Sale Value') }}</p>
+                    <p class="mt-1 text-2xl font-semibold text-gray-900">{{ number_format($averageSale) }}</p>
+                    <p class="text-xs text-gray-400">RWF</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5">
+                    <p class="text-sm font-medium text-gray-500">{{ __("Today's Sales") }}</p>
+                    <p class="mt-1 text-2xl font-semibold text-gray-900">{{ number_format($todaySales) }}</p>
+                    <p class="text-xs text-gray-400">{{ __('since midnight') }}</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5">
+                    <p class="text-sm font-medium text-gray-500">{{ __('Refunded / Voided') }}</p>
+                    <p class="mt-1 text-2xl font-semibold text-red-600">{{ number_format($refundedCount) }}</p>
+                </div>
+            </div>
 
             <!-- Filters -->
             <div class="bg-white overflow-hidden shadow-sm rounded-lg mb-6">
@@ -76,7 +112,9 @@
                                     {{ $sale->customer->name ?? __('Walk-in customer') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $sale->items->count() }} {{ __('items') }}
+                                    {{ $sale->items->count() }} {{ __('line') }}{{ $sale->items->count() === 1 ? '' : 's' }}
+                                    <span class="text-gray-400">&middot;</span>
+                                    {{ format_qty($sale->items->sum('quantity')) }} {{ __('units') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @php

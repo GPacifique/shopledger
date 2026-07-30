@@ -15,7 +15,9 @@ class SaleController extends Controller
     public function index(Request $request)
     {
         $shopId = $request->user()->shop_id;
-        $query = Sale::with(['items', 'creator', 'customer'])
+
+        $query = Sale::query()
+            ->with(['customer', 'items', 'creator'])
             ->where('shop_id', $shopId);
 
         if ($request->filled('date_from')) {
@@ -26,9 +28,50 @@ class SaleController extends Controller
             $query->whereDate('sale_date', '<=', $request->date_to);
         }
 
+        // Clone before pagination so stats reflect the full filtered set,
+        // not just the current page
+        $statsQuery = clone $query;
+
+        $totalSales   = (clone $statsQuery)->count();
+        $totalRevenue = (clone $statsQuery)->sum('total_amount');
+        $averageSale  = $totalSales > 0 ? $totalRevenue / $totalSales : 0;
+
+        // Profit: revenue minus cost of goods sold, via sale items.
+        $totalCost = (clone $statsQuery)
+            ->with('items')
+            ->get()
+            ->sum(function ($sale) {
+                return $sale->items->sum(function ($item) {
+                    return $item->cost_price_at_sale * $item->quantity;
+                });
+            });
+
+        $totalProfit = $totalRevenue - $totalCost;
+
+        // Items sold — total quantity across all filtered sale items
+        $totalItemsSold = (clone $statsQuery)
+            ->withSum('items', 'quantity')
+            ->get()
+            ->sum('items_sum_quantity');
+
+        // Today's sales count — scoped to this shop, independent of the date filter
+        $todaySales = Sale::where('shop_id', $shopId)
+            ->whereDate('sale_date', today())
+            ->count();
+
+        // NOTE: `sales` currently has no `status` column (only `payment_status`),
+        // so a `whereIn('status', [...])` query here would throw an "unknown
+        // column" SQL error. Defaulting to 0 until the status migration/enum
+        // from earlier is actually applied — swap this back to a real query
+        // once that column exists.
+        $refundedCount = 0;
+
         $sales = $query->orderByDesc('sale_date')->paginate(15)->withQueryString();
 
-        return view('sales.index', compact('sales'));
+        return view('sales.index', compact(
+            'sales', 'todaySales', 'totalProfit', 'refundedCount',
+            'totalSales', 'totalRevenue', 'averageSale', 'totalItemsSold'
+        ));
     }
 
     public function create(Request $request)
@@ -51,7 +94,7 @@ class SaleController extends Controller
             'payment_method' => 'required|in:cash,momo,bank,card',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.quantity' => 'required|numeric|min:0.00001|decimal:0,5',
             'items.*.unit_price' => 'required|numeric|min:0',
             'payment_status' => 'nullable|in:paid,unpaid',
         ]);
@@ -97,7 +140,9 @@ class SaleController extends Controller
                     'line_total' => $line,
                 ]);
 
-                $product->stock -= (int) $item['quantity'];
+                // Fractional-safe: no (int) cast — stock is a decimal:5 cast
+                // on the Product model, matching the decimal(15,5) column.
+                $product->stock -= $item['quantity'];
                 $product->save();
 
                 $total += $line;
@@ -173,6 +218,7 @@ class SaleController extends Controller
             abort(403);
         }
     }
+
     public function print(Request $request, Sale $sale)
     {
         $this->authorizeSale($request, $sale);
@@ -195,10 +241,11 @@ class SaleController extends Controller
         }, 0);
 
         $pdf = Pdf::loadView('sales.receipt', compact('sale', 'profit'))
-            ->setPaper([0,0,280,800], 'portrait');
+            ->setPaper([0, 0, 280, 800], 'portrait');
 
         return $pdf->download('sale-' . $sale->id . '.pdf');
     }
+
     public function updatePaymentStatus(Request $request, Sale $sale)
     {
         $this->authorizeSale($request, $sale);
@@ -213,6 +260,7 @@ class SaleController extends Controller
         return redirect()->route('sales.show', $sale)
             ->with('success', 'Payment status updated successfully.');
     }
+
     public function updatePaymentMethod(Request $request, Sale $sale)
     {
         $this->authorizeSale($request, $sale);

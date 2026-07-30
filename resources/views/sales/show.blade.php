@@ -112,7 +112,7 @@
                         </div>
                         <div>
                             <p class="text-xs text-gray-500 uppercase tracking-wider">{{ __('Items') }}</p>
-                            <p class="font-medium text-gray-900">{{ $sale->items->sum('quantity') }} {{ __('units') }}</p>
+                            <p class="font-medium text-gray-900">{{ format_qty($sale->items->sum('quantity')) }} {{ __('units') }}</p>
                         </div>
                     </div>
                 </div>
@@ -148,7 +148,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        {{ $item->quantity }}
+                                        {{ format_qty($item->quantity) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right text-sm text-gray-600">{{ rwf($item->unit_price) }}</td>
@@ -223,7 +223,7 @@
                             <div class="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2">
                                 <div class="flex items-center">
                                     <span class="text-sm text-gray-700">{{ $item->product->name }}</span>
-                                    <span class="ml-2 text-xs text-gray-500">({{ $item->quantity }}x)</span>
+                                    <span class="ml-2 text-xs text-gray-500">({{ format_qty($item->quantity) }}x)</span>
                                 </div>
                                 <div class="flex items-center space-x-4">
                                     <span class="text-sm {{ $itemProfit >= 0 ? 'text-green-600' : 'text-red-600' }} font-medium">

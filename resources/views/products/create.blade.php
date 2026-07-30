@@ -6,16 +6,16 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
             </a>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-lg sm:text-xl text-gray-800 leading-tight">
                 {{ __('Add New Product') }}
             </h2>
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-6 sm:py-12">
+        <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                <form method="POST" action="{{ route('products.store') }}" class="p-6 space-y-6">
+                <form method="POST" action="{{ route('products.store') }}" class="p-4 sm:p-6 space-y-6">
                     @csrf
 
                     <div>
@@ -28,9 +28,9 @@
 
                     <div>
                         <label for="sku" class="block text-sm font-medium text-gray-700">{{ __('SKU') }} *</label>
-                        <div class="mt-1 flex rounded-md shadow-sm">
-                            <input type="text" name="sku" id="sku" value="{{ old('sku') }}" required class="block w-full rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="{{ __('Auto-generated') }}">
-                            <button type="button" onclick="generateSKU()" class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 hover:bg-gray-100 text-sm">
+                        <div class="mt-1 flex flex-col sm:flex-row rounded-md shadow-sm">
+                            <input type="text" name="sku" id="sku" value="{{ old('sku') }}" required class="block w-full rounded-md sm:rounded-l-md sm:rounded-r-none border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="{{ __('Auto-generated') }}">
+                            <button type="button" onclick="generateSKU()" class="mt-2 sm:mt-0 inline-flex items-center justify-center px-3 py-2 sm:py-0 rounded-md sm:rounded-l-none sm:rounded-r-md border border-gray-300 sm:border-l-0 bg-gray-50 text-gray-500 hover:bg-gray-100 text-sm">
                                 <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                 </svg>
@@ -58,7 +58,7 @@
                         @enderror
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         <div>
                             <label for="category_id" class="block text-sm font-medium text-gray-700">{{ __('Category') }} *</label>
                             <select name="category_id" id="category_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -75,9 +75,9 @@
                         </div>
 
                         <div>
-                            <label for="supplier_id" class="block text-sm font-medium text-gray-700">{{ __('Supplier') }} *</label>
-                            <select name="supplier_id" id="supplier_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">{{ __('Select a supplier') }}</option>
+                            <label for="supplier_id" class="block text-sm font-medium text-gray-700">{{ __('Supplier') }}</label>
+                            <select name="supplier_id" id="supplier_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">{{ __('Select a supplier (optional)') }}</option>
                                 @foreach ($suppliers as $supplier)
                                     <option value="{{ $supplier->id }}" @selected(old('supplier_id') == $supplier->id)>
                                         {{ $supplier->name }}
@@ -90,14 +90,14 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         <div>
                             <label for="buying_price" class="block text-sm font-medium text-gray-700">{{ __('Buying Price') }} *</label>
                             <div class="mt-1 relative rounded-md shadow-sm">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">RWF</span>
+                                    <span class="text-gray-500 text-sm">RWF</span>
                                 </div>
-                                <input type="number" name="buying_price" id="buying_price" value="{{ old('buying_price') }}" step="1" min="0" required class="pl-12 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0">
+                                <input type="number" name="buying_price" id="buying_price" value="{{ old('buying_price') }}" step="0.01" min="0.01" required class="pl-12 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0.00">
                             </div>
                             @error('buying_price')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -108,9 +108,9 @@
                             <label for="selling_price" class="block text-sm font-medium text-gray-700">{{ __('Selling Price') }} *</label>
                             <div class="mt-1 relative rounded-md shadow-sm">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">RWF</span>
+                                    <span class="text-gray-500 text-sm">RWF</span>
                                 </div>
-                                <input type="number" name="selling_price" id="selling_price" value="{{ old('selling_price') }}" step="1" min="0" required class="pl-12 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0">
+                                <input type="number" name="selling_price" id="selling_price" value="{{ old('selling_price') }}" step="0.01" min="0.01" required class="pl-12 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0.00">
                             </div>
                             @error('selling_price')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -118,10 +118,10 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         <div>
                             <label for="stock" class="block text-sm font-medium text-gray-700">{{ __('Initial Stock') }}</label>
-                            <input type="number" name="stock" id="stock" value="{{ old('stock', 0) }}" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0">
+                            <input type="number" name="stock" id="stock" value="{{ old('stock', 0) }}" min="0" step="0.00001" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0.00000">
                             @error('stock')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -129,7 +129,7 @@
 
                         <div>
                             <label for="minimum_stock" class="block text-sm font-medium text-gray-700">{{ __('Minimum Stock') }}</label>
-                            <input type="number" name="minimum_stock" id="minimum_stock" value="{{ old('minimum_stock', 0) }}" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0">
+                            <input type="number" name="minimum_stock" id="minimum_stock" value="{{ old('minimum_stock', 0) }}" min="0" step="0.00001" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="0.00000">
                             @error('minimum_stock')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -137,12 +137,12 @@
                     </div>
 
                     <div>
-                        <label for="expiry_date" class="block text-sm font-medium text-gray-700">{{ __('Expiry Date') }}</label>
-                        <input type="date" name="expiry_date" id="expiry_date" value="{{ old('expiry_date') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('expiry_date')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+    <label for="expiry_date" class="block text-sm font-medium text-gray-700">{{ __('Expiry Date') }}</label>
+    <input type="date" name="expiry_date" id="expiry_date" value="{{ old('expiry_date', now()->addYears(2)->format('Y-m-d')) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+    @error('expiry_date')
+        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+    @enderror
+</div>
 
                     <div>
                         <label for="status" class="block text-sm font-medium text-gray-700">{{ __('Status') }}</label>
@@ -155,11 +155,11 @@
                         @enderror
                     </div>
 
-                    <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-                        <a href="{{ route('products.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-4 border-t">
+                        <a href="{{ route('products.index') }}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             {{ __('Cancel') }}
                         </a>
-                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
                             {{ __('Create Product') }}
                         </button>
                     </div>
@@ -176,17 +176,13 @@
 
             let prefix = 'PRD';
             if (name) {
-                // Take first 3 letters of the product name (uppercase)
                 prefix = name.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase() || 'PRD';
             }
 
-            // Generate random 5-digit number
             const random = Math.floor(10000 + Math.random() * 90000);
-
             skuInput.value = prefix + '-' + random;
         }
 
-        // Auto-generate SKU when name field loses focus (if SKU is empty)
         document.getElementById('name').addEventListener('blur', function() {
             const skuInput = document.getElementById('sku');
             if (!skuInput.value.trim()) {
