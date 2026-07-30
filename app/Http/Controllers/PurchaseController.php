@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\User;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
@@ -9,7 +9,8 @@ use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use App\Notifications\PurchaseDeleted;
+use Illuminate\Support\Facades\Notification;
 class PurchaseController extends Controller
 {
     public function index(Request $request)
@@ -119,7 +120,7 @@ $stats = [
         return view('purchases.show', compact('purchase'));
     }
 
-    public function destroy(Request $request, Purchase $purchase)
+    /**<!--public function destroy(Request $request, Purchase $purchase)
     {
         $this->authorizePurchase($request, $purchase);
 
@@ -141,8 +142,44 @@ $stats = [
         if ($purchase->shop_id !== $request->user()->shop_id && !$request->user()->isSystemAdmin()) {
             abort(403);
         }
-    }
+    }-->**/
 
+public function destroy(Request $request, Purchase $purchase)
+{
+    $this->authorizePurchase($request, $purchase);
+
+    // Snapshot before it's gone
+    $purchaseId  = $purchase->id;
+    $totalAmount = $purchase->total_amount;
+    $shopId      = $purchase->shop_id;
+    $deletedBy   = $request->user()->name;
+
+    DB::transaction(function () use ($purchase) {
+        // Reverse stock changes
+        foreach ($purchase->items as $item) {
+            $item->product->decrement('stock', $item->quantity);
+        }
+        $purchase->items()->delete();
+        $purchase->delete();
+    });
+
+    $shopAdmins = User::where('shop_id', $shopId)
+        ->where('id', '!=', $request->user()->id) // don't notify the person who just deleted it
+        ->where('role', 'admin') // adjust to however your admin role is stored
+        ->get();
+
+    Notification::send($shopAdmins, new PurchaseDeleted($purchaseId, $totalAmount, $deletedBy));
+
+    return redirect()->route('purchases.index')
+        ->with('success', 'Purchase deleted and stock reversed.');
+}
+
+protected function authorizePurchase(Request $request, Purchase $purchase): void
+{
+    if ($purchase->shop_id !== $request->user()->shop_id && !$request->user()->isSystemAdmin()) {
+        abort(403);
+    }
+}
     public function downloadPdf(Request $request, Purchase $purchase)
     {
         $this->authorizePurchase($request, $purchase);

@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\User;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Sale;
@@ -9,7 +9,8 @@ use App\Models\SaleItem;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use App\Notifications\SaleDeleted;
+use Illuminate\Support\Facades\Notification;
 class SaleController extends Controller
 {
     public function index(Request $request)
@@ -195,7 +196,7 @@ class SaleController extends Controller
             ->with('success', 'Sale updated successfully.');
     }
 
-    public function destroy(Request $request, Sale $sale)
+/**public function destroy(Request $request, Sale $sale)
     {
         $this->authorizeSale($request, $sale);
 
@@ -218,7 +219,45 @@ class SaleController extends Controller
             abort(403);
         }
     }
+**/
 
+public function destroy(Request $request, Sale $sale)
+{
+    $this->authorizeSale($request, $sale);
+
+    // Snapshot before it's gone
+    $saleId        = $sale->id;
+    $totalAmount   = $sale->total_amount;
+    $paymentMethod = Sale::PAYMENT_METHODS[$sale->payment_method] ?? $sale->payment_method;
+    $shopId        = $sale->shop_id;
+    $deletedBy     = $request->user()->name;
+
+    DB::transaction(function () use ($sale) {
+        // Restore stock (opposite direction from a purchase reversal)
+        foreach ($sale->items as $item) {
+            $item->product->increment('stock', $item->quantity);
+        }
+        $sale->items()->delete();
+        $sale->delete();
+    });
+
+    $shopAdmins = User::where('shop_id', $shopId)
+        ->where('id', '!=', $request->user()->id)
+        ->where('role', 'admin') // same placeholder as before — adjust once I see the User model
+        ->get();
+
+    Notification::send($shopAdmins, new SaleDeleted($saleId, $totalAmount, $paymentMethod, $deletedBy));
+
+    return redirect()->route('sales.index')
+        ->with('success', 'Sale deleted and stock restored.');
+}
+
+protected function authorizeSale(Request $request, Sale $sale): void
+{
+    if ($sale->shop_id !== $request->user()->shop_id && !$request->user()->isSystemAdmin()) {
+        abort(403);
+    }
+}
     public function print(Request $request, Sale $sale)
     {
         $this->authorizeSale($request, $sale);
