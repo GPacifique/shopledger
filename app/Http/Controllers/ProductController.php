@@ -78,7 +78,7 @@ class ProductController extends Controller
                 'required', 'string', 'max:100',
                 Rule::unique('products', 'sku')->where('shop_id', $shopId),
             ],
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:products,name',
             'description' => 'nullable|string',
             'barcode' => [
                 'nullable', 'string', 'max:255',
