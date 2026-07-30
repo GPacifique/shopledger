@@ -1,0 +1,23 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MahWi logo">
+  <!-- M monogram, built from a single tally-mark stroke -->
+  <path
+    d="M14 48 L14 16 L32 38 L50 16 L50 48"
+    fill="none"
+    stroke="#16233A"
+    stroke-width="6.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Confirmation stamp: every sale, recorded -->
+  <circle cx="50" cy="48" r="10" fill="#F5F0E4"/>
+  <circle cx="50" cy="48" r="9" fill="#1F7A4D"/>
+  <path
+    d="M45.8 48.2 L48.7 51 L54.4 45"
+    fill="none"
+    stroke="#F5F0E4"
+    stroke-width="2.6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

@@ -29,11 +29,19 @@ class PurchaseController extends Controller
         if ($request->filled('date_to')) {
             $query->whereDate('purchase_date', '<=', $request->date_to);
         }
+// Assume $query is the same Eloquent query builder with your supplier/date_from/date_to filters already applied
+$stats = [
+    'total_purchases' => (clone $query)->count(),
+    'total_amount'    => (clone $query)->sum('total_amount'),
+    'total_items'     => (clone $query)->withCount('items')->get()->sum('items_count'),
+    'avg_purchase'    => (clone $query)->avg('total_amount'),
+];
 
+// then paginate as before
         $purchases = $query->orderByDesc('purchase_date')->paginate(15)->withQueryString();
         $suppliers = Supplier::where('shop_id', $shopId)->orderBy('name')->get();
 
-        return view('purchases.index', compact('purchases', 'suppliers'));
+        return view('purchases.index', compact('purchases','stats','suppliers'));
     }
 
     public function create(Request $request)

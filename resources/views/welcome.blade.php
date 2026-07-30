@@ -356,13 +356,13 @@
       <details class="lang-switch">
         <summary>
           @php
-            $flags = ['en' => 'ðŸ‡¬ðŸ‡§', 'fr' => 'ðŸ‡«ðŸ‡·', 'rw' => 'ðŸ‡·ðŸ‡¼', 'sw' => 'ðŸ‡¹ðŸ‡¿'];
+            $flags = ['en' => '🇬🇧', 'fr' => '🇫🇷', 'rw' => '🇷🇼', 'sw' => '🇹🇿'];
           @endphp
-          <span>{{ $flags[app()->getLocale()] ?? 'ðŸ‡¬ðŸ‡§' }}</span>
+          <span>{{ $flags[app()->getLocale()] ?? '🇬🇧' }}</span>
           <span>{{ strtoupper(app()->getLocale()) }}</span>
         </summary>
         <div class="lang-menu">
-          @foreach(['en' => ['English', 'ðŸ‡¬ðŸ‡§'], 'fr' => ['FranÃ§ais', 'ðŸ‡«ðŸ‡·'], 'rw' => ['Kinyarwanda', 'ðŸ‡·ðŸ‡¼'], 'sw' => ['Kiswahili', 'ðŸ‡¹ðŸ‡¿']] as $code => $lang)
+          @foreach(['en' => ['English', '🇬🇧'], 'fr' => ['Français', '🇫🇷'], 'rw' => ['Kinyarwanda', '🇷🇼'], 'sw' => ['Kiswahili', '🇹🇿']] as $code => $lang)
             <a href="{{ route('language.switch', $code) }}" class="{{ app()->getLocale() === $code ? 'is-active' : '' }}">
               <span>{{ $lang[1] }}</span>{{ $lang[0] }}
             </a>
@@ -375,7 +375,7 @@
       <div class="showcase-copy">
         <p class="showcase-eyebrow">{{ __("What you'll see inside") }}</p>
         <h1>{{ __('Every shop, on one screen.') }}</h1>
-        <p>{{ __("A quick look at the dashboard your team opens every morning â€” stock, sales, and profit, always current.") }}</p>
+        <p>{{ __("A quick look at the dashboard your team opens every morning — stock, sales, and profit, always current.") }}</p>
       </div>
 
       <div class="frame">
@@ -457,7 +457,7 @@
             <label for="password">{{ __('Password') }}</label>
             <div class="field-pass-wrap">
               <input id="password" name="password" type="password" class="{{ $errors->has('password') ? 'has-error' : '' }}"
-                     placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="current-password" required>
+                     placeholder="••••••••" autocomplete="current-password" required>
               <button type="button" class="toggle-pass" id="toggle-pass" aria-pressed="false">{{ __('Show') }}</button>
             </div>
             @error('password')
@@ -483,7 +483,7 @@
       <div class="ticket-foot">
         {{ __('New to MahWi?') }}
         @if (Route::has('register'))
-          <a href="{{ route('register') }}">{{ __('Open your ledger â€” free') }}</a>
+          <a href="{{ route('register') }}">{{ __('Open your ledger — free') }}</a>
         @endif
       </div>
     </div>
