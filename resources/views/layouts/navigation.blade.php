@@ -21,8 +21,8 @@
                             {{ __('Products') }}
                         </x-nav-link>
                         <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
-    {{ __('Categories') }}
-</x-nav-link>
+                            {{ __('Categories') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
                             {{ __('Suppliers') }}
                         </x-nav-link>
@@ -47,8 +47,8 @@
                     @endif
 
                     @if(Auth::user()->isSeller())
-                        <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                            {{ __('Products') }}
+                        <x-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">
+                            {{ __('Purchases') }}
                         </x-nav-link>
                         <x-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
                             {{ __('Sales') }}
