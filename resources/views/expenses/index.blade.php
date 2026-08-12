@@ -67,25 +67,25 @@
 
                                 <!-- ACTIONS -->
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    @if(auth()->user()->isSystemAdmin() || auth()->user()->isShopAdmin())
+                                        <a href="{{ route('expenses.edit', $expense->id) }}"
+                                           class="text-indigo-600 hover:underline">
+                                            Edit
+                                        </a>
 
-                                    <a href="{{ route('expenses.edit', $expense->id) }}"
-                                       class="text-indigo-600 hover:underline">
-                                        Edit
-                                    </a>
+                                        <form action="{{ route('expenses.destroy', $expense->id) }}"
+                                              method="POST"
+                                              class="inline-block ml-3">
+                                            @csrf
+                                            @method('DELETE')
 
-                                    <form action="{{ route('expenses.destroy', $expense->id) }}"
-                                          method="POST"
-                                          class="inline-block ml-3">
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button type="submit"
-                                                onclick="return confirm('Delete this expense?')"
-                                                class="text-red-600 hover:underline">
-                                            Delete
-                                        </button>
-                                    </form>
-
+                                            <button type="submit"
+                                                    onclick="return confirm('Delete this expense?')"
+                                                    class="text-red-600 hover:underline">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
 
                             </tr>

@@ -3,7 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopAdminController;
 use App\Http\Controllers\ShopController;
-Use App\Http\Controllers\SubscriptionPlanController;
+use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\SupplierController;
@@ -21,12 +21,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExpenseCategoryController;
-Use App\Http\Controllers\CategoryController;
-Route::resource('products', ProductController::class);
-Route::get('products/{product}/qr-code', [ProductController::class, 'qrCode'])->name('products.qr-code');
-Route::resource('categories', CategoryController::class)
-    ->except(['show'])
-    ->middleware(['auth', 'verified']);
+use App\Http\Controllers\CategoryController;
 Route::middleware(['auth', 'verified', 'role:system_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/settings', [SystemAdminController::class, 'settings'])->name('settings');
     Route::get('/shops', [SystemAdminController::class, 'shopsIndex'])->name('shops.index');
@@ -38,68 +33,11 @@ Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
 
-Route::resource('expenses', ExpenseController::class);
-Route::resource('expensecategories',ExpenseCategoryController::class);
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 // Language Switch Route
 Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
 Route::get('/', function () {
     return view('welcome');
-});
-Route::prefix('admin')->middleware(['auth','system.admin'])->group(function () {
-
-    Route::get('/dashboard',
-        [SystemAdminController::class,'dashboard']
-    )->name('admin.dashboard');
-
-    Route::post('/shops/{shop}/approve',
-        [SystemAdminController::class,'approveShop']
-    );
-
-    Route::post('/shops/{shop}/reject',
-        [SystemAdminController::class,'rejectShop']
-    );
-
-    Route::post('/shops/{shop}/suspend',
-        [SystemAdminController::class,'suspendShop']
-    );
-
-    Route::post('/shops/{shop}/reactivate',
-        [SystemAdminController::class,'reactivateShop']
-    );
-
-    Route::get('/subscriptions',
-        [SystemAdminController::class,'subscriptions']
-    );
-
-    Route::get('/payments',
-        [SystemAdminController::class,'payments']
-    );
-
-    Route::post('/payments/{id}/approve',
-        [SystemAdminController::class,'approvePayment']
-    );
-
-    Route::post('/payments/{id}/reject',
-        [SystemAdminController::class,'rejectPayment']
-    );
-
-    Route::get('/analytics',
-        [SystemAdminController::class,'analytics']
-    );
-
-    Route::get('/revenue-report',
-        [SystemAdminController::class,'revenueReport']
-    );
-
-    Route::get('/revenue-pdf',
-        [SystemAdminController::class,'downloadRevenuePdf']
-    );
-
-    Route::get('/expired-subscriptions',
-        [SystemAdminController::class,'expiredSubscriptions']
-    );
 });
 
 Route::get('/dashboard', function () {
@@ -135,6 +73,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Shop Admin Routes - Only accessible by shop_admin
+    Route::middleware(RoleMiddleware::class.':shop_admin')->group(function () {
+        Route::get('/shop/dashboard', [ShopAdminController::class, 'dashboard'])->name('shop.dashboard');
+        Route::resource('categories', CategoryController::class)->except(['show']);
+        Route::resource('suppliers', SupplierController::class);
+        Route::resource('customers', CustomerController::class);
+        Route::resource('staff', StaffController::class);
+        Route::resource('expenses', ExpenseController::class);
+        Route::resource('expensecategories', ExpenseCategoryController::class);
+        Route::resource('products', ProductController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+        Route::get('products/{product}/qr-code', [ProductController::class, 'qrCode'])->name('products.qr-code');
+        Route::get('/stats', [StatsController::class, 'summary'])->name('stats.summary');
+    });
+
+    // Sales and purchases are accessible to both shop_admin and seller
+    Route::middleware(RoleMiddleware::class.':shop_admin,seller')->group(function () {
+        Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+        Route::get('purchases/{purchase}/download', [PurchaseController::class, 'downloadPdf'])->name('purchases.download');
+        Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+        Route::get('sales/{sale}/print', [SaleController::class, 'print'])->name('sales.print');
+        Route::get('sales/{sale}/export', [SaleController::class, 'export'])->name('sales.export');
+    });
+
     // System Admin Routes - Only accessible by system_admin
     Route::middleware(RoleMiddleware::class.':system_admin')->group(function () {
         Route::get('/admin/dashboard', [SystemAdminController::class, 'dashboard'])->name('admin.dashboard');
@@ -147,12 +108,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/admin/users/{user}', [SystemAdminController::class, 'updateUser'])->name('admin.users.update');
     });
 
-    // Shop Admin Routes - Only accessible by shop_admin
-    Route::middleware(RoleMiddleware::class.':shop_admin')->group(function () {
-        Route::get('/shop/dashboard', [ShopAdminController::class, 'dashboard'])->name('shop.dashboard');
-    });
-
-    // Seller Routes - Only accessible by seller
     Route::middleware(RoleMiddleware::class.':seller')->group(function () {
         Route::get('/seller/dashboard', [SellerController::class, 'dashboard'])->name('seller.dashboard');
     });
@@ -161,21 +116,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(RoleMiddleware::class.':accountant')->group(function () {
         Route::get('/accountant/dashboard', [AccountantController::class, 'dashboard'])->name('accountant.dashboard');
     });
-
-    // Resource routes for shop admin
-    Route::resource('products', ProductController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
-    Route::get('products/{product}/qr-code', [ProductController::class, 'qrCode'])->name('products.qr-code');
-    Route::resource('suppliers', SupplierController::class);
-    Route::resource('customers', CustomerController::class);
-    Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
-    Route::get('purchases/{purchase}/download', [PurchaseController::class, 'downloadPdf'])->name('purchases.download');
-    Route::get('sales/{sale}/print', [SaleController::class, 'print'])->name('sales.print');
-    Route::get('sales/{sale}/export', [SaleController::class, 'export'])->name('sales.export');
-    Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-    Route::resource('staff', StaffController::class);
-
-    // Stats
-    Route::get('/stats', [StatsController::class, 'summary'])->name('stats.summary');
 });
 
 require __DIR__.'/auth.php';

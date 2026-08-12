@@ -127,7 +127,7 @@
                     <div class="border-t border-gray-100 pt-6 text-center">
                         <p class="text-sm text-gray-500">
                             Need help? Contact us at 
-                            <a href="mailto:support@shopledger.com" class="text-indigo-600 hover:text-indigo-800 font-medium">support@shopledger.com</a>
+                            <a href="mailto:support@mahwi.com" class="text-indigo-600 hover:text-indigo-800 font-medium">support@mahwi.com</a>
                         </p>
                     </div>
                 </div>

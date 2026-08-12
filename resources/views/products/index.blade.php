@@ -132,12 +132,14 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                     <a href="{{ route('products.show', $product) }}" class="text-gray-600 hover:text-gray-900">{{ __('View') }}</a>
                                     <a href="{{ route('products.qr-code', $product) }}" target="_blank" class="text-blue-600 hover:text-blue-900">{{ __('QR') }}</a>
-                                    <a href="{{ route('products.edit', $product) }}" class="text-indigo-600 hover:text-indigo-900">{{ __('Edit') }}</a>
-                                    <form action="{{ route('products.destroy', $product) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this product?') }}')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">{{ __('Delete') }}</button>
-                                    </form>
+                                    @if(auth()->user()->isSystemAdmin() || auth()->user()->isShopAdmin())
+                                        <a href="{{ route('products.edit', $product) }}" class="text-indigo-600 hover:text-indigo-900">{{ __('Edit') }}</a>
+                                        <form action="{{ route('products.destroy', $product) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this product?') }}')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900">{{ __('Delete') }}</button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                             @empty

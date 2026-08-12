@@ -1,8 +1,8 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+<nav x-data="{ open: false, openGroupMobile: null }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
+        <div class="flex flex-wrap items-center justify-between py-4">
+            <div class="flex flex-wrap items-center">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
@@ -11,48 +11,72 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden sm:-my-px sm:ms-10 sm:flex sm:flex-wrap sm:gap-2 lg:gap-8">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->routeIs('shop.dashboard') || request()->routeIs('admin.dashboard') || request()->routeIs('seller.dashboard') || request()->routeIs('accountant.dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    @if(Auth::user()->isShopAdmin())
-                        <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                            {{ __('Products') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
-                            {{ __('Categories') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
-                            {{ __('Suppliers') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
-                            {{ __('Customers') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">
-                            {{ __('Purchases') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
-                            {{ __('Sales') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.*')">
-                            {{ __('Expenses') }}
-                        </x-nav-link>   
-                        <x-nav-link :href="route('expensecategories.index')" :active="request()->routeIs('expensecategories.*')">
-                            {{ __('Expense Categories') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('staff.index')" :active="request()->routeIs('staff.*')">
-                            {{ __('Staff') }}
-                        </x-nav-link>
+                    @if(Auth::user()->isAdmin())
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = ! open" type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                {{ __('Inventory') }}
+                                <svg :class="{'rotate-180': open}" class="ml-2 h-4 w-4 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            <div x-show="open" x-cloak @click.outside="open = false" class="absolute left-0 z-20 mt-2 w-48 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg">
+                                <a href="{{ route('products.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ __('Products') }}</a>
+                                <a href="{{ route('categories.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ __('Categories') }}</a>
+                                <a href="{{ route('suppliers.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ __('Suppliers') }}</a>
+                                <a href="{{ route('customers.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ __('Customers') }}</a>
+                            </div>
+                        </div>
+
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = ! open" type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                {{ __('Transactions') }}
+                                <svg :class="{'rotate-180': open}" class="ml-2 h-4 w-4 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            <div x-show="open" x-cloak @click.outside="open = false" class="absolute left-0 z-20 mt-2 w-52 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg">
+                                <a href="{{ route('purchases.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ __('Purchases') }}</a>
+                                <a href="{{ route('sales.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ __('Sales') }}</a>
+                                <a href="{{ route('expenses.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ __('Expenses') }}</a>
+                                <a href="{{ route('expensecategories.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ __('Expense Categories') }}</a>
+                            </div>
+                        </div>
+
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = ! open" type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                {{ __('Team') }}
+                                <svg :class="{'rotate-180': open}" class="ml-2 h-4 w-4 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            <div x-show="open" x-cloak @click.outside="open = false" class="absolute left-0 z-20 mt-2 w-40 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg">
+                                <a href="{{ route('staff.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ __('Staff') }}</a>
+                            </div>
+                        </div>
                     @endif
 
                     @if(Auth::user()->isSeller())
-                        <x-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">
-                            {{ __('Purchases') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
-                            {{ __('Sales') }}
-                        </x-nav-link>
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = ! open" type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                {{ __('Transactions') }}
+                                <svg :class="{'rotate-180': open}" class="ml-2 h-4 w-4 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            <div x-show="open" x-cloak @click.outside="open = false" class="absolute left-0 z-20 mt-2 w-40 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg">
+                                <a href="{{ route('purchases.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ __('Purchases') }}</a>
+                                <a href="{{ route('sales.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{{ __('Sales') }}</a>
+                            </div>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -113,34 +137,63 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
-            @if(Auth::user()->isShopAdmin())
-                <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                    {{ __('Products') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
-                    {{ __('Suppliers') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
-                    {{ __('Customers') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">
-                    {{ __('Purchases') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
-                    {{ __('Sales') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('staff.index')" :active="request()->routeIs('staff.*')">
-                    {{ __('Staff') }}
-                </x-responsive-nav-link>
+            @if(Auth::user()->isAdmin())
+                <div>
+                    <button @click="openGroupMobile === 'inventory' ? openGroupMobile = null : openGroupMobile = 'inventory'" type="button" class="flex w-full items-center justify-between px-4 py-2 text-sm font-semibold text-gray-700 rounded-md hover:bg-gray-100">
+                        <span>{{ __('Inventory') }}</span>
+                        <svg :class="{'rotate-180': openGroupMobile === 'inventory'}" class="h-4 w-4 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div x-show="openGroupMobile === 'inventory'" x-cloak class="space-y-1 pl-4 mt-1">
+                        <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">{{ __('Products') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">{{ __('Categories') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">{{ __('Suppliers') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">{{ __('Customers') }}</x-responsive-nav-link>
+                    </div>
+                </div>
+
+                <div>
+                    <button @click="openGroupMobile === 'transactions' ? openGroupMobile = null : openGroupMobile = 'transactions'" type="button" class="flex w-full items-center justify-between px-4 py-2 text-sm font-semibold text-gray-700 rounded-md hover:bg-gray-100">
+                        <span>{{ __('Transactions') }}</span>
+                        <svg :class="{'rotate-180': openGroupMobile === 'transactions'}" class="h-4 w-4 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div x-show="openGroupMobile === 'transactions'" x-cloak class="space-y-1 pl-4 mt-1">
+                        <x-responsive-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">{{ __('Purchases') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">{{ __('Sales') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.*')">{{ __('Expenses') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('expensecategories.index')" :active="request()->routeIs('expensecategories.*')">{{ __('Expense Categories') }}</x-responsive-nav-link>
+                    </div>
+                </div>
+
+                <div>
+                    <button @click="openGroupMobile === 'team' ? openGroupMobile = null : openGroupMobile = 'team'" type="button" class="flex w-full items-center justify-between px-4 py-2 text-sm font-semibold text-gray-700 rounded-md hover:bg-gray-100">
+                        <span>{{ __('Team') }}</span>
+                        <svg :class="{'rotate-180': openGroupMobile === 'team'}" class="h-4 w-4 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div x-show="openGroupMobile === 'team'" x-cloak class="space-y-1 pl-4 mt-1">
+                        <x-responsive-nav-link :href="route('staff.index')" :active="request()->routeIs('staff.*')">{{ __('Staff') }}</x-responsive-nav-link>
+                    </div>
+                </div>
             @endif
 
             @if(Auth::user()->isSeller())
-                <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                    {{ __('Products') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
-                    {{ __('Sales') }}
-                </x-responsive-nav-link>
+                <div>
+                    <button @click="openGroupMobile === 'transactions' ? openGroupMobile = null : openGroupMobile = 'transactions'" type="button" class="flex w-full items-center justify-between px-4 py-2 text-sm font-semibold text-gray-700 rounded-md hover:bg-gray-100">
+                        <span>{{ __('Transactions') }}</span>
+                        <svg :class="{'rotate-180': openGroupMobile === 'transactions'}" class="h-4 w-4 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div x-show="openGroupMobile === 'transactions'" x-cloak class="space-y-1 pl-4 mt-1">
+                        <x-responsive-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">{{ __('Purchases') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">{{ __('Sales') }}</x-responsive-nav-link>
+                    </div>
+                </div>
             @endif
         </div>
 

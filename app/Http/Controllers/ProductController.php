@@ -10,6 +10,9 @@ use chillerlan\QRCode\QRCode;
 use App\Models\PurchaseItem;
 use App\Models\SaleItem;
 use Illuminate\Support\Facades\DB;
+use App\Notifications\ProductDeleted;
+use App\Notifications\ProductUpdated;
+
 class ProductController extends Controller
 {
    public function index(Request $request)
@@ -78,7 +81,10 @@ class ProductController extends Controller
                 'required', 'string', 'max:100',
                 Rule::unique('products', 'sku')->where('shop_id', $shopId),
             ],
-            'name' => 'required|string|max:255|unique:products,name',
+            'name' => [
+                'required', 'string', 'max:255',
+                Rule::unique('products', 'name')->where('shop_id', $shopId),
+            ],
             'description' => 'nullable|string',
             'barcode' => [
                 'nullable', 'string', 'max:255',
@@ -171,6 +177,7 @@ public function show(Request $request, Product $product)
     public function edit(Request $request, Product $product)
     {
         $this->authorizeProduct($request, $product);
+        $this->authorizeProductManage($request, $product);
 
         $shopId = $request->user()->shop_id;
 
@@ -184,6 +191,7 @@ public function show(Request $request, Product $product)
     public function update(Request $request, Product $product)
     {
         $this->authorizeProduct($request, $product);
+        $this->authorizeProductManage($request, $product);
 
         $shopId = $product->shop_id;
 
@@ -192,7 +200,10 @@ public function show(Request $request, Product $product)
                 'required', 'string', 'max:100',
                 Rule::unique('products', 'sku')->where('shop_id', $shopId)->ignore($product->id),
             ],
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required', 'string', 'max:255',
+                Rule::unique('products', 'name')->where('shop_id', $shopId)->ignore($product->id),
+            ],
             'description' => 'nullable|string',
             'barcode' => [
                 'nullable', 'string', 'max:255',
@@ -211,6 +222,8 @@ public function show(Request $request, Product $product)
 
         $product->update($validated);
 
+        $this->notifyShopAdmins($product->shop_id, new ProductUpdated($product->id, $product->name, $request->user()->name), $request->user()->id);
+
         return redirect()->route('products.index')
             ->with('success', 'Product updated successfully.');
     }
@@ -218,7 +231,16 @@ public function show(Request $request, Product $product)
     public function destroy(Request $request, Product $product)
     {
         $this->authorizeProduct($request, $product);
+        $this->authorizeProductManage($request, $product);
+
+        $productId = $product->id;
+        $productName = $product->name;
+        $shopId = $product->shop_id;
+        $deletedBy = $request->user()->name;
+
         $product->delete();
+
+        $this->notifyShopAdmins($shopId, new ProductDeleted($productId, $productName, $deletedBy), $request->user()->id);
 
         return redirect()->route('products.index')
             ->with('success', 'Product deleted successfully.');
@@ -236,6 +258,13 @@ public function show(Request $request, Product $product)
     protected function authorizeProduct(Request $request, Product $product): void
     {
         if ($product->shop_id !== $request->user()->shop_id && !$request->user()->isSystemAdmin()) {
+            abort(403);
+        }
+    }
+
+    protected function authorizeProductManage(Request $request, Product $product): void
+    {
+        if (!$request->user()->isSystemAdmin() && !$request->user()->isShopAdmin()) {
             abort(403);
         }
     }

@@ -157,11 +157,13 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                     <a href="{{ route('purchases.show', $purchase) }}" class="text-indigo-600 hover:text-indigo-900">{{ __('View') }}</a>
-                                    <form action="{{ route('purchases.destroy', $purchase) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure? This will reverse stock changes.') }}')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">{{ __('Delete') }}</button>
-                                    </form>
+                                    @if(auth()->user()->isSystemAdmin() || auth()->user()->isShopAdmin())
+                                        <form action="{{ route('purchases.destroy', $purchase) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure? This will reverse stock changes.') }}')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900">{{ __('Delete') }}</button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                             @empty

@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
         // Create System Admin first (no shop required)
         $systemAdmin = User::create([
             'name' => 'System Admin',
-            'email' => 'admin@shopledger.com',
+            'email' => 'admin@mahwi.com',
             'password' => Hash::make('password'),
             'role' => 'system_admin',
             'account_status' => 'active',

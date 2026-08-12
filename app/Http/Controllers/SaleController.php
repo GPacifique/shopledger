@@ -175,6 +175,7 @@ class SaleController extends Controller
     public function edit(Request $request, Sale $sale)
     {
         $this->authorizeSale($request, $sale);
+        $this->authorizeSaleManage($request, $sale);
 
         return view('sales.edit', compact('sale'));
     }
@@ -182,6 +183,7 @@ class SaleController extends Controller
     public function update(Request $request, Sale $sale)
     {
         $this->authorizeSale($request, $sale);
+        $this->authorizeSaleManage($request, $sale);
 
         $validated = $request->validate([
             'customer_id' => 'nullable|exists:customers,id',
@@ -224,6 +226,7 @@ class SaleController extends Controller
 public function destroy(Request $request, Sale $sale)
 {
     $this->authorizeSale($request, $sale);
+    $this->authorizeSaleManage($request, $sale);
 
     // Snapshot before it's gone
     $saleId        = $sale->id;
@@ -241,12 +244,7 @@ public function destroy(Request $request, Sale $sale)
         $sale->delete();
     });
 
-    $shopAdmins = User::where('shop_id', $shopId)
-        ->where('id', '!=', $request->user()->id)
-        ->where('role', 'admin') // same placeholder as before — adjust once I see the User model
-        ->get();
-
-    Notification::send($shopAdmins, new SaleDeleted($saleId, $totalAmount, $paymentMethod, $deletedBy));
+    $this->notifyShopAdmins($shopId, new SaleDeleted($saleId, $totalAmount, $paymentMethod, $deletedBy), $request->user()->id);
 
     return redirect()->route('sales.index')
         ->with('success', 'Sale deleted and stock restored.');
@@ -255,6 +253,13 @@ public function destroy(Request $request, Sale $sale)
 protected function authorizeSale(Request $request, Sale $sale): void
 {
     if ($sale->shop_id !== $request->user()->shop_id && !$request->user()->isSystemAdmin()) {
+        abort(403);
+    }
+}
+
+protected function authorizeSaleManage(Request $request, Sale $sale): void
+{
+    if (!$request->user()->isSystemAdmin() && !$request->user()->isShopAdmin()) {
         abort(403);
     }
 }

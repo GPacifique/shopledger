@@ -137,12 +137,14 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                     <a href="{{ route('sales.show', $sale) }}" class="text-indigo-600 hover:text-indigo-900">{{ __('View') }}</a>
-                                    <a href="{{ route('sales.edit', $sale) }}" class="text-amber-600 hover:text-amber-900">{{ __('Edit') }}</a>
-                                    <form action="{{ route('sales.destroy', $sale) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure? This will restore stock.') }}')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">{{ __('Delete') }}</button>
-                                    </form>
+                                    @if(auth()->user()->isSystemAdmin() || auth()->user()->isShopAdmin())
+                                        <a href="{{ route('sales.edit', $sale) }}" class="text-amber-600 hover:text-amber-900">{{ __('Edit') }}</a>
+                                        <form action="{{ route('sales.destroy', $sale) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure? This will restore stock.') }}')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900">{{ __('Delete') }}</button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                             @empty

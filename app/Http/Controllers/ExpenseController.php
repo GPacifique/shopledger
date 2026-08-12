@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
-Use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\ExpenseDeleted;
+use App\Notifications\ExpenseUpdated;
 use Carbon\Carbon;
 
 class ExpenseController extends Controller
@@ -76,6 +79,7 @@ class ExpenseController extends Controller
     public function edit(Expense $expense)
     {
         $this->authorizeExpense($expense);
+        $this->authorizeExpenseManage($expense);
 
         return view('expenses.edit', compact('expense'));
     }
@@ -83,6 +87,7 @@ class ExpenseController extends Controller
     public function update(Request $request, Expense $expense)
     {
         $this->authorizeExpense($expense);
+        $this->authorizeExpenseManage($expense);
 
         $validated = $request->validate([
             'category_id' => 'required|exists:expense_categories,id',
@@ -94,6 +99,8 @@ class ExpenseController extends Controller
 
         $expense->update($validated);
 
+        $this->notifyShopAdmins($expense->shop_id, new ExpenseUpdated($expense->id, (float) $expense->amount, $request->user()->name), $request->user()->id);
+
         return redirect()
             ->route('expenses.index')
             ->with('success', 'Expense updated successfully.');
@@ -102,8 +109,16 @@ class ExpenseController extends Controller
 public function destroy(Expense $expense)
 {
     $this->authorizeExpense($expense);
+    $this->authorizeExpenseManage($expense);
+
+    $expenseId = $expense->id;
+    $amount = $expense->amount;
+    $shopId = $expense->shop_id;
+    $deletedBy = auth()->user()->name;
 
     $expense->delete();
+
+    $this->notifyShopAdmins($shopId, new ExpenseDeleted($expenseId, $amount, $deletedBy), auth()->id());
 
     return redirect()
         ->route('expenses.index')
@@ -112,6 +127,13 @@ public function destroy(Expense $expense)
 private function authorizeExpense(Expense $expense)
 {
     if ($expense->shop_id !== auth()->user()->shop_id) {
+        abort(403, 'Unauthorized action.');
+    }
+}
+
+private function authorizeExpenseManage(Expense $expense)
+{
+    if (!auth()->user()->isSystemAdmin() && !auth()->user()->isShopAdmin()) {
         abort(403, 'Unauthorized action.');
     }
 }

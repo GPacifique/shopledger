@@ -6,21 +6,21 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
         <title>{{ config('app.name', 'MahwiPOS') }} | @yield('title', 'Saas shop management system made for shops around the globe')</title>
-        <meta name="application-name" content="Shopledger">
-        <meta name="apple-mobile-web-app-title" content="Shopledger">
+        <meta name="application-name" content="MahwiPOS">
+        <meta name="apple-mobile-web-app-title" content="MahwiPOS">
 
         <!-- SEO Meta Tags -->
-        <meta name="description" content="Shopledger is a modern multi-shop management system for inventory, sales, purchases, expenses, staff, and analytics for growing businesses in Rwanda and beyond.">
+        <meta name="description" content="MahwiPOS is a modern multi-shop management system for inventory, sales, purchases, expenses, staff, and analytics for growing businesses in Rwanda and beyond.">
         <meta name="keywords" content="shop management, inventory system, sales tracking, purchase management, POS, Rwanda, stock alerts, expense tracking, business analytics">
-        <meta name="author" content="Shopledger">
+        <meta name="author" content="MahwiPOS Team">
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
         <link rel="canonical" href="{{ url()->current() }}">
 
         <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website">
         <meta property="og:url" content="{{ url()->current() }}">
-        <meta property="og:title" content="{{ config('app.name', 'Shopledger') }} - Multi-Shop Management System">
-        <meta property="og:description" content="Manage inventory, sales, purchases, staff, and analytics from one smart dashboard with Shopledger.">
+        <meta property="og:title" content="{{ config('app.name', 'MahwiPOS') }} - Multi-Shop Management System">
+        <meta property="og:description" content="Manage inventory, sales, purchases, staff, and analytics from one smart dashboard with MahwiPOS.">
         <meta property="og:image" content="{{ asset('images/og-logo.png') }}">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
@@ -29,8 +29,8 @@
         <!-- Twitter -->
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:url" content="{{ url()->current() }}">
-        <meta name="twitter:title" content="{{ config('app.name', 'Shopledger') }} - Multi-Shop Management System">
-        <meta name="twitter:description" content="Manage inventory, sales, purchases, staff, and analytics from one smart dashboard with Shopledger.">
+        <meta name="twitter:title" content="{{ config('app.name', 'MahwiPOS') }} - Multi-Shop Management System">
+        <meta name="twitter:description" content="Manage inventory, sales, purchases, staff, and analytics from one smart dashboard with MahwiPOS.">
         <meta name="twitter:image" content="{{ asset('images/og-logo.png') }}">
 
         <!-- Favicon / Logo -->
@@ -67,9 +67,13 @@
 
             <!-- Page Content -->
             <main class="flex-grow">
-                {{ $slot }}
+                <div class="py-6">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        {{ $slot }}
+                    </div>
+                </div>
             </main>
-<x-whatsapp-float />
+            <x-whatsapp-float />
             <!-- Motivational Footer -->
             <x-footer variant="light" />
         </div>

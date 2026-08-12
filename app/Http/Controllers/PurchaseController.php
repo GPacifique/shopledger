@@ -147,6 +147,7 @@ $stats = [
 public function destroy(Request $request, Purchase $purchase)
 {
     $this->authorizePurchase($request, $purchase);
+    $this->authorizePurchaseManage($request, $purchase);
 
     // Snapshot before it's gone
     $purchaseId  = $purchase->id;
@@ -163,12 +164,7 @@ public function destroy(Request $request, Purchase $purchase)
         $purchase->delete();
     });
 
-    $shopAdmins = User::where('shop_id', $shopId)
-        ->where('id', '!=', $request->user()->id) // don't notify the person who just deleted it
-        ->where('role', 'admin') // adjust to however your admin role is stored
-        ->get();
-
-    Notification::send($shopAdmins, new PurchaseDeleted($purchaseId, $totalAmount, $deletedBy));
+    $this->notifyShopAdmins($shopId, new PurchaseDeleted($purchaseId, $totalAmount, $deletedBy), $request->user()->id);
 
     return redirect()->route('purchases.index')
         ->with('success', 'Purchase deleted and stock reversed.');
@@ -177,6 +173,13 @@ public function destroy(Request $request, Purchase $purchase)
 protected function authorizePurchase(Request $request, Purchase $purchase): void
 {
     if ($purchase->shop_id !== $request->user()->shop_id && !$request->user()->isSystemAdmin()) {
+        abort(403);
+    }
+}
+
+protected function authorizePurchaseManage(Request $request, Purchase $purchase): void
+{
+    if (!$request->user()->isSystemAdmin() && !$request->user()->isShopAdmin()) {
         abort(403);
     }
 }

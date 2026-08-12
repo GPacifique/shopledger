@@ -211,7 +211,7 @@
         <div class="header">
             <div class="header-top">
                 <div class="logo-section">
-                    <div class="logo-text">Shopledger</div>
+                    <div class="logo-text">mahwi</div>
                     <div class="logo-tagline">Multi-Shop Management System</div>
                 </div>
                 <div class="doc-title">
@@ -309,7 +309,7 @@
         <!-- Footer -->
         <div class="footer">
             <p>Generated on {{ now()->format('F d, Y \a\t h:i A') }}</p>
-            <p style="margin-top: 5px;">Powered by <span class="footer-brand">Shopledger</span> - Multi-Shop Management System</p>
+            <p style="margin-top: 5px;">Powered by <span class="footer-brand">MahwiPOS</span> - Multi-Shop Management System</p>
             <p style="margin-top: 3px;">Made with ❤️ in Rwanda</p>
         </div>
     </div>

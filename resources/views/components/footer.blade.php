@@ -40,7 +40,7 @@
             <p class="text-xl md:text-2xl font-medium text-white/90 italic mb-3">
                 "{{ $randomQuote }}"
             </p>
-            <p class="text-indigo-300 text-sm">— Daily inspiration for Shopledger entrepreneurs</p>
+            <p class="text-indigo-300 text-sm">— Daily inspiration for mahwi entrepreneurs</p>
         </div>
     </div>
 
