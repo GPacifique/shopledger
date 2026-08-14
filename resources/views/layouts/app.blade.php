@@ -34,10 +34,10 @@
         <meta name="twitter:image" content="{{ asset('images/og-logo.png') }}">
 
         <!-- Favicon / Logo -->
-        <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.png') }}">
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logo.png') }}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logo.png') }}">
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo.png') }}">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('images/MAHWILOGO.png') }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/MAHWILOGO.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/MAHWILOGO.png') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/MAHWILOGO.png') }}">
 
         <!-- Theme Color -->
         <meta name="theme-color" content="#6366f1">
