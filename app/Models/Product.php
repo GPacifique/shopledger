@@ -36,9 +36,9 @@ class Product extends Model
     protected $casts = [
         'buying_price' => 'decimal:2',
         'selling_price' => 'decimal:2',
-        'quantity' => 'decimal:5',
-        'stock' => 'decimal:5',
-        'minimum_stock' => 'decimal:5',
+        'quantity' => 'decimal:2',
+        'stock' => 'decimal:2',
+        'minimum_stock' => 'decimal:2',
         'expiry_date' => 'date',
     ];
 

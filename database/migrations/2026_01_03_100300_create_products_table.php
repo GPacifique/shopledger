@@ -19,9 +19,9 @@ return new class extends Migration {
             $table->text('description')->nullable();
             $table->decimal('buying_price', 12, 2)->default(0);
             $table->decimal('selling_price', 12, 2)->default(0);
-            $table->decimal('quantity', 15, 5)->default(0);
-            $table->decimal('stock', 15, 5)->default(0);
-            $table->decimal('minimum_stock', 15, 5)->default(0);
+            $table->decimal('quantity', 15, 2)->default(0);
+            $table->decimal('stock', 15, 2)->default(0);
+            $table->decimal('minimum_stock', 15, 2)->default(0);
             $table->date('expiry_date')->nullable();
             $table->string('product_image')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');

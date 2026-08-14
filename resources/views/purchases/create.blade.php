@@ -109,7 +109,7 @@
     min="0.01"
     step="0.01"
     inputmode="decimal"
-    value="1.00"
+    value="0.01"
     required
     class="quantity-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
     placeholder="0.00"

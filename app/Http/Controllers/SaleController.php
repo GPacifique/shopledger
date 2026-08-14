@@ -95,7 +95,7 @@ class SaleController extends Controller
             'payment_method' => 'required|in:cash,momo,bank,card',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|numeric|min:0.00001|decimal:0,5',
+            'items.*.quantity' => 'required|numeric|min:0.01|decimal:0,2',
             'items.*.unit_price' => 'required|numeric|min:0',
             'payment_status' => 'nullable|in:paid,unpaid',
         ]);
@@ -141,8 +141,8 @@ class SaleController extends Controller
                     'line_total' => $line,
                 ]);
 
-                // Fractional-safe: no (int) cast — stock is a decimal:5 cast
-                // on the Product model, matching the decimal(15,5) column.
+                // Fractional-safe: no (int) cast — stock is a decimal:2 cast
+                // on the Product model, matching the decimal(15,2) column.
                 $product->stock -= $item['quantity'];
                 $product->save();
 

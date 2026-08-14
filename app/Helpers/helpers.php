@@ -29,7 +29,7 @@ if (!function_exists('format_currency')) {
     }
 }
 if (! function_exists('format_qty')) {
-    function format_qty($value, int $maxDecimals = 5): string
+    function format_qty($value, int $maxDecimals = 2): string
     {
         $formatted = number_format((float) $value, $maxDecimals, '.', ',');
         // Trim trailing zeros, then a trailing dot if nothing's left after it
