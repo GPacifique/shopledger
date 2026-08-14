@@ -507,9 +507,9 @@
             <input type="checkbox" id="terms" name="terms" required>
             <label for="terms">
               {{ __('I agree to the') }}
-              <a href="{{ route('terms') ?? '#' }}">{{ __('Terms of Service') }}</a>
+              <a href="{{ Route::has('terms') ? route('terms') : '#' }}">{{ __('Terms of Service') }}</a>
               {{ __('and') }}
-              <a href="{{ route('privacy') ?? '#' }}">{{ __('Privacy Policy') }}</a>.
+              <a href="{{ Route::has('privacy') ? route('privacy') : '#' }}">{{ __('Privacy Policy') }}</a>.
             </label>
           </div>
 
