@@ -20,7 +20,7 @@
         <meta property="og:url" content="{{ url()->current() }}">
         <meta property="og:title" content="{{ config('app.name', 'MahwiPOS') }} - Multi-Shop Management System">
         <meta property="og:description" content="Manage inventory, sales, purchases, staff, and analytics from one smart dashboard with MahwiPOS.">
-        <meta property="og:image" content="{{ asset('images/og-logo.png') }}">
+        <meta property="og:image" content="{{ asset('images/MAHWILOGO.png') }}">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
         <meta property="og:site_name" content="MahwiPOS">
@@ -30,13 +30,13 @@
         <meta name="twitter:url" content="{{ url()->current() }}">
         <meta name="twitter:title" content="{{ config('app.name', 'MahwiPOS') }} - Multi-Shop Management System">
         <meta name="twitter:description" content="Manage inventory, sales, purchases, staff, and analytics from one smart dashboard with MahwiPOS.">
-        <meta name="twitter:image" content="{{ asset('images/og-logo.png') }}">
+        <meta name="twitter:image" content="{{ asset('images/MAHWILOGO.png') }}">
 
         <!-- Favicon / Logo -->
         <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/og-logo.png') }}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/og-logo.png') }}">
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/og-logo.png') }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/MAHWILOGO.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/MAHWILOGO.png') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/MAHWILOGO.png') }}">
 
         <!-- Theme Color -->
         <meta name="theme-color" content="#6366f1">
@@ -61,7 +61,7 @@
         <meta property="og:url" content="{{ url()->current() }}">
         <meta property="og:title" content="{{ config('app.name', 'MahWi') }} - Multi-Shop Management System">
         <meta property="og:description" content="Simplify your shop management with MahWi. Track inventory, sales, purchases, and staff all in one place.">
-        <meta property="og:image" content="{{ asset('images/og-image.png') }}">
+        <meta property="og:image" content="{{ asset('images/MAHWILOGO.png') }}">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
         <meta property="og:site_name" content="MahWi">
@@ -71,11 +71,11 @@
         <meta name="twitter:url" content="{{ url()->current() }}">
         <meta name="twitter:title" content="{{ config('app.name', 'MahWi') }} - Multi-Shop Management System">
         <meta name="twitter:description" content="Simplify your shop management with MahWi. Track inventory, sales, purchases, and staff all in one place.">
-        <meta name="twitter:image" content="{{ asset('images/og-image.png') }}">
+        <meta name="twitter:image" content="{{ asset('images/MAHWILOGO.png') }}">
 
         <!-- Favicon -->
-        <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
-        <link rel="apple-touch-icon" href="{{ asset('images/logo.svg') }}">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('images/MAHWILOGO.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('images/MAHWILOGO.png') }}">
 
         <!-- Theme Color -->
         <meta name="theme-color" content="#6366f1">
@@ -115,22 +115,12 @@
                     <div>
                         <div class="flex items-center space-x-3 mb-4">
                             <div class="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
-                                <svg class="w-10 h-10 text-white" viewBox="0 0 50 50" fill="currentColor">
-                                    <circle cx="12" cy="10" r="4"/>
-                                    <path d="M8 16 L10 26 L14 26 L16 16 Z"/>
-                                    <path d="M9 26 L6 38 L8 38 L12 28" stroke="currentColor" stroke-width="2" fill="none"/>
-                                    <path d="M13 26 L17 38 L15 38 L11 28" stroke="currentColor" stroke-width="2" fill="none"/>
-                                    <path d="M14 18 L22 20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
-                                    <path d="M22 18 L24 18 L28 32 L42 32 L45 22 L26 22" stroke="currentColor" stroke-width="2" fill="none"/>
-                                    <circle cx="30" cy="36" r="3"/>
-                                    <circle cx="40" cy="36" r="3"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h1 class="text-3xl font-extrabold tracking-tight">MahWi</h1>
-                                <p class="text-indigo-200 text-sm">Multi-Shop Management System</p>
+                                <X-application-logo class="w-8 h-8 text-white" />
                             </div>
                         </div>
+                        <h1 class="text-4xl font-bold mb-2">Welcome to MahWi</h1>
+                        <p class="text-lg text-white/90">Your all-in-one multi-shop management system for inventory, sales, purchases, and staff management.</p>
+                    </div>
 
                         <!-- Motivational Quote -->
                         @php
