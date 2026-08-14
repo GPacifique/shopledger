@@ -12,9 +12,11 @@
                 </h2>
             </div>
             <div class="flex space-x-3">
-                <a href="{{ route('products.edit', $product) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
-                    {{ __('Edit Product') }}
-                </a>
+                @if(auth()->user()->isSystemAdmin() || auth()->user()->isShopAdmin())
+                    <a href="{{ route('products.edit', $product) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+                        {{ __('Edit Product') }}
+                    </a>
+                @endif
             </div>
         </div>
     </x-slot>

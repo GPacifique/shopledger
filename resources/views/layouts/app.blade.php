@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
-        <title>{{ config('app.name', 'MahwiPOS') }} | @yield('title', 'Saas shop management system made for shops around the globe')</title>
+        <title>{{ config('app.name', 'MahwiPOS') }} | @yield('title', 'all in one business management system made for shops around the globe')</title>
         <meta name="application-name" content="MahwiPOS">
         <meta name="apple-mobile-web-app-title" content="MahwiPOS">
 

@@ -5,10 +5,12 @@
                 {{ __('Expenses') }}
             </h2>
 
-            <a href="{{ route('expenses.create') }}"
-               class="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700">
-                + Add Expense
-            </a>
+            @if(auth()->user()->isSystemAdmin() || auth()->user()->isShopAdmin())
+                <a href="{{ route('expenses.create') }}"
+                   class="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700">
+                    + Add Expense
+                </a>
+            @endif
         </div>
     </x-slot>
 

@@ -110,7 +110,8 @@ class SaleController extends Controller
                 return redirect()->back()->withInput()
                     ->with('error', 'Product not found.');
             }
-            if ($product->stock < $item['quantity']) {
+
+            if ($product->stock <= 0 || $product->stock < $item['quantity']) {
                 return redirect()->back()->withInput()
                     ->with('error', "Insufficient stock for \"{$product->name}\". Available: {$product->stock}, Requested: {$item['quantity']}");
             }
@@ -143,7 +144,8 @@ class SaleController extends Controller
 
                 // Fractional-safe: no (int) cast — stock is a decimal:2 cast
                 // on the Product model, matching the decimal(15,2) column.
-                $product->stock -= $item['quantity'];
+                $newStock = max(0, $product->stock - $item['quantity']);
+                $product->stock = $newStock;
                 $product->save();
 
                 $total += $line;

@@ -80,11 +80,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('suppliers', SupplierController::class);
         Route::resource('customers', CustomerController::class);
         Route::resource('staff', StaffController::class);
-        Route::resource('expenses', ExpenseController::class);
         Route::resource('expensecategories', ExpenseCategoryController::class);
-        Route::resource('products', ProductController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-        Route::get('products/{product}/qr-code', [ProductController::class, 'qrCode'])->name('products.qr-code');
         Route::get('/stats', [StatsController::class, 'summary'])->name('stats.summary');
+    });
+
+    Route::middleware(RoleMiddleware::class.':shop_admin,seller')->group(function () {
+        Route::resource('products', ProductController::class)->only(['index', 'show']);
+        Route::get('products/{product}/qr-code', [ProductController::class, 'qrCode'])->name('products.qr-code');
+        Route::resource('expenses', ExpenseController::class)->only(['index']);
+    });
+
+    Route::middleware(RoleMiddleware::class.':shop_admin')->group(function () {
+        Route::resource('expenses', ExpenseController::class)->except(['index', 'show']);
+        Route::resource('products', ProductController::class)->except(['index', 'show']);
     });
 
     // Sales and purchases are accessible to both shop_admin and seller

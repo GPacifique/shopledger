@@ -53,62 +53,213 @@
             </div>
 
             <!-- Today's Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <!-- Today's Sales Amount -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
                 <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100" style="animation-delay: 0.1s">
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
-                            <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                                <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center">
+                                <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
-                            <div class="text-right">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    <svg class="w-3 h-3 mr-1 animate-pulse" fill="currentColor" viewBox="0 0 8 8">
-                                        <circle cx="4" cy="4" r="3"/>
-                                    </svg>
-                                    {{ __('Live') }}
-                                </span>
-                            </div>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">{{ __('Today') }}</span>
                         </div>
-                        <h3 class="text-sm font-medium text-gray-500 mb-2">{{ __("Today's Sales") }}</h3>
-                        <p class="text-3xl font-bold text-gray-900 mb-2" id="todaySales">{{ rwf($todaySales) }}</p>
-                        <div class="flex items-center text-sm text-green-600">
-                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                            <span class="font-medium">{{ __('Revenue earned today') }}</span>
-                        </div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">{{ __('Shop Sales') }}</h3>
+                        <p class="text-2xl font-bold text-gray-900">{{ rwf($todaySales) }}</p>
                     </div>
-                    <div class="h-1.5 bg-gradient-to-r from-green-400 to-emerald-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                 </div>
 
-                <!-- Today's Transactions -->
-                <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100" style="animation-delay: 0.2s">
+                <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100" style="animation-delay: 0.15s">
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
-                            <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                                <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center">
+                                <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
                             </div>
-                            <div class="text-right">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    {{ __('Today') }}
-                                </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ __('My sales') }}</span>
+                        </div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">{{ __('Your Sales') }}</h3>
+                        <p class="text-2xl font-bold text-gray-900">{{ rwf($todayMySales) }}</p>
+                    </div>
+                </div>
+
+                <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100" style="animation-delay: 0.2s">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center">
+                                <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
                             </div>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-800">{{ __('Avg.') }}</span>
+                        </div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">{{ __('Average Sale') }}</h3>
+                        <p class="text-2xl font-bold text-gray-900">{{ rwf($averageSaleValue) }}</p>
+                    </div>
+                </div>
+
+                <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100" style="animation-delay: 0.25s">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                                <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12h10M12 7v10m-7 0h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">{{ __('Orders') }}</span>
                         </div>
                         <h3 class="text-sm font-medium text-gray-500 mb-2">{{ __('Transactions') }}</h3>
-                        <p class="text-3xl font-bold text-gray-900 mb-2" id="todayCount">{{ $todaySalesCount }}</p>
-                        <div class="flex items-center text-sm text-blue-600">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <span class="font-medium">{{ __('Sales completed') }}</span>
+                        <p class="text-2xl font-bold text-gray-900">{{ $todaySalesCount }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <p class="text-sm text-gray-500">{{ __('Total Products') }}</p>
+                    <p class="mt-2 text-3xl font-bold text-gray-900">{{ number_format($totalProducts) }}</p>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <p class="text-sm text-gray-500">{{ __('Stock Units') }}</p>
+                    <p class="mt-2 text-3xl font-bold text-gray-900">{{ format_qty($totalStockUnits) }}</p>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <p class="text-sm text-gray-500">{{ __('Low Stock') }}</p>
+                    <p class="mt-2 text-3xl font-bold text-yellow-600">{{ number_format($lowStockProducts) }}</p>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <p class="text-sm text-gray-500">{{ __('Out of Stock') }}</p>
+                    <p class="mt-2 text-3xl font-bold text-red-600">{{ number_format($outOfStockProducts) }}</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">{{ __('Inventory Snapshot') }}</h3>
+                        <span class="text-sm text-gray-500">{{ __('Value') }}: {{ rwf($inventoryValue) }}</span>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+                            <span class="text-gray-600">{{ __('Products in stock') }}</span>
+                            <span class="font-semibold text-gray-900">{{ number_format(max($totalProducts - $outOfStockProducts, 0)) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+                            <span class="text-gray-600">{{ __('Purchases today') }}</span>
+                            <span class="font-semibold text-gray-900">{{ rwf($todayPurchases) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+                            <span class="text-gray-600">{{ __('My completed sales') }}</span>
+                            <span class="font-semibold text-gray-900">{{ $todayMySalesCount }}</span>
                         </div>
                     </div>
-                    <div class="h-1.5 bg-gradient-to-r from-blue-400 to-indigo-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">{{ __('Low Stock Alerts') }}</h3>
+                        <a href="{{ route('products.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-800">{{ __('View all') }}</a>
+                    </div>
+                    @if($lowStockItems->isNotEmpty())
+                        <div class="space-y-3">
+                            @foreach($lowStockItems as $item)
+                                <div class="flex items-center justify-between rounded-xl border border-yellow-200 bg-yellow-50 p-3">
+                                    <div>
+                                        <p class="font-medium text-gray-900">{{ $item->name }}</p>
+                                        <p class="text-xs text-gray-500">{{ __('Minimum') }}: {{ format_qty($item->minimum_stock) }}</p>
+                                    </div>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        {{ format_qty($item->stock) }} {{ __('left') }}
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="rounded-xl bg-green-50 border border-green-200 p-4 text-sm text-green-700">
+                            {{ __('Inventory is healthy. No low-stock alerts at the moment.') }}
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+                <div class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between mb-5">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">{{ __('Weekly Sales Trend') }}</h3>
+                            <p class="text-sm text-gray-500">{{ __('Your sales for the last 7 days') }}</p>
+                        </div>
+                        <span class="text-sm font-medium text-indigo-600">{{ __('7 days') }}</span>
+                    </div>
+
+                    <div class="flex items-end h-52 gap-3">
+                        @foreach($weeklySalesTrend as $trend)
+                            @php
+                                $barHeight = $weeklySalesMax > 0 ? max(12, ($trend['total'] / $weeklySalesMax) * 100) : 12;
+                                $visibleBarHeight = $trend['total'] > 0 ? $barHeight : 12;
+                            @endphp
+                            <div class="flex-1 flex flex-col items-center justify-end h-full">
+                                <div class="w-full flex justify-center items-end">
+                                    <div class="w-full rounded-t-xl bg-gradient-to-t from-indigo-500 to-blue-400 shadow-sm" style="height: {{ $visibleBarHeight }}%"></div>
+                                </div>
+                                <div class="mt-3 flex flex-col items-center text-center">
+                                    <span class="text-xs font-medium text-gray-500">{{ $trend['day'] }}</span>
+                                    <span class="text-[10px] text-gray-400">{{ $trend['date'] }}</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between mb-5">
+                        <h3 class="text-lg font-semibold text-gray-900">{{ __('Stock Movement') }}</h3>
+                        <a href="{{ route('products.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-800">{{ __('View all') }}</a>
+                    </div>
+                    <div class="space-y-3">
+                        @forelse($recentStockMovements as $movement)
+                            <div class="flex items-center justify-between rounded-xl bg-gray-50 p-3">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $movement->product?->name ?? __('Product') }}</p>
+                                    <p class="text-xs text-gray-500 uppercase">{{ $movement->type }}</p>
+                                </div>
+                                <span class="text-sm font-semibold {{ $movement->isIncoming() ? 'text-green-600' : 'text-blue-600' }}">
+                                    {{ $movement->isIncoming() ? '+' : '-' }}{{ format_qty($movement->quantity) }}
+                                </span>
+                            </div>
+                        @empty
+                            <div class="rounded-xl bg-gray-50 p-4 text-sm text-gray-500">{{ __('No stock movements recorded yet.') }}</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ __('Best Selling Products') }}</h3>
+                    <span class="text-sm text-gray-500">{{ __('Your top items') }}</span>
+                </div>
+
+                <div class="space-y-4">
+                    @forelse($bestSellingProducts as $bestItem)
+                        @php
+                            $topProduct = $bestItem->product;
+                            $maxQuantity = $bestSellingProducts->max('total_quantity') ?: 1;
+                            $width = max(18, ($bestItem->total_quantity / $maxQuantity) * 100);
+                        @endphp
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-900">{{ $topProduct?->name ?? __('Unknown product') }}</span>
+                                <span class="text-sm text-gray-500">{{ format_qty($bestItem->total_quantity) }} sold</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500" style="width: {{ $width }}%"></div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="rounded-xl bg-gray-50 p-4 text-sm text-gray-500">{{ __('No sales data yet for your best-selling products.') }}</div>
+                    @endforelse
                 </div>
             </div>
 
