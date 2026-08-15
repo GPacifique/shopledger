@@ -6,6 +6,8 @@ use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
+use App\Models\StockMovement;
+use App\Services\StockService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +15,13 @@ use App\Notifications\SaleDeleted;
 use Illuminate\Support\Facades\Notification;
 class SaleController extends Controller
 {
+    protected StockService $stockService;
+
+    public function __construct(StockService $stockService)
+    {
+        $this->stockService = $stockService;
+    }
+
     public function index(Request $request)
     {
         $shopId = $request->user()->shop_id;
@@ -142,11 +151,13 @@ class SaleController extends Controller
                     'line_total' => $line,
                 ]);
 
-                // Fractional-safe: no (int) cast — stock is a decimal:2 cast
-                // on the Product model, matching the decimal(15,2) column.
-                $newStock = max(0, $product->stock - $item['quantity']);
-                $product->stock = $newStock;
-                $product->save();
+                // Record stock movement (auto-creates audit trail)
+                $this->stockService->recordSale(
+                    $product,
+                    (int) $item['quantity'],
+                    $sale->id,
+                    $user->id
+                );
 
                 $total += $line;
             }
@@ -236,11 +247,21 @@ public function destroy(Request $request, Sale $sale)
     $paymentMethod = Sale::PAYMENT_METHODS[$sale->payment_method] ?? $sale->payment_method;
     $shopId        = $sale->shop_id;
     $deletedBy     = $request->user()->name;
+    $user          = $request->user();
 
-    DB::transaction(function () use ($sale) {
-        // Restore stock (opposite direction from a purchase reversal)
+    DB::transaction(function () use ($sale, $user) {
+        // Restore stock with movement tracking (reverse the sale)
         foreach ($sale->items as $item) {
-            $item->product->increment('stock', $item->quantity);
+            // Use TYPE_RETURN to reverse the stock decrease from sale
+            $this->stockService->recordMovement(
+                $item->product,
+                StockMovement::TYPE_RETURN,
+                $item->quantity,
+                'App\Models\Sale',
+                $sale->id,
+                'Sale deleted - stock reversal',
+                $user->id
+            );
         }
         $sale->items()->delete();
         $sale->delete();

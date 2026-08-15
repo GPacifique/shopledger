@@ -4,7 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Product;
+use App\Models\Shop;
+use App\Models\User;
 class StockMovement extends Model
 {
     use HasFactory;
@@ -101,4 +105,39 @@ class StockMovement extends Model
     {
         return in_array($this->type, [self::TYPE_PURCHASE, self::TYPE_TRANSFER_IN, self::TYPE_RETURN]);
     }
+    // app/Models/StockMovement.php — add this method
+
+public static function record(
+    Product $product,
+    string $type,
+    int $quantity, // always positive
+    ?string $referenceType = null,
+    ?int $referenceId = null,
+    ?string $notes = null
+): self {
+    $stockBefore = $product->stock;
+
+    $isIncoming = in_array($type, [
+        self::TYPE_PURCHASE, self::TYPE_TRANSFER_IN, self::TYPE_RETURN,
+    ]);
+
+    $stockAfter = $isIncoming
+        ? $stockBefore + $quantity
+        : $stockBefore - $quantity;
+
+    $product->update(['stock' => $stockAfter]);
+
+    return self::create([
+        'shop_id' => $product->shop_id,
+        'product_id' => $product->id,
+        'type' => $type,
+        'quantity' => $quantity, // stored positive; direction comes from `type`
+        'stock_before' => $stockBefore,
+        'stock_after' => $stockAfter,
+        'reference_type' => $referenceType,
+        'reference_id' => $referenceId,
+        'notes' => $notes,
+        'created_by' => Auth::id(),
+    ]);
+}
 }

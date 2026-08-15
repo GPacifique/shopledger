@@ -75,10 +75,9 @@ class SellerController extends Controller
             ->take(10)
             ->get();
 
-        $weeklySalesTrend = collect(range(6, 0, -1))->map(function ($daysAgo) use ($shopId, $user) {
+        $weeklySalesTrend = collect(range(6, 0, -1))->map(function ($daysAgo) use ($shopId) {
             $date = Carbon::today()->subDays($daysAgo);
             $total = Sale::where('shop_id', $shopId)
-                ->where('created_by', $user->id)
                 ->whereDate('sale_date', $date)
                 ->sum('total_amount');
 

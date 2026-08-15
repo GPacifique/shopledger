@@ -184,6 +184,7 @@
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+                <!-- Weekly Sales Trend (FIXED) -->
                 <div class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <div class="flex items-center justify-between mb-5">
                         <div>
@@ -196,12 +197,21 @@
                     <div class="flex items-end h-52 gap-3">
                         @foreach($weeklySalesTrend as $trend)
                             @php
-                                $barHeight = $weeklySalesMax > 0 ? max(12, ($trend['total'] / $weeklySalesMax) * 100) : 12;
-                                $visibleBarHeight = $trend['total'] > 0 ? $barHeight : 12;
+                                // Distinguish "genuinely zero sales" from "small but real sales" —
+                                // both used to collapse to the same 12% floor, making a real
+                                // 8,000 RWF day look identical to a 0 RWF day.
+                                $hasSales = $trend['total'] > 0;
+                                $barHeight = ($weeklySalesMax > 0 && $hasSales)
+                                    ? max(6, ($trend['total'] / $weeklySalesMax) * 100)
+                                    : 4;
                             @endphp
                             <div class="flex-1 flex flex-col items-center justify-end h-full">
-                                <div class="w-full flex justify-center items-end">
-                                    <div class="w-full rounded-t-xl bg-gradient-to-t from-indigo-500 to-blue-400 shadow-sm" style="height: {{ $visibleBarHeight }}%"></div>
+                                <div class="w-full flex justify-center items-end h-full">
+                                    <div
+                                        class="w-full rounded-t-xl shadow-sm {{ $hasSales ? 'bg-gradient-to-t from-indigo-500 to-blue-400' : 'bg-gray-200' }}"
+                                        style="height: {{ $barHeight }}%"
+                                        title="{{ rwf($trend['total']) }}"
+                                    ></div>
                                 </div>
                                 <div class="mt-3 flex flex-col items-center text-center">
                                     <span class="text-xs font-medium text-gray-500">{{ $trend['day'] }}</span>
@@ -212,6 +222,7 @@
                     </div>
                 </div>
 
+                <!-- Stock Movement (FIXED) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <div class="flex items-center justify-between mb-5">
                         <h3 class="text-lg font-semibold text-gray-900">{{ __('Stock Movement') }}</h3>
@@ -219,12 +230,29 @@
                     </div>
                     <div class="space-y-3">
                         @forelse($recentStockMovements as $movement)
+                            @php
+                                // Full literal class strings (not interpolated) so Tailwind's
+                                // JIT scanner can find and generate them at build time.
+                                $badgeClasses = match ($movement->type_color) {
+                                    'green'  => ['bg-green-100', 'text-green-700', 'text-green-600'],
+                                    'blue'   => ['bg-blue-100', 'text-blue-700', 'text-blue-600'],
+                                    'red'    => ['bg-red-100', 'text-red-700', 'text-red-600'],
+                                    'yellow' => ['bg-yellow-100', 'text-yellow-700', 'text-yellow-600'],
+                                    default  => ['bg-gray-100', 'text-gray-700', 'text-gray-600'],
+                                };
+                                [$badgeBg, $badgeText, $amountColor] = $badgeClasses;
+                            @endphp
                             <div class="flex items-center justify-between rounded-xl bg-gray-50 p-3">
-                                <div class="min-w-0">
-                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $movement->product?->name ?? __('Product') }}</p>
-                                    <p class="text-xs text-gray-500 uppercase">{{ $movement->type }}</p>
+                                <div class="min-w-0 flex items-center gap-3">
+                                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg {{ $badgeBg }} {{ $badgeText }} text-xs font-bold flex-shrink-0">
+                                        {{ strtoupper(substr($movement->type, 0, 1)) }}
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 truncate">{{ $movement->product?->name ?? __('Product') }}</p>
+                                        <p class="text-xs text-gray-500">{{ \App\Models\StockMovement::getTypes()[$movement->type] ?? $movement->type }}</p>
+                                    </div>
                                 </div>
-                                <span class="text-sm font-semibold {{ $movement->isIncoming() ? 'text-green-600' : 'text-blue-600' }}">
+                                <span class="text-sm font-semibold {{ $amountColor }} flex-shrink-0">
                                     {{ $movement->isIncoming() ? '+' : '-' }}{{ format_qty($movement->quantity) }}
                                 </span>
                             </div>
