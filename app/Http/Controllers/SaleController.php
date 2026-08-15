@@ -106,7 +106,7 @@ class SaleController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|numeric|min:0.01|decimal:0,2',
             'items.*.unit_price' => 'required|numeric|min:0',
-            'payment_status' => 'nullable|in:paid,unpaid',
+            'payment_status' => 'nullable|in:Paid,Unpaid','Partial',
         ]);
 
         $user = $request->user();

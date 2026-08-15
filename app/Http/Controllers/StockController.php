@@ -128,7 +128,7 @@ class StockController extends Controller
 
         $validated = $request->validate([
             'adjustment_type' => 'required|in:set,add,subtract',
-            'quantity' => 'required|integer|min:0',
+            'quantity' => 'required|numeric|min:0',
             'reason' => 'required|string|max:500',
         ]);
 
@@ -158,7 +158,7 @@ class StockController extends Controller
         $this->authorizeProduct($request, $product);
 
         $validated = $request->validate([
-            'quantity' => 'required|integer|min:1|max:' . $product->stock,
+            'quantity' => 'required|numeric|<min:0 class="0"></min:0>1|max:' . $product->stock,
             'notes' => 'required|string|max:500',
         ]);
 

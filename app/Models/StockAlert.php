@@ -23,8 +23,8 @@ class StockAlert extends Model
     protected $casts = [
         'is_resolved' => 'boolean',
         'resolved_at' => 'datetime',
-        'current_stock' => 'integer',
-        'threshold' => 'integer',
+        'current_stock' => 'numeric',
+        'threshold' => 'numeric',
     ];
 
     const TYPE_LOW_STOCK = 'low_stock';
