@@ -27,9 +27,9 @@ class StockMovement extends Model
     ];
 
     protected $casts = [
-        'quantity' => 'numeric',
-        'stock_before' => 'numeric',
-        'stock_after' => 'numeric',
+        'quantity' => 'decimal:2',
+        'stock_before' => 'decimal:2',
+        'stock_after' => 'decimal:2',
     ];
 
     const TYPE_PURCHASE = 'purchase';
