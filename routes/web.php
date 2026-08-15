@@ -80,6 +80,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('suppliers', SupplierController::class);
         Route::resource('customers', CustomerController::class);
         Route::resource('staff', StaffController::class);
+        Route::resource('products',ProductController::class);
         Route::resource('expensecategories', ExpenseCategoryController::class);
         Route::get('/stats', [StatsController::class, 'summary'])->name('stats.summary');
     });
@@ -92,7 +93,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware(RoleMiddleware::class.':shop_admin')->group(function () {
         Route::resource('expenses', ExpenseController::class)->except(['index', 'show']);
-        Route::resource('products', ProductController::class)->except(['index', 'show']);
+        Route::resource('products', ProductController::class)->except(['index', 'edit','create','show']);
+    
     });
 
     // Sales and purchases are accessible to both shop_admin and seller
