@@ -1,76 +1,110 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Category;
 use App\Models\Supplier;
 use App\Models\Product;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use chillerlan\QRCode\QRCode;
 use App\Models\PurchaseItem;
 use App\Models\SaleItem;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Notifications\ProductDeleted;
 use App\Notifications\ProductUpdated;
+use chillerlan\QRCode\QRCode;
 
 class ProductController extends Controller
 {
-   public function index(Request $request)
-{
-    $shopId = $request->user()->shop_id;
-    $query = Product::where('shop_id', $shopId);
+    public function index(Request $request)
+    {
+        $shopId = $request->user()->shop_id;
 
-    // Search functionality
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('sku', 'like', "%{$search}%")
-              ->orWhere('description', 'like', "%{$search}%");
-        });
-    }
+        $query = Product::where('shop_id', $shopId);
 
-    // Filter by stock status — now relative to each product's own minimum_stock
-    if ($request->filled('stock_status')) {
-        if ($request->stock_status === 'low') {
-            $query->whereColumn('stock', '<=', 'minimum_stock')->where('stock', '>', 0);
-        } elseif ($request->stock_status === 'out') {
-            $query->where('stock', '<=', 0);
-        } elseif ($request->stock_status === 'in') {
-            $query->whereColumn('stock', '>', 'minimum_stock');
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
         }
+
+        // Filter by stock status
+        if ($request->filled('stock_status')) {
+            if ($request->stock_status === 'low') {
+                $query->whereColumn('stock', '<=', 'minimum_stock')
+                    ->where('stock', '>', 0);
+            } elseif ($request->stock_status === 'out') {
+                $query->where('stock', '<=', 0);
+            } elseif ($request->stock_status === 'in') {
+                $query->whereColumn('stock', '>', 'minimum_stock');
+            }
+        }
+
+        $statsQuery = clone $query;
+
+        $totalProducts = (clone $statsQuery)->count();
+
+        $totalStockUnits = (clone $statsQuery)->sum('stock');
+
+        $stockValueCost = (clone $statsQuery)
+            ->sum(DB::raw('stock * buying_price'));
+
+        $stockValueRetail = (clone $statsQuery)
+            ->sum(DB::raw('stock * selling_price'));
+
+        $lowStockCount = (clone $statsQuery)
+            ->whereColumn('stock', '<=', 'minimum_stock')
+            ->where('stock', '>', 0)
+            ->count();
+
+        $outOfStockCount = (clone $statsQuery)
+            ->where('stock', '<=', 0)
+            ->count();
+
+        $expiringSoonCount = (clone $statsQuery)
+            ->whereNotNull('expiry_date')
+            ->whereBetween('expiry_date', [
+                now(),
+                now()->addDays(30),
+            ])
+            ->count();
+
+        $products = $query
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('products.index', compact(
+            'products',
+            'totalProducts',
+            'totalStockUnits',
+            'stockValueCost',
+            'stockValueRetail',
+            'lowStockCount',
+            'outOfStockCount',
+            'expiringSoonCount'
+        ));
     }
 
-    $statsQuery = clone $query;
+    public function create()
+    {
+        $shopId = request()->user()->shop_id;
 
-    $totalProducts    = (clone $statsQuery)->count();
-    $totalStockUnits  = (clone $statsQuery)->sum('stock');
-    $stockValueCost   = (clone $statsQuery)->sum(DB::raw('stock * buying_price'));
-    $stockValueRetail = (clone $statsQuery)->sum(DB::raw('stock * selling_price'));
-    $lowStockCount    = (clone $statsQuery)->whereColumn('stock', '<=', 'minimum_stock')->where('stock', '>', 0)->count();
-    $outOfStockCount  = (clone $statsQuery)->where('stock', '<=', 0)->count();
-    $expiringSoonCount = (clone $statsQuery)
-        ->whereNotNull('expiry_date')
-        ->whereBetween('expiry_date', [now(), now()->addDays(30)])
-        ->count();
+        return view('products.create', [
+            'categories' => Category::where('shop_id', $shopId)
+                ->orderBy('name')
+                ->get(),
 
-    $products = $query->orderBy('name')->paginate(15)->withQueryString();
-
-    return view('products.index', compact(
-        'products', 'totalProducts', 'totalStockUnits',
-        'stockValueCost', 'stockValueRetail', 'lowStockCount',
-        'outOfStockCount', 'expiringSoonCount'
-    ));
-}
-   public function create()
-{
-    $shopId = request()->user()->shop_id;
-
-    return view('products.create', [
-        'categories' => Category::where('shop_id', $shopId)->orderBy('name')->get(),
-        'suppliers' => Supplier::where('shop_id', $shopId)->orderBy('name')->get(),
-    ]);
-}
+            'suppliers' => Supplier::where('shop_id', $shopId)
+                ->orderBy('name')
+                ->get(),
+        ]);
+    }
 
     public function store(Request $request)
     {
@@ -78,26 +112,44 @@ class ProductController extends Controller
 
         $validated = $request->validate([
             'sku' => [
-                'required', 'string', 'max:100',
-                Rule::unique('products', 'sku')->where('shop_id', $shopId),
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('products', 'sku')
+                    ->where('shop_id', $shopId),
             ],
+
             'name' => [
-                'required', 'string', 'max:255',
-                Rule::unique('products', 'name')->where('shop_id', $shopId),
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('products', 'name')
+                    ->where('shop_id', $shopId),
             ],
+
             'description' => 'nullable|string',
+
             'barcode' => [
-                'nullable', 'string', 'max:255',
-                Rule::unique('products', 'barcode')->where('shop_id', $shopId),
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('products', 'barcode')
+                    ->where('shop_id', $shopId),
             ],
+
             'buying_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
-            'quantity' => 'nullable|numeric|min:0.01',
-            'stock' => 'nullable|numeric|min:0.01',
-            'minimum_stock' => 'nullable|numeric|min:0.01',
+
+            'quantity' => 'nullable|numeric|min:0',
+            'stock' => 'nullable|numeric|min:0',
+            'minimum_stock' => 'nullable|numeric|min:0',
+
             'expiry_date' => 'nullable|date',
+
             'category_id' => 'required|exists:categories,id',
+
             'supplier_id' => 'nullable|exists:suppliers,id',
+
             'status' => 'nullable|in:active,inactive',
         ]);
 
@@ -109,70 +161,143 @@ class ProductController extends Controller
 
         Product::create($validated);
 
-        return redirect()->route('products.index')
+        return redirect()
+            ->route('products.index')
             ->with('success', 'Product created successfully.');
     }
 
-    
+    public function show(Request $request, Product $product)
+    {
+        $this->authorizeProduct($request, $product);
 
-public function show(Request $request, Product $product)
-{
-    $this->authorizeProduct($request, $product);
+        /*
+        |--------------------------------------------------------------------------
+        | Product Shop
+        |--------------------------------------------------------------------------
+        */
 
-    $product->load([
-        'category',
-        'supplier',
-    ]);
+        $shopId = $product->shop_id;
 
-    $purchaseItems = PurchaseItem::with([
-            'purchase.supplier',
-            'purchase.creator',
-        ])
-        ->where('product_id', $product->id)
-        ->latest()
-        ->paginate(10, ['*'], 'purchases');
+        $product->load([
+            'category',
+            'supplier',
+        ]);
 
-    $saleItems = SaleItem::with([
-            'sale.customer',
-            'sale.creator',
-        ])
-        ->where('product_id', $product->id)
-        ->latest()
-        ->paginate(10, ['*'], 'sales');
+        /*
+        |--------------------------------------------------------------------------
+        | Purchase History
+        |--------------------------------------------------------------------------
+        */
 
-    $totalPurchased = PurchaseItem::where('product_id', $product->id)->sum('quantity');
+        $purchaseItems = PurchaseItem::with([
+                'purchase.supplier',
+                'purchase.creator',
+            ])
+            ->where('shop_id', $shopId)
+            ->where('product_id', $product->id)
+            ->latest()
+            ->paginate(10, ['*'], 'purchases');
 
-    $totalPurchaseCost = PurchaseItem::where('product_id', $product->id)->sum('line_total');
+        /*
+        |--------------------------------------------------------------------------
+        | Sales History
+        |--------------------------------------------------------------------------
+        */
 
-    $totalSold = SaleItem::where('product_id', $product->id)->sum('quantity');
+        $saleItems = SaleItem::with([
+                'sale.customer',
+                'sale.creator',
+            ])
+            ->where('shop_id', $shopId)
+            ->where('product_id', $product->id)
+            ->latest()
+            ->paginate(10, ['*'], 'sales');
 
-    $totalSales = SaleItem::where('product_id', $product->id)->sum('line_total');
+        /*
+        |--------------------------------------------------------------------------
+        | Purchase Statistics
+        |--------------------------------------------------------------------------
+        */
 
-    $grossProfit = SaleItem::where('product_id', $product->id)
-        ->selectRaw('SUM((unit_price-cost_price_at_sale)*quantity) as profit')
-        ->value('profit');
+        $totalPurchased = PurchaseItem::where('shop_id', $shopId)
+            ->where('product_id', $product->id)
+            ->sum('quantity');
 
-    $lastPurchase = PurchaseItem::where('product_id',$product->id)
-        ->latest()
-        ->first();
+        $totalPurchaseCost = PurchaseItem::where('shop_id', $shopId)
+            ->where('product_id', $product->id)
+            ->sum('line_total');
 
-    $lastSale = SaleItem::where('product_id',$product->id)
-        ->latest()
-        ->first();
+        /*
+        |--------------------------------------------------------------------------
+        | Sales Statistics
+        |--------------------------------------------------------------------------
+        */
 
-    return view('products.show', compact(
-        'product',
-        'purchaseItems',
-        'saleItems',
-        'totalPurchased',
-        'totalPurchaseCost',
-        'totalSold',
-        'totalSales',
-        'grossProfit',
-        'lastPurchase',
-        'lastSale'
-    ));
-}
+        $totalSold = SaleItem::where('shop_id', $shopId)
+            ->where('product_id', $product->id)
+            ->sum('quantity');
+
+        $totalSales = SaleItem::where('shop_id', $shopId)
+            ->where('product_id', $product->id)
+            ->sum('line_total');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Gross Profit
+        |--------------------------------------------------------------------------
+        |
+        | Gross Profit =
+        | (Selling Price - Cost Price At Sale) × Quantity
+        |
+        */
+
+        $grossProfit = SaleItem::where('shop_id', $shopId)
+            ->where('product_id', $product->id)
+            ->selectRaw(
+                'COALESCE(
+                    SUM(
+                        (unit_price - cost_price_at_sale) * quantity
+                    ),
+                    0
+                ) AS profit'
+            )
+            ->value('profit');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Last Purchase
+        |--------------------------------------------------------------------------
+        */
+
+        $lastPurchase = PurchaseItem::where('shop_id', $shopId)
+            ->where('product_id', $product->id)
+            ->latest()
+            ->first();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Last Sale
+        |--------------------------------------------------------------------------
+        */
+
+        $lastSale = SaleItem::where('shop_id', $shopId)
+            ->where('product_id', $product->id)
+            ->latest()
+            ->first();
+
+        return view('products.show', compact(
+            'product',
+            'purchaseItems',
+            'saleItems',
+            'totalPurchased',
+            'totalPurchaseCost',
+            'totalSold',
+            'totalSales',
+            'grossProfit',
+            'lastPurchase',
+            'lastSale'
+        ));
+    }
 
     public function edit(Request $request, Product $product)
     {
@@ -183,8 +308,14 @@ public function show(Request $request, Product $product)
 
         return view('products.edit', [
             'product' => $product,
-            'categories' => Category::where('shop_id', $shopId)->orderBy('name')->get(),
-            'suppliers' => Supplier::where('shop_id', $shopId)->orderBy('name')->get(),
+
+            'categories' => Category::where('shop_id', $shopId)
+                ->orderBy('name')
+                ->get(),
+
+            'suppliers' => Supplier::where('shop_id', $shopId)
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
@@ -197,34 +328,64 @@ public function show(Request $request, Product $product)
 
         $validated = $request->validate([
             'sku' => [
-                'required', 'string', 'max:100',
-                Rule::unique('products', 'sku')->where('shop_id', $shopId)->ignore($product->id),
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('products', 'sku')
+                    ->where('shop_id', $shopId)
+                    ->ignore($product->id),
             ],
+
             'name' => [
-                'required', 'string', 'max:255',
-                Rule::unique('products', 'name')->where('shop_id', $shopId)->ignore($product->id),
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('products', 'name')
+                    ->where('shop_id', $shopId)
+                    ->ignore($product->id),
             ],
+
             'description' => 'nullable|string',
+
             'barcode' => [
-                'nullable', 'string', 'max:255',
-                Rule::unique('products', 'barcode')->where('shop_id', $shopId)->ignore($product->id),
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('products', 'barcode')
+                    ->where('shop_id', $shopId)
+                    ->ignore($product->id),
             ],
+
             'buying_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
-            'quantity' => 'nullable|numeric|min:0.01',
-            'stock' => 'required|numeric|min:0.01',
-            'minimum_stock' => 'nullable|numeric|min:0.01',
+
+            'quantity' => 'nullable|numeric|min:0',
+            'stock' => 'required|numeric|min:0',
+            'minimum_stock' => 'nullable|numeric|min:0',
+
             'expiry_date' => 'nullable|date',
+
             'category_id' => 'required|exists:categories,id',
+
             'supplier_id' => 'nullable|exists:suppliers,id',
+
             'status' => 'nullable|in:active,inactive',
         ]);
 
         $product->update($validated);
 
-        $this->notifyShopAdmins($product->shop_id, new ProductUpdated($product->id, $product->name, $request->user()->name), $request->user()->id);
+        $this->notifyShopAdmins(
+            $product->shop_id,
+            new ProductUpdated(
+                $product->id,
+                $product->name,
+                $request->user()->name
+            ),
+            $request->user()->id
+        );
 
-        return redirect()->route('products.index')
+        return redirect()
+            ->route('products.index')
             ->with('success', 'Product updated successfully.');
     }
 
@@ -240,9 +401,18 @@ public function show(Request $request, Product $product)
 
         $product->delete();
 
-        $this->notifyShopAdmins($shopId, new ProductDeleted($productId, $productName, $deletedBy), $request->user()->id);
+        $this->notifyShopAdmins(
+            $shopId,
+            new ProductDeleted(
+                $productId,
+                $productName,
+                $deletedBy
+            ),
+            $request->user()->id
+        );
 
-        return redirect()->route('products.index')
+        return redirect()
+            ->route('products.index')
             ->with('success', 'Product deleted successfully.');
     }
 
@@ -252,21 +422,31 @@ public function show(Request $request, Product $product)
 
         $qrCodeData = $product->generateQrCode();
 
-        return response($qrCodeData)->header('Content-Type', 'image/svg+xml');
+        return response($qrCodeData)
+            ->header('Content-Type', 'image/svg+xml');
     }
 
-    protected function authorizeProduct(Request $request, Product $product): void
-    {
-        if ($product->shop_id !== $request->user()->shop_id && !$request->user()->isSystemAdmin()) {
+    protected function authorizeProduct(
+        Request $request,
+        Product $product
+    ): void {
+        if (
+            $product->shop_id !== $request->user()->shop_id
+            && !$request->user()->isSystemAdmin()
+        ) {
             abort(403);
         }
     }
 
-    protected function authorizeProductManage(Request $request, Product $product): void
-    {
-        if (!$request->user()->isSystemAdmin() && !$request->user()->isShopAdmin()) {
+    protected function authorizeProductManage(
+        Request $request,
+        Product $product
+    ): void {
+        if (
+            !$request->user()->isSystemAdmin()
+            && !$request->user()->isShopAdmin()
+        ) {
             abort(403);
         }
     }
-  
 }
