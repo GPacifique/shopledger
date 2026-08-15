@@ -55,8 +55,9 @@
                     <div>
                         <label for="payment_status" class="block text-sm font-medium text-gray-700">{{ __('Payment Status') }}</label>
                         <select name="payment_status" id="payment_status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="paid" @selected(old('payment_status', $sale->payment_status) === 'paid')>{{ __('Paid') }}</option>
-                            <option value="unpaid" @selected(old('payment_status', $sale->payment_status) === 'unpaid')>{{ __('Unpaid') }}</option>
+                            <option value="Paid" @selected(old('payment_status', $sale->payment_status) === 'Paid')>{{ __('Paid') }}</option>
+                            <option value="Unpaid" @selected(old('payment_status', $sale->payment_status) === 'Unpaid')>{{ __('Unpaid') }}</option>
+                            <option value="Partial" @selected(old('payment_status', $sale->payment_status) === 'Partial')>{{ __('Partial') }}</option>
                         </select>
                         @error('payment_status')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

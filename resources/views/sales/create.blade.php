@@ -91,16 +91,16 @@
                                     <x-form.field name="payment_status" :label="__('Payment Status')" required>
                                         @php
                                             $paymentStatuses = [
-                                                'paid' => __('Paid'),
-                                                'partial' => __('Partial'),
-                                                'unpaid' => __('Unpaid'),
+                                                'Paid' => __('Paid'),
+                                                'Partial' => __('Partial'),
+                                                'Paid' => __('Unpaid'),
                                             ];
                                         @endphp
                                         <select name="payment_status" id="payment_status" required
                                                 x-model="paymentStatus"
                                                 class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-2.5 px-3 text-base transition-colors">
                                             @foreach($paymentStatuses as $value => $label)
-                                                <option value="{{ $value }}" {{ old('payment_status', 'paid') === $value ? 'selected' : '' }}>
+                                                <option value="{{ $value }}" {{ old('payment_status', 'Paid') === $value ? 'selected' : '' }}>
                                                     {{ $label }}
                                                 </option>
                                             @endforeach

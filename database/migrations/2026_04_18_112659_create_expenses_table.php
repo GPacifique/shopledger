@@ -27,7 +27,7 @@ return new class extends Migration
             $table->text('description')->nullable();
 //statusactive/inactive
 
-            $table->enum('status', ['paid', 'unpaid'])->default('unpaid');
+            $table->enum('status', ['Paid', 'unpaid'])->default('unpaid');
             // 📎 File attachment (receipt, invoice, etc.)
             $table->string('attachment')->nullable();
 

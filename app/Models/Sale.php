@@ -20,6 +20,12 @@ class Sale extends Model
         'card' => 'Card Payment',
     ];
 
+    public const PAYMENT_STATUSES = [
+        'Paid' => 'Paid',
+        'Unpaid' => 'Unpaid',
+        'Partial' => 'Partial',
+    ];
+
     protected $casts = [
         'sale_date' => 'date',
     ];

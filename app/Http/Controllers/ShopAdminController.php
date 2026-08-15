@@ -53,15 +53,15 @@ class ShopAdminController extends Controller
         $yearlyNetProfit = $yearlySales - $yearlyPurchases - $yearlyExpenses;
 
         // --- Payment status breakdown (computed once) ---
-        $paidSales = (clone $salesQuery)->where('payment_status', 'paid')->sum('total_amount');
-        $unpaidSales = (clone $salesQuery)->where('payment_status', 'unpaid')->sum('total_amount');
-        $partialSales = (clone $salesQuery)->where('payment_status', 'partial')->sum('total_amount');
+        $paidSales = (clone $salesQuery)->where('payment_status', 'Paid')->sum('total_amount');
+        $unpaidSales = (clone $salesQuery)->where('payment_status', 'Unpaid')->sum('total_amount');
+        $partialSales = (clone $salesQuery)->where('payment_status', 'Partial')->sum('total_amount');
         $totalSales = $paidSales + $unpaidSales + $partialSales;
 
         $paymentStatusStats = [
-            'paid' => $paidSales,
-            'unpaid' => $unpaidSales,
-            'partial' => $partialSales,
+            'Paid' => $paidSales,
+            'Unpaid' => $unpaidSales,
+            'Partial' => $partialSales,
         ];
 
         // --- Payment method breakdown: today vs this month ---

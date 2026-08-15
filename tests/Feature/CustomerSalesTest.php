@@ -70,7 +70,7 @@ class CustomerSalesTest extends TestCase
             'customer_id' => $customer->id,
             'sale_date' => now()->toDateString(),
             'payment_method' => 'cash',
-            'payment_status' => 'paid',
+            'payment_status' => 'Paid',
             'items' => [
                 [
                     'product_id' => $product->id,
@@ -136,7 +136,7 @@ class CustomerSalesTest extends TestCase
             'customer_id' => null,
             'sale_date' => now()->toDateString(),
             'payment_method' => 'cash',
-            'payment_status' => 'paid',
+            'payment_status' => 'Paid',
             'created_by' => $user->id,
             'total_amount' => 0,
         ]);

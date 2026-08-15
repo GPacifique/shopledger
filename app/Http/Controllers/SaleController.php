@@ -202,7 +202,7 @@ class SaleController extends Controller
             'customer_id' => 'nullable|exists:customers,id',
             'sale_date' => 'required|date',
             'payment_method' => 'required|in:cash,momo,bank,card',
-            'payment_status' => 'nullable|in:paid,unpaid',
+            'payment_status' => 'nullable|in:Paid,Unpaid','Partial',
         ]);
 
         $sale->update($validated);
