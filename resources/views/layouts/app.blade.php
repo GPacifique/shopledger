@@ -59,7 +59,7 @@
             <!-- Page Heading -->
             @isset($header)
                 <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    <div class="{{ $attributes->has('full-width') ? 'w-full px-4' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' }} py-6">
                         {{ $header }}
                     </div>
                 </header>
@@ -68,7 +68,7 @@
             <!-- Page Content -->
             <main class="flex-grow">
                 <div class="py-6">
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="{{ $attributes->has('full-width') ? 'w-full px-0' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' }}">
                         {{ $slot }}
                     </div>
                 </div>

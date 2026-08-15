@@ -1,17 +1,20 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\Sale;
 use App\Models\Purchase;
 use App\Models\Expense;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\User;
+use App\Models\SaleItem;
+use App\Models\StockMovement;
+use App\Models\ExpenseCategory;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use App\Models\SaleItem;
-use App\Models\ExpenseCategory;
 class ShopAdminController extends Controller
 {
     public function dashboard()
@@ -24,103 +27,52 @@ class ShopAdminController extends Controller
         }
 
         $shopId = $shop->id;
-          $salesQuery = Sale::where('shop_id', $shopId);
-    $purchaseQuery = Purchase::where('shop_id', $shopId);
-    $expenseQuery = Expense::where('shop_id', $shopId);
-  $dailySales = (clone $salesQuery)->whereDate('sale_date', today())->sum('total_amount');
-    $dailyPurchases = (clone $purchaseQuery)->whereDate('purchase_date', today())->sum('total_amount');
-    $dailyExpenses = (clone $expenseQuery)->whereDate('expense_date', today())->sum('amount');
-    $dailyNetProfit = $dailySales - $dailyPurchases - $dailyExpenses;
-    $yearlyNetProfit = (clone $salesQuery)->whereYear('sale_date', now()->year)->sum('total_amount') - (clone $purchaseQuery)->whereYear('purchase_date', now()->year)->sum('total_amount') - (clone $expenseQuery)->whereYear('expense_date', now()->year)->sum('amount');
-    $weeklySales = (clone $salesQuery)->whereBetween('sale_date', [now()->startOfWeek(), now()->endOfWeek()])->sum('total_amount');
-    $weeklyPurchases = (clone $purchaseQuery)->whereBetween('purchase_date', [now()->startOfWeek(), now()->endOfWeek()])->sum('total_amount');
-    $weeklyExpenses = (clone $expenseQuery)->whereBetween('expense_date', [now()->startOfWeek(), now()->endOfWeek()])->sum('amount');
-$weeklyNetProfit = (clone $salesQuery)->whereBetween('sale_date', [now()->startOfWeek(), now()->endOfWeek()])->sum('total_amount') - (clone $purchaseQuery)->whereBetween('purchase_date', [now()->startOfWeek(), now()->endOfWeek()])->sum('total_amount') - (clone $expenseQuery)->whereBetween('expense_date', [now()->startOfWeek(), now()->endOfWeek()])->sum('amount');   
-$yearlySales = (clone $salesQuery)->whereYear('sale_date', now()->year)->sum('total_amount');
-    $yearlyPurchases = (clone $purchaseQuery)->whereYear('purchase_date', now()->year)->sum('total_amount');
-    $yearlyExpenses = (clone $expenseQuery)->whereYear('expense_date', now()->year)->sum('amount');
-     $yearlyNetProfit = $yearlySales - $yearlyPurchases - $yearlyExpenses;  
-     $paidSales = (clone $salesQuery)->where('payment_status', 'paid')->sum('total_amount');
-    $unpaidSales = (clone $salesQuery)->where('payment_status', 'unpaid')->sum('total_amount');
-    $partialSales = (clone $salesQuery)->where('payment_status', 'partial')->sum('total_amount');   
-    $totalSales = $paidSales + $unpaidSales + $partialSales;
-     $paymentMethodStats = (clone $salesQuery)
-        ->selectRaw('payment_method, SUM(total_amount) as total, COUNT(*) as count')
-        ->groupBy('payment_method')
-        ->pluck('total', 'payment_method')
-        ->toArray();  
-        $totalunpaidSales = (clone $salesQuery)->where('payment_status', 'unpaid')->sum('total_amount');
-        $totalpartialSales = (clone $salesQuery)->where('payment_status', 'partial')->sum('total_amount');
-        $totalpaidSales = (clone $salesQuery)->where('payment_status', 'paid')->sum('total_amount');
-         $totalSales = $totalunpaidSales + $totalpartialSales + $totalpaidSales;
-         $paymentStatusStats = [
-        'paid' => $totalpaidSales,
-        'unpaid' => $totalunpaidSales,
-        'partial' => $totalpartialSales
-    ];
+        $today = Carbon::today();
 
-         $paymentMethodStats = (clone $salesQuery)
-        ->selectRaw('payment_method, SUM(total_amount) as total, COUNT(*) as count')
-        ->groupBy('payment_method')
-        ->pluck('total', 'payment_method')
-        ->toArray();            
-if (!$shop) {
-            return view('dashboard.user', compact('shop'));
-        }
+        $salesQuery = Sale::where('shop_id', $shopId);
+        $purchaseQuery = Purchase::where('shop_id', $shopId);
+        $expenseQuery = Expense::where('shop_id', $shopId);
 
-        // Get shop statistics
-        $stats =[      
-            'total_products'=> Product::where('shop_id', $shop->id)->count(),
-            'total_suppliers' => Supplier::where('shop_id', $shop->id)->count(),
-            'total_staff' => User::where('shop_id', $shop->id)->where('id', '!=', $user->id)->count(),
-            'low_stock_products' => Product::where('shop_id', $shop->id)->where('stock', '<', 10)->count(),
-             'dailySales' => $dailySales,
-        'dailyPurchases' => $dailyPurchases,
-        'dailyExpenses' => $dailyExpenses,
-        'dailyNetProfit' => $dailyNetProfit,
-        'weeklyNetProfit' => $weeklyNetProfit,
-        'weeklySales' => $weeklySales,
-        'weeklyPurchases' => $weeklyPurchases,
-        'weeklyExpenses' => $weeklyExpenses,
-        'yearlyNetProfit' => $yearlyNetProfit,
-        'yearlySales' => $yearlySales,
-        'yearlyPurchases' => $yearlyPurchases,
-        'yearlyExpenses' => $yearlyExpenses,
-         'paymentStatusStats' => $paymentStatusStats,
-         'paymentMethodStats' => $paymentMethodStats,
-         'totalSales' => $totalSales,
-         'paidSales' => $paidSales,
-         'unpaidSales' => $unpaidSales,
-         'partialSales' => $partialSales,
+        // --- Daily figures ---
+        $dailySales = (clone $salesQuery)->whereDate('sale_date', $today)->sum('total_amount');
+        $dailyPurchases = (clone $purchaseQuery)->whereDate('purchase_date', $today)->sum('total_amount');
+        $dailyExpenses = (clone $expenseQuery)->whereDate('expense_date', $today)->sum('amount');
+        $dailyNetProfit = $dailySales - $dailyPurchases - $dailyExpenses;
+
+        // --- Weekly figures ---
+        $weekRange = [now()->startOfWeek(), now()->endOfWeek()];
+        $weeklySales = (clone $salesQuery)->whereBetween('sale_date', $weekRange)->sum('total_amount');
+        $weeklyPurchases = (clone $purchaseQuery)->whereBetween('purchase_date', $weekRange)->sum('total_amount');
+        $weeklyExpenses = (clone $expenseQuery)->whereBetween('expense_date', $weekRange)->sum('amount');
+        $weeklyNetProfit = $weeklySales - $weeklyPurchases - $weeklyExpenses;
+
+        // --- Yearly figures (computed once) ---
+        $yearlySales = (clone $salesQuery)->whereYear('sale_date', $today->year)->sum('total_amount');
+        $yearlyPurchases = (clone $purchaseQuery)->whereYear('purchase_date', $today->year)->sum('total_amount');
+        $yearlyExpenses = (clone $expenseQuery)->whereYear('expense_date', $today->year)->sum('amount');
+        $yearlyNetProfit = $yearlySales - $yearlyPurchases - $yearlyExpenses;
+
+        // --- Payment status breakdown (computed once) ---
+        $paidSales = (clone $salesQuery)->where('payment_status', 'paid')->sum('total_amount');
+        $unpaidSales = (clone $salesQuery)->where('payment_status', 'unpaid')->sum('total_amount');
+        $partialSales = (clone $salesQuery)->where('payment_status', 'partial')->sum('total_amount');
+        $totalSales = $paidSales + $unpaidSales + $partialSales;
+
+        $paymentStatusStats = [
+            'paid' => $paidSales,
+            'unpaid' => $unpaidSales,
+            'partial' => $partialSales,
         ];
-        // Today's stats
-        $today =Carbon::today();
-        $stats['today_sales'] = Sale::where('shop_id', $shop->id)
-            ->whereDate('sale_date', $today)
-            ->sum('total_amount');
-        $stats['today_purchases'] = Purchase::where('shop_id', $shop->id)
-            ->whereDate('purchase_date', $today)
-            ->sum('total_amount');
 
-        // This month stats
-        $stats['month_sales'] = Sale::where('shop_id', $shop->id)
-            ->whereMonth('sale_date', $today->month)
-            ->whereYear('sale_date', $today->year)
-            ->sum('total_amount');
-        $stats['month_purchases'] = Purchase::where('shop_id', $shop->id)
-            ->whereMonth('purchase_date', $today->month)
-            ->whereYear('purchase_date', $today->year)
-            ->sum('total_amount');
-
-        // Payment method stats - Today
+        // --- Payment method breakdown: today vs this month ---
         $paymentMethodStats = [
-            'today' => Sale::where('shop_id', $shop->id)
+            'today' => (clone $salesQuery)
                 ->whereDate('sale_date', $today)
                 ->selectRaw('payment_method, SUM(total_amount) as total, COUNT(*) as count')
                 ->groupBy('payment_method')
                 ->pluck('total', 'payment_method')
                 ->toArray(),
-            'month' => Sale::where('shop_id', $shop->id)
+            'month' => (clone $salesQuery)
                 ->whereMonth('sale_date', $today->month)
                 ->whereYear('sale_date', $today->year)
                 ->selectRaw('payment_method, SUM(total_amount) as total, COUNT(*) as count')
@@ -129,98 +81,164 @@ if (!$shop) {
                 ->toArray(),
         ];
 
-        // Recent sales
-        $recentSales = Sale::where('shop_id', $shop->id)
+        // --- Shop-level counts ---
+        $stats = [
+            'total_products' => Product::where('shop_id', $shopId)->count(),
+            'total_suppliers' => Supplier::where('shop_id', $shopId)->count(),
+            'total_staff' => User::where('shop_id', $shopId)->where('id', '!=', $user->id)->count(),
+            'low_stock_products' => Product::where('shop_id', $shopId)->where('stock', '<', 10)->count(),
+
+            'dailySales' => $dailySales,
+            'dailyPurchases' => $dailyPurchases,
+            'dailyExpenses' => $dailyExpenses,
+            'dailyNetProfit' => $dailyNetProfit,
+
+            'weeklySales' => $weeklySales,
+            'weeklyPurchases' => $weeklyPurchases,
+            'weeklyExpenses' => $weeklyExpenses,
+            'weeklyNetProfit' => $weeklyNetProfit,
+
+            'yearlySales' => $yearlySales,
+            'yearlyPurchases' => $yearlyPurchases,
+            'yearlyExpenses' => $yearlyExpenses,
+            'yearlyNetProfit' => $yearlyNetProfit,
+
+            'paymentStatusStats' => $paymentStatusStats,
+            'paymentMethodStats' => $paymentMethodStats,
+
+            'totalSales' => $totalSales,
+            'paidSales' => $paidSales,
+            'unpaidSales' => $unpaidSales,
+            'partialSales' => $partialSales,
+
+            'today_sales' => $dailySales,
+            'today_purchases' => $dailyPurchases,
+
+            'month_sales' => (clone $salesQuery)
+                ->whereMonth('sale_date', $today->month)
+                ->whereYear('sale_date', $today->year)
+                ->sum('total_amount'),
+            'month_purchases' => (clone $purchaseQuery)
+                ->whereMonth('purchase_date', $today->month)
+                ->whereYear('purchase_date', $today->year)
+                ->sum('total_amount'),
+        ];
+
+        // --- Recent activity ---
+        $recentSales = Sale::where('shop_id', $shopId)
             ->with('items.product')
             ->orderByDesc('created_at')
             ->take(5)
             ->get();
 
-        // Recent purchases
-        $recentPurchases = Purchase::where('shop_id', $shop->id)
+        $recentPurchases = Purchase::where('shop_id', $shopId)
             ->with(['supplier', 'items.product'])
             ->orderByDesc('created_at')
             ->take(5)
             ->get();
 
-        // Low stock products
-        $lowStockProducts = Product::where('shop_id', $shop->id)
+        // --- Stock movements (shop-wide, all staff) ---
+        $recentStockMovements = StockMovement::where('shop_id', $shopId)
+            ->with(['product', 'creator'])
+            ->orderByDesc('created_at')
+            ->take(10)
+            ->get();
+
+        $todayStockIn = StockMovement::where('shop_id', $shopId)
+            ->whereDate('created_at', $today)
+            ->whereIn('type', [
+                StockMovement::TYPE_PURCHASE,
+                StockMovement::TYPE_TRANSFER_IN,
+                StockMovement::TYPE_RETURN,
+            ])
+            ->sum('quantity');
+
+        $todayStockOut = StockMovement::where('shop_id', $shopId)
+            ->whereDate('created_at', $today)
+            ->whereIn('type', [
+                StockMovement::TYPE_SALE,
+                StockMovement::TYPE_TRANSFER_OUT,
+                StockMovement::TYPE_DAMAGE,
+            ])
+            ->sum('quantity');
+
+        // --- Product health ---
+        $lowStockProducts = Product::where('shop_id', $shopId)
             ->where('stock', '<', 10)
             ->orderBy('stock')
             ->take(5)
             ->get();
 
-        $outOfStockProducts = Product::where('shop_id', $shop->id)
+        $outOfStockProducts = Product::where('shop_id', $shopId)
             ->where('stock', '<=', 0)
             ->orderBy('name')
             ->take(5)
             ->get();
 
-        $expiringProducts = Product::where('shop_id', $shop->id)
+        $expiringProducts = Product::where('shop_id', $shopId)
             ->whereNotNull('expiry_date')
             ->whereBetween('expiry_date', [now()->startOfDay(), now()->addDays(30)->endOfDay()])
             ->orderBy('expiry_date')
             ->take(5)
             ->get();
 
-        // Staff members
-        $staff = User::where('shop_id', $shop->id)
+        // --- Staff ---
+        $staff = User::where('shop_id', $shopId)
             ->where('id', '!=', $user->id)
             ->get();
 
-        // Chart data - Last 7 days sales vs purchases
-        $chartData = $this->getChartData($shop->id, 7);
+        // --- Charts ---
+        $chartData = $this->getChartData($shopId, 7);
+        $monthlyChartData = $this->getMonthlyChartData($shopId, 6);
 
-        // Chart data - Last 6 months
-        $monthlyChartData = $this->getMonthlyChartData($shop->id, 6);
-// Sales by Product Category
-$salesCategoryData = SaleItem::query()
-    ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
-    ->join('products', 'sale_items.product_id', '=', 'products.id')
-    ->join('categories', 'products.category_id', '=', 'categories.id')
-    ->where('sales.shop_id', $shopId)
-    ->selectRaw('categories.name as category, SUM(sale_items.quantity * sale_items.unit_price) as total')
-    ->groupBy('categories.id', 'categories.name')
-    ->orderByDesc('total')
-    ->get();
+        $salesCategoryData = SaleItem::query()
+            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+            ->join('products', 'sale_items.product_id', '=', 'products.id')
+            ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->where('sales.shop_id', $shopId)
+            ->selectRaw('categories.name as category, SUM(sale_items.quantity * sale_items.unit_price) as total')
+            ->groupBy('categories.id', 'categories.name')
+            ->orderByDesc('total')
+            ->get();
 
+        $expenseCategoryData = Expense::query()
+            ->join('expense_categories', 'expenses.category_id', '=', 'expense_categories.id')
+            ->where('expenses.shop_id', $shopId)
+            ->selectRaw('expense_categories.name as category, SUM(expenses.amount) as total')
+            ->groupBy('expense_categories.id', 'expense_categories.name')
+            ->orderByDesc('total')
+            ->get();
 
-// Expenses by Expense Category
-$expenseCategoryData = Expense::query()
-    ->join('expense_categories', 'expenses.category_id', '=', 'expense_categories.id')
-    ->where('expenses.shop_id', $shopId)
-    ->selectRaw('expense_categories.name as category, SUM(expenses.amount) as total')
-    ->groupBy('expense_categories.id', 'expense_categories.name')
-    ->orderByDesc('total')
-    ->get();
-
-       return view('dashboard.shop-admin', compact(
-    'shop',
-    'stats',
-    'salesCategoryData',
-    'expenseCategoryData',
-    'paymentMethodStats',
-    'recentSales',
-    'recentPurchases',
-    'lowStockProducts',
-    'outOfStockProducts',
-    'expiringProducts',
-    'staff',
-    'chartData',
-    'monthlyChartData',
-    'dailySales',
-    'dailyPurchases',
-    'dailyExpenses',
-    'dailyNetProfit',
-    'weeklyNetProfit',
-    'weeklySales',
-    'weeklyPurchases',
-    'weeklyExpenses',
-    'yearlyNetProfit',
-    'yearlySales',
-    'yearlyPurchases',
-    'yearlyExpenses'    
-));
+        return view('dashboard.shop-admin', compact(
+            'shop',
+            'stats',
+            'salesCategoryData',
+            'expenseCategoryData',
+            'paymentMethodStats',
+            'recentSales',
+            'recentPurchases',
+            'recentStockMovements',
+            'todayStockIn',
+            'todayStockOut',
+            'lowStockProducts',
+            'outOfStockProducts',
+            'expiringProducts',
+            'staff',
+            'chartData',
+            'monthlyChartData',
+            'dailySales',
+            'dailyPurchases',
+            'dailyExpenses',
+            'dailyNetProfit',
+            'weeklyNetProfit',
+            'weeklySales',
+            'weeklyPurchases',
+            'weeklyExpenses',
+            'yearlyNetProfit',
+            'yearlySales',
+            'yearlyPurchases',
+            'yearlyExpenses'
+        ));
     }
 
     private function getMonthlyChartData($shopId, $months)
@@ -256,39 +274,45 @@ $expenseCategoryData = Expense::query()
             'profit' => $profitData,
         ];
     }
+
     private function getChartData($shopId, $days = 7)
-{
-    $labels = [];
-    $salesData = [];
-    $purchaseData = [];
-    $expenseData = [];
+    {
+        $labels = [];
+        $salesData = [];
+        $purchaseData = [];
+        $expenseData = [];
 
-    for ($i = $days - 1; $i >= 0; $i--) {
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i);
+            $labels[] = $date->format('D');
 
-        $date = Carbon::today()->subDays($i);
-        $labels[] = $date->format('D');
+            $salesData[] = Sale::where('shop_id', $shopId)
+                ->whereDate('sale_date', $date)
+                ->sum('total_amount');
 
-        $salesData[] = Sale::where('shop_id', $shopId)
-            ->whereDate('sale_date', $date)
-            ->sum('total_amount');
+            $purchaseData[] = Purchase::where('shop_id', $shopId)
+                ->whereDate('purchase_date', $date)
+                ->sum('total_amount');
 
-        $purchaseData[] = Purchase::where('shop_id', $shopId)
-            ->whereDate('purchase_date', $date)
-            ->sum('total_amount');
+            $expenseData[] = Expense::where('shop_id', $shopId)
+                ->whereDate('expense_date', $date)
+                ->sum('amount');
+        }
 
-        $expenseData[] = Expense::where('shop_id', $shopId)
-            ->whereDate('expense_date', $date)
-            ->sum('amount');
-    }
-
-    return [
-        'labels' => $labels,
-        'sales' => $salesData,
-        'purchases' => $purchaseData,
-        'expenses' => $expenseData,
-        'dailyNetProfit' => $dailyNetProfit ?? array_map(function($s, $p, $e) {
+        // Fixed: $dailyNetProfit doesn't exist in this method's scope
+        // (it belongs to dashboard(), a different method) — compute the
+        // daily profit series directly instead of referencing a variable
+        // that was never in reach here.
+        $profitData = array_map(function ($s, $p, $e) {
             return $s - $p - $e;
-        }, $salesData, $purchaseData, $expenseData),
-    ];
-}
+        }, $salesData, $purchaseData, $expenseData);
+
+        return [
+            'labels' => $labels,
+            'sales' => $salesData,
+            'purchases' => $purchaseData,
+            'expenses' => $expenseData,
+            'dailyNetProfit' => $profitData,
+        ];
+    }
 }
