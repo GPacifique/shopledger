@@ -4,7 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Order;
 class Shop extends Model
 {
     use HasFactory;
@@ -61,5 +62,8 @@ class Shop extends Model
     {
         return $this->hasMany(User::class, 'shop_id');
     }
-
+public function orders(): HasMany
+{
+    return $this->hasMany(Order::class);
+}
 }

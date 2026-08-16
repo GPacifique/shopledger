@@ -143,24 +143,20 @@ class ShopAdminController extends Controller
             ->orderByDesc('created_at')
             ->take(10)
             ->get();
+// --- Today's stock movements ---
+// quantity_change is:
+//   positive = stock coming in
+//   negative = stock going out
 
-        $todayStockIn = StockMovement::where('shop_id', $shopId)
-            ->whereDate('created_at', $today)
-            ->whereIn('type', [
-                StockMovement::TYPE_PURCHASE,
-                StockMovement::TYPE_TRANSFER_IN,
-                StockMovement::TYPE_RETURN,
-            ])
-            ->sum('quantity');
+$todayStockIn = StockMovement::where('shop_id', $shopId)
+    ->whereDate('created_at', $today)
+    ->where('quantity_change', '>', 0)
+    ->sum('quantity_change');
 
-        $todayStockOut = StockMovement::where('shop_id', $shopId)
-            ->whereDate('created_at', $today)
-            ->whereIn('type', [
-                StockMovement::TYPE_SALE,
-                StockMovement::TYPE_TRANSFER_OUT,
-                StockMovement::TYPE_DAMAGE,
-            ])
-            ->sum('quantity');
+$todayStockOut = StockMovement::where('shop_id', $shopId)
+    ->whereDate('created_at', $today)
+    ->where('quantity_change', '<', 0)
+    ->sum(DB::raw('ABS(quantity_change)'));
 
         // --- Product health ---
         $lowStockProducts = Product::where('shop_id', $shopId)

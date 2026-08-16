@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->string('sku');
             $table->string('name');
             $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete();
-            $table->foreignId('supplier_id')->constrained('suppliers')->cascadeOnDelete();
+            $table->foreignId('supplier_id')nullable()->constrained('suppliers')->nullOnDelete();
             $table->string('barcode')->nullable();
             $table->string('qr_code')->nullable();
             $table->text('description')->nullable();

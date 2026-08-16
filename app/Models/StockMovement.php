@@ -2,142 +2,120 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Product;
-use App\Models\Shop;
-use App\Models\User;
+
 class StockMovement extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'shop_id',
         'product_id',
-        'type',
-        'quantity',
-        'stock_before',
-        'stock_after',
         'reference_type',
         'reference_id',
-        'notes',
+        'quantity_change',
+        'quantity_after',
         'created_by',
+        'note',
+        'type',
     ];
 
     protected $casts = [
-        'quantity' => 'decimal:2',
-        'stock_before' => 'decimal:2',
-        'stock_after' => 'decimal:2',
+        'quantity_change' => 'decimal:2',
+        'quantity_after' => 'decimal:2',
     ];
 
-    const TYPE_PURCHASE = 'purchase';
-    const TYPE_SALE = 'sale';
-    const TYPE_ADJUSTMENT = 'adjustment';
-    const TYPE_RETURN = 'return';
-    const TYPE_DAMAGE = 'damage';
-    const TYPE_TRANSFER_IN = 'transfer_in';
-    const TYPE_TRANSFER_OUT = 'transfer_out';
+    /*
+    |--------------------------------------------------------------------------
+    | Movement Types
+    |--------------------------------------------------------------------------
+    */
+
+    public const TYPE_PURCHASE = 'purchase';
+
+    public const TYPE_SALE = 'sale';
+
+    public const TYPE_ORDER = 'order';
+
+    public const TYPE_ADJUSTMENT = 'adjustment';
+
+    public const TYPE_RETURN = 'return';
+
+    public const TYPE_TRANSFER = 'transfer';
+
+    public const TYPE_OPENING = 'opening';
+
+    public const TYPE_DAMAGE = 'damage';
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
+    public function shop(): BelongsTo
+    {
+        return $this->belongsTo(Shop::class);
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Movement Types
+    |--------------------------------------------------------------------------
+    */
 
     public static function getTypes(): array
     {
         return [
             self::TYPE_PURCHASE => 'Purchase',
             self::TYPE_SALE => 'Sale',
-            self::TYPE_ADJUSTMENT => 'Adjustment',
+            self::TYPE_ORDER => 'Order',
+            self::TYPE_ADJUSTMENT => 'Stock Adjustment',
             self::TYPE_RETURN => 'Return',
-            self::TYPE_DAMAGE => 'Damage',
-            self::TYPE_TRANSFER_IN => 'Transfer In',
-            self::TYPE_TRANSFER_OUT => 'Transfer Out',
+            self::TYPE_TRANSFER => 'Transfer',
+            self::TYPE_OPENING => 'Opening Stock',
+            self::TYPE_DAMAGE => 'Damaged Stock',
         ];
     }
 
-    public function shop()
+    /**
+     * Get the human-readable movement type.
+     */
+    public function getTypeLabelAttribute(): string
     {
-        return $this->belongsTo(Shop::class);
+        return self::getTypes()[$this->type] ?? ucfirst($this->type);
     }
 
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
-
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function reference()
-    {
-        if ($this->reference_type && $this->reference_id) {
-            return $this->reference_type::find($this->reference_id);
-        }
-        return null;
-    }
-
-    public function getTypeColorAttribute(): string
-    {
-        return match ($this->type) {
-            self::TYPE_PURCHASE, self::TYPE_TRANSFER_IN, self::TYPE_RETURN => 'green',
-            self::TYPE_SALE, self::TYPE_TRANSFER_OUT => 'blue',
-            self::TYPE_DAMAGE => 'red',
-            self::TYPE_ADJUSTMENT => 'yellow',
-            default => 'gray',
-        };
-    }
-
-    public function getTypeIconAttribute(): string
-    {
-        return match ($this->type) {
-            self::TYPE_PURCHASE => 'arrow-down-circle',
-            self::TYPE_SALE => 'arrow-up-circle',
-            self::TYPE_ADJUSTMENT => 'adjustments-horizontal',
-            self::TYPE_RETURN => 'arrow-uturn-left',
-            self::TYPE_DAMAGE => 'exclamation-triangle',
-            self::TYPE_TRANSFER_IN => 'arrow-right-circle',
-            self::TYPE_TRANSFER_OUT => 'arrow-left-circle',
-            default => 'cube',
-        };
-    }
-
+    /**
+     * Determine whether this movement increases stock.
+     */
     public function isIncoming(): bool
     {
-        return in_array($this->type, [self::TYPE_PURCHASE, self::TYPE_TRANSFER_IN, self::TYPE_RETURN]);
+        return in_array($this->type, [
+            self::TYPE_PURCHASE,
+            self::TYPE_RETURN,
+            self::TYPE_OPENING,
+        ], true);
     }
-    // app/Models/StockMovement.php — add this method
 
-public static function record(
-    Product $product,
-    string $type,
-    int $quantity, // always positive
-    ?string $referenceType = null,
-    ?int $referenceId = null,
-    ?string $notes = null
-): self {
-    $stockBefore = $product->stock;
-
-    $isIncoming = in_array($type, [
-        self::TYPE_PURCHASE, self::TYPE_TRANSFER_IN, self::TYPE_RETURN,
-    ]);
-
-    $stockAfter = $isIncoming
-        ? $stockBefore + $quantity
-        : $stockBefore - $quantity;
-
-    $product->update(['stock' => $stockAfter]);
-
-    return self::create([
-        'shop_id' => $product->shop_id,
-        'product_id' => $product->id,
-        'type' => $type,
-        'quantity' => $quantity, // stored positive; direction comes from `type`
-        'stock_before' => $stockBefore,
-        'stock_after' => $stockAfter,
-        'reference_type' => $referenceType,
-        'reference_id' => $referenceId,
-        'notes' => $notes,
-        'created_by' => Auth::id(),
-    ]);
-}
+    /**
+     * Determine whether this movement decreases stock.
+     */
+    public function isOutgoing(): bool
+    {
+        return in_array($this->type, [
+            self::TYPE_SALE,
+            self::TYPE_ORDER,
+            self::TYPE_DAMAGE,
+        ], true);
+    }
 }

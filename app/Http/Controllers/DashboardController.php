@@ -22,6 +22,7 @@ class DashboardController extends Controller
         'system_admin'   => redirect()->route('admin.dashboard'),
         'business_admin' => redirect()->route('business.dashboard'),
         'seller'         => redirect()->route('seller.dashboard'),
+        'waiter'         =>redirect()->route('orders.waiter'),
         'accountant'     => redirect()->route('accountant.dashboard'),
         default          => $this->userDashboard($request),
     };

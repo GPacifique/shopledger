@@ -626,12 +626,43 @@
                     <div class="divide-y divide-gray-100 max-h-80 overflow-y-auto">
                         @forelse($recentStockMovements as $movement)
                             @php
-                                $isIn = in_array($movement->type, [
-                                    \App\Models\StockMovement::TYPE_PURCHASE,
-                                    \App\Models\StockMovement::TYPE_TRANSFER_IN,
-                                    \App\Models\StockMovement::TYPE_RETURN,
-                                ]);
-                            @endphp
+    $quantityChange = (float) $movement->quantity_change;
+
+    $isIn = $quantityChange > 0;
+
+    $referenceType = strtolower((string) $movement->reference_type);
+
+    $referenceLabel = match ($referenceType) {
+        'purchase'   => __('Purchase'),
+        'sale'       => __('Sale'),
+        'order'      => __('Order'),
+        'return'     => __('Return'),
+        'transfer'   => __('Transfer'),
+        'adjustment' => __('Stock Adjustment'),
+        'opening'    => __('Opening Stock'),
+        'damage'     => __('Damaged Stock'),
+        default      => ucfirst(str_replace('_', ' ', $referenceType)),
+    };
+
+    $movementQuantity = abs($quantityChange);
+
+    if ($quantityChange > 0) {
+        $movementBg = 'bg-teal-100';
+        $movementText = 'text-teal-600';
+        $quantityText = 'text-teal-600';
+        $sign = '+';
+    } elseif ($quantityChange < 0) {
+        $movementBg = 'bg-orange-100';
+        $movementText = 'text-orange-600';
+        $quantityText = 'text-orange-600';
+        $sign = '-';
+    } else {
+        $movementBg = 'bg-gray-100';
+        $movementText = 'text-gray-600';
+        $quantityText = 'text-gray-600';
+        $sign = '';
+    }
+@endphp
                             <div class="flex items-center justify-between px-6 py-3">
                                 <div class="flex items-center">
                                     <div class="h-9 w-9 rounded-lg flex items-center justify-center mr-3 {{ $isIn ? 'bg-teal-100 text-teal-600' : 'bg-orange-100 text-orange-600' }}">
@@ -649,7 +680,7 @@
                                     </div>
                                 </div>
                                 <span class="text-sm font-semibold {{ $isIn ? 'text-teal-600' : 'text-orange-600' }}">
-                                    {{ $isIn ? '+' : '-' }}{{ $movement->quantity }}
+                                    {{ $isIn ? '+' : '-' }}{{ $movement->quantity_change }}
                                 </span>
                             </div>
                         @empty

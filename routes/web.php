@@ -22,6 +22,71 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\WaiterController;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+
+    Route::prefix('shops/{shop}')->name('shops.')->group(function () {
+Route::get('orders/take', [OrderController::class, 'create'])
+    ->name('orders.waiter');
+        Route::get('waiter-dashboard', [WaiterController::class, 'dashboard'])
+            ->name('waiter.dashboard');
+
+        Route::get('orders', [OrderController::class, 'index'])
+            ->name('orders.index');
+
+        Route::get('orders/{order}', [OrderController::class, 'show'])
+            ->name('orders.show');
+
+        Route::post('orders', [OrderController::class, 'store'])
+            ->name('orders.store');
+
+        Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])
+            ->name('orders.cancel');
+
+        Route::post('orders/{order}/approve', [OrderController::class, 'approve'])
+            ->name('orders.approve');
+
+        Route::post('orders/{order}/reject', [OrderController::class, 'reject'])
+            ->name('orders.reject');
+    });
+
+});
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::prefix('shops/{shop}')->name('shops.')->group(function () {
+
+        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+        // waiter actions
+        Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
+        Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+
+        // seller actions
+        Route::post('orders/{order}/approve', [OrderController::class, 'approve'])->name('orders.approve');
+        Route::post('orders/{order}/reject', [OrderController::class, 'reject'])->name('orders.reject');
+    });
+});
+
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::prefix('shops/{shop}')->name('shops.')->group(function () {
+
+        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
+        Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+        Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])
+            ->name('orders.status');
+
+        Route::post('orders/{order}/payments', [OrderController::class, 'recordPayment'])
+            ->name('orders.payments.store');
+    });
+});
+
+
+
 Route::middleware(['auth', 'verified', 'role:system_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/settings', [SystemAdminController::class, 'settings'])->name('settings');
     Route::get('/shops', [SystemAdminController::class, 'shopsIndex'])->name('shops.index');
@@ -47,7 +112,10 @@ Route::get('/dashboard', function () {
     if ($user->role === 'system_admin') {
         return redirect()->route('admin.dashboard');
     }
-
+//waiter dashboard
+if ($user->role==='waiter'){
+    return redirect()->route('shops.waiter.dashboard', ['shop' => auth()->user()->shop]);
+    }
     // Shop admin dashboard
     if ($user->role === 'shop_admin') {
         return redirect()->route('shop.dashboard');

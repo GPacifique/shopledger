@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StockAlert extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'shop_id',
         'product_id',
@@ -17,111 +15,118 @@ class StockAlert extends Model
         'threshold',
         'is_resolved',
         'resolved_at',
-        'resolved_by',
     ];
 
     protected $casts = [
+        'current_stock' => 'decimal:2',
+        'threshold' => 'decimal:2',
         'is_resolved' => 'boolean',
         'resolved_at' => 'datetime',
-        'current_stock' => 'numeric',
-        'threshold' => 'numeric',
     ];
 
-    const TYPE_LOW_STOCK = 'low_stock';
-    const TYPE_OUT_OF_STOCK = 'out_of_stock';
-    const TYPE_OVERSTOCK = 'overstock';
+    /**
+     * Alert types used by the stock system.
+     */
+    public const TYPE_LOW_STOCK = 'low_stock';
+    public const TYPE_OUT_OF_STOCK = 'out_of_stock';
 
-    public function shop()
+    /**
+     * Shop relationship.
+     */
+    public function shop(): BelongsTo
     {
         return $this->belongsTo(Shop::class);
     }
 
-    public function product()
+    /**
+     * Product relationship.
+     */
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function resolver()
-    {
-        return $this->belongsTo(User::class, 'resolved_by');
-    }
-
-    public function resolve(int $userId): void
-    {
-        $this->update([
-            'is_resolved' => true,
-            'resolved_at' => now(),
-            'resolved_by' => $userId,
-        ]);
-    }
-
-    public function getAlertColorAttribute(): string
-    {
-        return match ($this->alert_type) {
-            self::TYPE_OUT_OF_STOCK => 'red',
-            self::TYPE_LOW_STOCK => 'yellow',
-            self::TYPE_OVERSTOCK => 'blue',
-            default => 'gray',
-        };
-    }
-
-    public function getAlertIconAttribute(): string
-    {
-        return match ($this->alert_type) {
-            self::TYPE_OUT_OF_STOCK => 'x-circle',
-            self::TYPE_LOW_STOCK => 'exclamation-triangle',
-            self::TYPE_OVERSTOCK => 'arrow-trending-up',
-            default => 'bell',
-        };
-    }
-
+    /**
+     * Check the product stock and create/update the appropriate alert.
+     */
     public static function checkAndCreateAlert(Product $product): ?self
     {
-        // Don't create alerts for products that don't track stock
-        if (!$product->track_stock) {
-            return null;
+        $currentStock = (float) $product->stock;
+        $threshold = (float) ($product->low_stock_threshold ?? 0);
+
+        /*
+         * Determine alert type.
+         */
+        if ($currentStock <= 0) {
+            $alertType = self::TYPE_OUT_OF_STOCK;
+        } elseif ($threshold > 0 && $currentStock <= $threshold) {
+            $alertType = self::TYPE_LOW_STOCK;
+        } else {
+            $alertType = null;
         }
 
-        $existingAlert = self::where('product_id', $product->id)
+        /*
+         * Find any existing unresolved alert for this product.
+         */
+        $existingAlert = self::where('shop_id', $product->shop_id)
+            ->where('product_id', $product->id)
             ->where('is_resolved', false)
+            ->latest('id')
             ->first();
 
-        // Determine alert type
-        $alertType = null;
-        if ($product->stock <= 0) {
-            $alertType = self::TYPE_OUT_OF_STOCK;
-        } elseif ($product->stock <= $product->low_stock_threshold) {
-            $alertType = self::TYPE_LOW_STOCK;
-        }
+        /*
+         * Stock is healthy.
+         * Resolve any existing alert.
+         */
+        if ($alertType === null) {
+            if ($existingAlert) {
+                $existingAlert->update([
+                    'current_stock' => $currentStock,
+                    'is_resolved' => true,
+                    'resolved_at' => now(),
+                ]);
+            }
 
-        // If stock is now healthy, resolve existing alert
-        if (!$alertType && $existingAlert) {
-            $existingAlert->resolve(auth()->id() ?? 1);
             return null;
         }
 
-        // If alert type changed, resolve old and create new
-        if ($existingAlert && $existingAlert->alert_type !== $alertType) {
-            $existingAlert->resolve(auth()->id() ?? 1);
-            $existingAlert = null;
-        }
-
-        // Create new alert if needed
-        if ($alertType && !$existingAlert) {
-            return self::create([
-                'shop_id' => $product->shop_id,
-                'product_id' => $product->id,
-                'alert_type' => $alertType,
-                'current_stock' => $product->stock,
-                'threshold' => $product->low_stock_threshold,
-            ]);
-        }
-
-        // Update current stock on existing alert
+        /*
+         * If an alert already exists, update it.
+         */
         if ($existingAlert) {
-            $existingAlert->update(['current_stock' => $product->stock]);
+
+            /*
+             * If the alert type changed, update it.
+             */
+            if ($existingAlert->alert_type !== $alertType) {
+                $existingAlert->update([
+                    'alert_type' => $alertType,
+                    'current_stock' => $currentStock,
+                    'threshold' => $threshold,
+                    'is_resolved' => false,
+                    'resolved_at' => null,
+                ]);
+            } else {
+                $existingAlert->update([
+                    'current_stock' => $currentStock,
+                    'threshold' => $threshold,
+                ]);
+            }
+
+            return $existingAlert->fresh();
         }
 
-        return $existingAlert;
+        /*
+         * Create a new unresolved alert.
+         */
+        return self::create([
+            'shop_id' => $product->shop_id,
+            'product_id' => $product->id,
+            'alert_type' => $alertType,
+            'current_stock' => $currentStock,
+            'threshold' => $threshold,
+            'is_resolved' => false,
+            'resolved_at' => null,
+        ]);
     }
 }

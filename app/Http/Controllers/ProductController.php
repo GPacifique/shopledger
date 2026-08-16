@@ -12,6 +12,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Notifications\ProductDeleted;
 use App\Notifications\ProductUpdated;
+use App\Models\StockMovement;
 use chillerlan\QRCode\QRCode;
 
 class ProductController extends Controller
@@ -106,66 +107,198 @@ class ProductController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {
-        $shopId = $request->user()->shop_id;
+   public function store(Request $request)
+{
+    $shopId = $request->user()->shop_id;
 
-        $validated = $request->validate([
-            'sku' => [
-                'required',
-                'string',
-                'max:100',
-                Rule::unique('products', 'sku')
-                    ->where('shop_id', $shopId),
-            ],
+    $validated = $request->validate([
+        'sku' => [
+            'required',
+            'string',
+            'max:100',
+            Rule::unique('products', 'sku')
+                ->where('shop_id', $shopId),
+        ],
 
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('products', 'name')
-                    ->where('shop_id', $shopId),
-            ],
+        'name' => [
+            'required',
+            'string',
+            'max:255',
+            Rule::unique('products', 'name')
+                ->where('shop_id', $shopId),
+        ],
 
-            'description' => 'nullable|string',
+        'description' => 'nullable|string',
 
-            'barcode' => [
-                'nullable',
-                'string',
-                'max:255',
-                Rule::unique('products', 'barcode')
-                    ->where('shop_id', $shopId),
-            ],
+        'barcode' => [
+            'nullable',
+            'string',
+            'max:255',
+            Rule::unique('products', 'barcode')
+                ->where('shop_id', $shopId),
+        ],
 
-            'buying_price' => 'required|numeric|min:0',
-            'selling_price' => 'required|numeric|min:0',
+        'buying_price' => 'required|numeric|min:0',
+        'selling_price' => 'required|numeric|min:0',
 
-            'quantity' => 'nullable|numeric|min:0',
-            'stock' => 'nullable|numeric|min:0',
-            'minimum_stock' => 'nullable|numeric|min:0',
+        /*
+        |--------------------------------------------------------------------------
+        | Opening Stock
+        |--------------------------------------------------------------------------
+        |
+        | This is the physical stock already available when the product
+        | is introduced into MahWi POS.
+        |
+        */
+        'opening_stock' => 'nullable|numeric|min:0',
+        'opening_unit_cost' => 'nullable|numeric|min:0',
+        'opening_stock_date' => 'nullable|date',
 
-            'expiry_date' => 'nullable|date',
+        'minimum_stock' => 'nullable|numeric|min:0',
 
-            'category_id' => 'required|exists:categories,id',
+        'expiry_date' => 'nullable|date',
 
-            'supplier_id' => 'nullable|exists:suppliers,id',
+        'category_id' => [
+            'required',
+            Rule::exists('categories', 'id')
+                ->where('shop_id', $shopId),
+        ],
 
-            'status' => 'nullable|in:active,inactive',
+        'supplier_id' => [
+            'nullable',
+            Rule::exists('suppliers', 'id')
+                ->where('shop_id', $shopId),
+        ],
+
+        'status' => 'nullable|in:active,inactive',
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Opening Stock Defaults
+    |--------------------------------------------------------------------------
+    */
+
+    $openingStock = (float) ($validated['opening_stock'] ?? 0);
+
+    /*
+    | If no separate opening cost is entered, use the product buying price.
+    |
+    | This is useful when the user enters:
+    |
+    | Buying Price: 2,500
+    | Opening Stock: 100
+    |
+    | The opening inventory value becomes:
+    |
+    | 100 × 2,500 = 250,000
+    */
+    $openingUnitCost = (float) (
+        $validated['opening_unit_cost']
+        ?? $validated['buying_price']
+    );
+
+    $openingStockDate = $validated['opening_stock_date'] ?? now();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Create Product + Opening Stock Movement Atomically
+    |--------------------------------------------------------------------------
+    */
+
+    DB::transaction(function () use (
+        &$validated,
+        $shopId,
+        $openingStock,
+        $openingUnitCost,
+        $openingStockDate,
+        $request
+    ) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Product
+        |--------------------------------------------------------------------------
+        */
+
+        $product = Product::create([
+            'shop_id' => $shopId,
+
+            'sku' => $validated['sku'],
+            'name' => $validated['name'],
+            'category_id' => $validated['category_id'],
+            'supplier_id' => $validated['supplier_id'] ?? null,
+
+            'barcode' => $validated['barcode'] ?? null,
+            'description' => $validated['description'] ?? null,
+
+            'buying_price' => $validated['buying_price'],
+            'selling_price' => $validated['selling_price'],
+
+            /*
+            | Opening stock becomes the initial stock.
+            */
+            'quantity' => $openingStock,
+            'stock' => $openingStock,
+
+            'minimum_stock' => $validated['minimum_stock'] ?? 0,
+
+            'expiry_date' => $validated['expiry_date'] ?? null,
+
+            'status' => $validated['status'] ?? 'active',
         ]);
 
-        $validated['shop_id'] = $shopId;
-        $validated['stock'] = $validated['stock'] ?? 0;
-        $validated['quantity'] = $validated['quantity'] ?? 0;
-        $validated['minimum_stock'] = $validated['minimum_stock'] ?? 0;
-        $validated['status'] = $validated['status'] ?? 'active';
+        /*
+        |--------------------------------------------------------------------------
+        | Opening Stock Movement
+        |--------------------------------------------------------------------------
+        |
+        | NEVER silently put opening stock into products.stock.
+        |
+        | Every initial stock quantity must have an audit record.
+        |
+        */
 
-        Product::create($validated);
+        if ($openingStock > 0) {
 
-        return redirect()
-            ->route('products.index')
-            ->with('success', 'Product created successfully.');
-    }
+            $openingTotalCost = round(
+                $openingStock * $openingUnitCost,
+                2
+            );
 
+            StockMovement::create([
+                'shop_id' => $shopId,
+                'product_id' => $product->id,
+
+                'type' => 'opening',
+
+                'reference_type' => 'product',
+                'reference_id' => $product->id,
+
+                'quantity_change' => $openingStock,
+
+                'quantity_after' => $openingStock,
+
+                'unit_cost' => $openingUnitCost,
+
+                'total_cost' => $openingTotalCost,
+
+                'movement_date' => $openingStockDate,
+
+                'created_by' => $request->user()->id,
+
+                'note' => 'Opening stock created when product was added.',
+            ]);
+        }
+    });
+
+    return redirect()
+        ->route('products.index')
+        ->with(
+            'success',
+            'Product created successfully with opening stock recorded.'
+        );
+}
     public function show(Request $request, Product $product)
     {
         $this->authorizeProduct($request, $product);

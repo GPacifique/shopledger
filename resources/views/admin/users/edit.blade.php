@@ -40,7 +40,7 @@
                         <div>
                             <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
                             <select id="role" name="role" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                @foreach(['system_admin','shop_admin','manager','seller','accountant','user'] as $role)
+                                @foreach(['system_admin','waiter','shop_admin','manager','seller','accountant','user'] as $role)
                                     <option value="{{ $role }}" {{ old('role', $user->role) === $role ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$role)) }}</option>
                                 @endforeach
                             </select>
