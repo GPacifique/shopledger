@@ -25,6 +25,12 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WaiterController;
 
+Route::get('/shops/{shop}/orders/{order}/bill', [WaiterController::class, 'downloadBill'])
+    ->name('shops.orders.bill.download');
+
+Route::get('/shops/{shop}/orders/{order}/print', [WaiterController::class, 'printOrder'])
+    ->name('shops.orders.print');
+
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('shops/{shop}')->name('shops.')->group(function () {
@@ -35,6 +41,7 @@ Route::get('orders/take', [OrderController::class, 'create'])
 
         Route::get('orders', [OrderController::class, 'index'])
             ->name('orders.index');
+           
 
         Route::get('orders/{order}', [OrderController::class, 'show'])
             ->name('orders.show');

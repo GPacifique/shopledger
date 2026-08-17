@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Shop;
 use Illuminate\Http\Request;
-
+use App\Models\Product;
+use Barryvdh\DomPDF\Facade\Pdf;
 class WaiterController extends Controller
 {
     /**
@@ -26,6 +27,7 @@ class WaiterController extends Controller
             $user->role === 'waiter',
             403
         );
+        
 
         $orders = Order::where('shop_id', $shop->id)
             ->where('created_by', $user->id)
@@ -55,6 +57,14 @@ class WaiterController extends Controller
             ->where('created_by', $user->id)
             ->where('status', 'cancelled')
             ->count();
+            $recentOrders = Order::with('items')
+    ->where('shop_id', $shop->id)
+    ->where('created_by', auth()->id())
+    ->latest()
+    ->take(10)
+    ->get();
+    $products = Product::where('shop_id', $shop->id)
+    ->orderBy('name')->get();
 
         return view('waiter.dashboard', compact(
             'shop',
@@ -62,7 +72,32 @@ class WaiterController extends Controller
             'pendingOrders',
             'approvedOrders',
             'completedOrders',
-            'cancelledOrders'
+            'cancelledOrders',
+            'recentOrders',
+            'products' , 
         ));
     }
+   public function downloadBill(Shop $shop, Order $order)
+{
+    $order->load('items.product');
+
+    $pdf = Pdf::loadView('waiter.pdf.bill', [
+        'shop' => $shop,
+        'order' => $order,
+    ]);
+
+    return $pdf->download("bill-order-{$order->id}.pdf");
+}
+
+public function printOrder(Shop $shop, Order $order)
+{
+    $order->load('items.product');
+
+    $pdf = Pdf::loadView('waiter.pdf.order', [
+        'shop' => $shop,
+        'order' => $order,
+    ]);
+
+    return $pdf->stream("order-{$order->id}.pdf");
+}
 }
