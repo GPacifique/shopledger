@@ -362,39 +362,47 @@ class ProductController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Sales Statistics
-        |--------------------------------------------------------------------------
-        */
-
-        $totalSold = SaleItem::where('shop_id', $shopId)
-            ->where('product_id', $product->id)
-            ->sum('quantity');
-
-        $totalSales = SaleItem::where('shop_id', $shopId)
-            ->where('product_id', $product->id)
-            ->sum('line_total');
-
-        /*
-        |--------------------------------------------------------------------------
-        | Gross Profit
+        | Sales & Profit Statistics
         |--------------------------------------------------------------------------
         |
-        | Gross Profit =
-        | (Selling Price - Cost Price At Sale) × Quantity
+        | Revenue and profit are computed from ONE query so they always
+        | share the same basis (line_total) — previously totalSales used
+        | line_total while grossProfit was derived from unit_price * qty,
+        | so the two figures could silently disagree whenever line_total
+        | included a discount, tax, or rounding adjustment.
         |
+        | cost_price_at_sale can be NULL for legacy or bad rows. SQL's
+        | SUM() skips NULLs rather than treating them as 0, which used to
+        | quietly drop those units from the cost side of the profit calc
+        | (while still counting them in totalSold) — understating cost
+        | and overstating profit with no visible warning. We COALESCE the
+        | missing cost down to the product's current buying_price as a
+        | fallback, and separately count how many rows needed it so the
+        | estimate is visible instead of silent.
+        |
+        | Gross Profit = SUM(line_total) - SUM(effective_cost * quantity)
         */
 
-        $grossProfit = SaleItem::where('shop_id', $shopId)
+        $saleStats = SaleItem::where('shop_id', $shopId)
             ->where('product_id', $product->id)
-            ->selectRaw(
-                'COALESCE(
+            ->selectRaw('
+                COALESCE(SUM(quantity), 0) AS total_sold,
+                COALESCE(SUM(line_total), 0) AS total_sales,
+                COALESCE(
                     SUM(
-                        (unit_price - cost_price_at_sale) * quantity
+                        line_total
+                        - (COALESCE(cost_price_at_sale, ?) * quantity)
                     ),
                     0
-                ) AS profit'
-            )
-            ->value('profit');
+                ) AS gross_profit,
+                SUM(CASE WHEN cost_price_at_sale IS NULL THEN 1 ELSE 0 END) AS missing_cost_rows
+            ', [$product->buying_price])
+            ->first();
+
+        $totalSold = $saleStats->total_sold;
+        $totalSales = $saleStats->total_sales;
+        $grossProfit = $saleStats->gross_profit;
+        $missingCostRows = $saleStats->missing_cost_rows;
 
         /*
         |--------------------------------------------------------------------------
@@ -427,6 +435,7 @@ class ProductController extends Controller
             'totalSold',
             'totalSales',
             'grossProfit',
+            'missingCostRows',
             'lastPurchase',
             'lastSale'
         ));
@@ -503,9 +512,101 @@ class ProductController extends Controller
             'supplier_id' => 'nullable|exists:suppliers,id',
 
             'status' => 'nullable|in:active,inactive',
+
+            // Optional reason for a manual stock/cost change, so the
+            // audit trail records *why*, not just *what* changed.
+            'adjustment_note' => 'nullable|string|max:255',
         ]);
 
-        $product->update($validated);
+        /*
+        |--------------------------------------------------------------------------
+        | Manual Stock / Cost Adjustment Audit Trail
+        |--------------------------------------------------------------------------
+        |
+        | store() never lets opening stock land in products.stock without
+        | a StockMovement record. update() previously let stock and
+        | buying_price be edited directly with no audit trail at all —
+        | so products.stock could silently drift from the movement log,
+        | and stockValueCost in index() (stock * buying_price) would be
+        | retroactively re-valued using the NEW price for stock that was
+        | actually bought at the OLD price, with no record of the change.
+        |
+        | We snapshot the "before" state, apply the update, then log a
+        | movement for any actual stock delta and a separate note if the
+        | buying price changed — inside the same transaction so the
+        | product row and its audit trail can't get out of sync.
+        */
+
+        $stockBefore = (float) $product->stock;
+        $buyingPriceBefore = (float) $product->buying_price;
+
+        DB::transaction(function () use (
+            $product,
+            $validated,
+            $request,
+            $shopId,
+            $stockBefore,
+            $buyingPriceBefore
+        ) {
+            $product->update($validated);
+
+            $stockAfter = (float) $validated['stock'];
+            $buyingPriceAfter = (float) $validated['buying_price'];
+            $stockDelta = $stockAfter - $stockBefore;
+
+            if (abs($stockDelta) > 0.0001) {
+                StockMovement::create([
+                    'shop_id' => $shopId,
+                    'product_id' => $product->id,
+
+                    'type' => 'adjustment',
+
+                    'reference_type' => 'product',
+                    'reference_id' => $product->id,
+
+                    'quantity_change' => $stockDelta,
+                    'quantity_after' => $stockAfter,
+
+                    'unit_cost' => $buyingPriceAfter,
+                    'total_cost' => round(abs($stockDelta) * $buyingPriceAfter, 2),
+
+                    'movement_date' => now(),
+
+                    'created_by' => $request->user()->id,
+
+                    'note' => $validated['adjustment_note']
+                        ?? 'Manual stock adjustment via product edit.',
+                ]);
+            }
+
+            if (abs($buyingPriceAfter - $buyingPriceBefore) > 0.0001) {
+                StockMovement::create([
+                    'shop_id' => $shopId,
+                    'product_id' => $product->id,
+
+                    'type' => 'cost_revision',
+
+                    'reference_type' => 'product',
+                    'reference_id' => $product->id,
+
+                    'quantity_change' => 0,
+                    'quantity_after' => $stockAfter,
+
+                    'unit_cost' => $buyingPriceAfter,
+                    'total_cost' => 0,
+
+                    'movement_date' => now(),
+
+                    'created_by' => $request->user()->id,
+
+                    'note' => sprintf(
+                        'Buying price changed from %s to %s. Note: existing stock valuation now uses the new price (no per-batch cost tracking).',
+                        $buyingPriceBefore,
+                        $buyingPriceAfter
+                    ),
+                ]);
+            }
+        });
 
         $this->notifyShopAdmins(
             $product->shop_id,
