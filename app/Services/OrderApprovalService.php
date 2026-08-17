@@ -45,7 +45,7 @@ class OrderApprovalService
                     ->first();
 
                 if ($product->stock < $item->quantity) {
-                    throw new InsufficientStockException($product, (int) $item->quantity);
+                    throw new InsufficientStockException($product, (float) $item->quantity);
                 }
             }
 

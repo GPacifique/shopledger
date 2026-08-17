@@ -21,9 +21,9 @@ class Sale extends Model
     ];
 
     public const PAYMENT_STATUSES = [
-        'Paid' => 'Paid',
-        'Unpaid' => 'Unpaid',
-        'Partial' => 'Partial',
+        'Paid' => 'paid',
+        'Unpaid' => 'unpaid',
+        'Partial' => 'partial',
     ];
 
     protected $casts = [

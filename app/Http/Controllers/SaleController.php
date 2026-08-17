@@ -154,7 +154,7 @@ class SaleController extends Controller
                 // Record stock movement (auto-creates audit trail)
                 $this->stockService->recordSale(
                     $product,
-                    (int) $item['quantity'],
+                    (float) $item['quantity'],
                     $sale->id,
                     $user->id
                 );

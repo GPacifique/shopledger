@@ -7,8 +7,10 @@ use Exception;
 
 class InsufficientStockException extends Exception
 {
-    public function __construct(public readonly Product $product, public readonly int $requested)
-    {
+    public function __construct(
+        public readonly Product $product,
+        public readonly float $requested
+    ) {
         parent::__construct(
             "Insufficient stock for '{$product->name}': requested {$requested}, available {$product->stock}."
         );

@@ -111,7 +111,7 @@ $stats = [
                 // Record stock movement (auto-creates audit trail)
                 $this->stockService->recordPurchase(
                     $product,
-                    (int) $item['quantity'],
+                    (float) $item['quantity'],
                     $purchase->id,
                     $user->id
                 );
