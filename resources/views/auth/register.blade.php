@@ -8,7 +8,7 @@
     <title>{{ config('app.name', 'Mahwi') }} - Create your account</title>
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Mahwi - Rwanda's leading multi-shop management system for inventory, sales, purchases, and staff management. Create your free account.">
+    <meta name="description" content="Mahwi - Rwanda's leading Business management system for Incomes inventory, sales, purchases, and staff management. Create your free account.">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#16233A">
 
@@ -389,20 +389,20 @@
           <span class="frame-dot" style="background:#A23A2E99;"></span>
           <span class="frame-dot" style="background:#C6862B99;"></span>
           <span class="frame-dot" style="background:#1F7A4D99;"></span>
-          <span class="frame-url" id="frame-url">mahwi.sharptechlearners.com/dashboard</span>
+          <span class="frame-url" id="frame-url">mahwi.com/dashboard</span>
         </div>
 
         <div class="slides" id="slides" role="region" aria-roledescription="carousel" aria-label="{{ __('Product screenshots') }}">
 
-          <div class="slide is-active" data-url="mahwi.sharptechlearners.com/dashboard" aria-hidden="false">
+          <div class="slide is-active" data-url="mahwi.com/dashboard" aria-hidden="false">
             <img src="{{ asset('images/MAHWI OVERVIEW.png') }}" alt="{{ __('MahWi dashboard overview showing sales, profit and stock at a glance') }}">
           </div>
 
-          <div class="slide" data-url="mahwi.sharptechlearners.com/inventory" aria-hidden="true">
+          <div class="slide" data-url="mahwi.com/inventory" aria-hidden="true">
             <img src="{{ asset('images/mahwi-inventory.png') }}" alt="{{ __('MahWi inventory screen showing stock levels and low-stock alerts') }}">
           </div>
 
-          <div class="slide" data-url="mahwi.sharptechlearners.com/sales" aria-hidden="true">
+          <div class="slide" data-url="mahwi.com/sales" aria-hidden="true">
             <img src="{{ asset('images/mahwi-sales.png') }}" alt="{{ __('MahWi sales screen showing a new sale being recorded with profit calculated') }}">
           </div>
 

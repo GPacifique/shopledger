@@ -7,7 +7,7 @@
     <div class="max-w-3xl mx-auto">
         <h1 class="text-4xl font-bold mb-4">Contact Us</h1>
         <p class="text-gray-600 mb-8">
-            Have questions about MahWi Shop Management System? We'd love to hear from you.
+            Have questions about MahWi Management System? We'd love to hear from you.
         </p>
 
         <div class="bg-white shadow-lg rounded-lg p-8">

@@ -147,7 +147,7 @@ class ProductController extends Controller
         |--------------------------------------------------------------------------
         |
         | This is the physical stock already available when the product
-        | is introduced into MahWi POS.
+        | is introduced into MahWi.
         |
         */
         'opening_stock' => 'nullable|numeric|min:0',

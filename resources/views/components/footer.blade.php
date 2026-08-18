@@ -175,7 +175,7 @@
                 <div>
                     <span class="text-gray-800 font-bold">MahWi</span>
                     <span class="text-gray-400 mx-2">|</span>
-                    <span class="text-gray-500 text-sm">Multi-Shop Management</span>
+                    <span class="text-gray-500 text-sm">Business Management</span>
                 </div>
             </div>
 

@@ -19,10 +19,10 @@
 
     {{-- SEO --}}
     <meta name="description"
-          content="MahwiPOS is a modern multi-shop management system for inventory, sales, purchases, orders, expenses, staff, and analytics for growing businesses in Rwanda and beyond.">
+          content="MahwiPOS is a modern Business management system for inventory, sales, purchases, orders, expenses, staff, and analytics for growing businesses in Rwanda and beyond.">
 
     <meta name="keywords"
-          content="MahwiPOS, shop management, inventory system, POS, sales, purchases, orders, Rwanda, stock management, business analytics">
+          content="MahwiPOS, Business management, inventory system, POS, sales, purchases, orders, Rwanda, stock management, business analytics">
 
     <meta name="author" content="MahwiPOS Team">
     <meta name="robots" content="index, follow">
@@ -33,23 +33,23 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:title"
-          content="{{ config('app.name', 'MahwiPOS') }} - Multi-Shop Management System">
+          content="{{ config('app.name', 'MahwiPOS') }} - Business Management System">
 
     <meta property="og:description"
-          content="Manage inventory, sales, purchases, orders, expenses, staff, and analytics with MahwiPOS.">
+          content="Manage Incomes, inventory, sales, purchases, orders, expenses, staff, and analytics with MahwiPOS.">
 
-    <meta property="og:image" content="{{ asset('images/og-logo.png') }}">
+    <meta property="og:image" content="{{ asset('images/MAHWILOGO.png') }}">
     <meta property="og:site_name" content="MahwiPOS">
 
     {{-- Twitter --}}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title"
-          content="{{ config('app.name', 'MahwiPOS') }} - Multi-Shop Management System">
+          content="{{ config('app.name', 'MahwiPOS') }} - Business Management System">
 
     <meta name="twitter:description"
-          content="Manage inventory, sales, purchases, orders, expenses, staff, and analytics with MahwiPOS.">
+          content="Manage Incomes, inventory, sales, purchases, orders, expenses, staff, and analytics with MahwiPOS.">
 
-    <meta name="twitter:image" content="{{ asset('images/og-logo.png') }}">
+    <meta name="twitter:image" content="{{ asset('images/MAHWILOGO.png') }}">
 
     {{-- Favicon --}}
     <link rel="icon"
