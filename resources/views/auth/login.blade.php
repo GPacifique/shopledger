@@ -374,7 +374,7 @@
     <div class="showcase-body">
       <div class="showcase-copy">
         <p class="showcase-eyebrow">{{ __("What you'll see inside") }}</p>
-        <h1>{{ __('Every shop, on one screen.') }}</h1>
+        <h1>{{ __('Every Business, on one screen.') }}</h1>
         <p>{{ __("A quick look at the dashboard your team opens every morning — stock, sales, and profit, always current.") }}</p>
       </div>
 

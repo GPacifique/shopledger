@@ -380,7 +380,7 @@
     <div class="showcase-body">
       <div class="showcase-copy">
         <p class="showcase-eyebrow">{{ __('Get set up in minutes') }}</p>
-        <h1>{{ __('Bring every shop online.') }}</h1>
+        <h1>{{ __('Bring every Business online.') }}</h1>
         <p>{{ __('Create your account and start tracking stock, sales, and profit across all your shops from day one.') }}</p>
       </div>
 
