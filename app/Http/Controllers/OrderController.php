@@ -89,7 +89,7 @@ public function create(Shop $shop)
                 'order_number' => $this->orderNumbers->generate($shop),
                 'status' => 'pending',
                 'payment_method' => $request->payment_method,
-                'payment_status' => 'Unpaid',
+                'payment_status' => 'unpaid',
                 'discount_amount' => $request->discount_amount ?? 0,
                 'tax_amount' => $request->tax_amount ?? 0,
                 'notes' => $request->notes,

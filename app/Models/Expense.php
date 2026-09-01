@@ -37,7 +37,7 @@ class Expense extends Model
         return $this->belongsTo(ExpenseCategory::class);
     }
 
-    public function user()
+    public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }

@@ -54,7 +54,7 @@
                             <label for="date" class="block text-sm font-medium text-gray-700">{{ __('messages.Date') }} <span
                                     class="text-red-500">*</span></label>
                             <input type="date" name="date" id="date"
-                                value="{{ old('date', $expense->date->format('Y-m-d')) }}" required
+                                value="{{ old('expense_date', $expense->expense_date->format('Y-m-d')) }}" required
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
                             @error('date')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

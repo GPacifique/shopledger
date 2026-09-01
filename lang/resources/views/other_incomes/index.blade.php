@@ -422,7 +422,7 @@
 
                     <div class="mb-4">
                         <h3 class="text-lg font-semibold text-gray-900">
-                            {{ __('Monthly Income') }}
+                            {{ __('Last 6 Months') }}
                         </h3>
 
                         <p class="text-sm text-gray-500">
@@ -431,7 +431,7 @@
                     </div>
 
                     <div class="h-72">
-                        <canvas id="monthlyIncomeChart"></canvas>
+                        <canvas id="sixMonthChart"></canvas>
                     </div>
 
                 </div>
@@ -738,7 +738,7 @@
                 const dailyData = @json($dailyChart);
 
                 const dailyLabels = dailyData.map(item => {
-                    return new Date(item.income_date + 'T00:00:00')
+                    return new Date(item.date + 'T00:00:00')
                         .toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric'

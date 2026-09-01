@@ -27,7 +27,7 @@
                         </div>
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900">Shop Details</h3>
-                            <p class="text-xs text-gray-500">Fill in the shop information</p>
+                            <p class="text-xs text-gray-500">Fill in the Business information</p>
                         </div>
                     </div>
                 </div>

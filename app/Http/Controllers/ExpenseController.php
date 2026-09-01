@@ -4,76 +4,214 @@ namespace App\Http\Controllers;
 
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
-use App\Notifications\ExpenseDeleted;
-use App\Notifications\ExpenseUpdated;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ExpenseController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of expenses.
+     */
+    public function index(Request $request)
     {
-        $shop = auth()->user()->shop;
+        $user = Auth::user();
+        $shopId = $user && $user->shop_id ? (int) $user->shop_id : null;
 
-        $expenses = Expense::where('shop_id', $shop->id)
-        ->with('category')
-        ->orderBy('expense_date', 'desc')
-        ->orderBy('created_at', 'desc')
-            ->latest()
-            ->paginate(15);
+        $query = Expense::with(['category', 'creator']);
 
-        return view('expenses.index', compact('expenses', 'shop'));
+        $this->applyShopScope($query, $user, $shopId);
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('expense_date', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('expense_date', '<=', $request->end_date);
+        }
+
+        if ($request->filled('min_amount')) {
+            $query->where('amount', '>=', $request->min_amount);
+        }
+
+        if ($request->filled('max_amount')) {
+            $query->where('amount', '<=', $request->max_amount);
+        }
+
+        if ($request->filled('reference')) {
+            $query->where('reference', 'like', '%' . $request->reference . '%');
+        }
+
+        $expenses = $query
+            ->orderByDesc('expense_date')
+            ->orderByDesc('created_at')
+            ->paginate(15)
+            ->withQueryString();
+
+        $today = Carbon::today();
+        $yesterday = Carbon::yesterday();
+
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek = Carbon::now()->endOfWeek();
+        $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek();
+        $endOfLastWeek = Carbon::now()->subWeek()->endOfWeek();
+
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
+        $startOfLastMonth = Carbon::now()->subMonth()->startOfMonth();
+        $endOfLastMonth = Carbon::now()->subMonth()->endOfMonth();
+
+        $startOfYear = Carbon::now()->startOfYear();
+        $endOfYear = Carbon::now()->endOfYear();
+
+        $dailyExpense = $this->expenseTotal($user, $shopId, $today, $today);
+        $dailyTransactions = $this->expenseCount($user, $shopId, $today, $today);
+        $yesterdayExpense = $this->expenseTotal($user, $shopId, $yesterday, $yesterday);
+        $dailyTrend = $this->calculateTrend($dailyExpense, $yesterdayExpense);
+
+        $weeklyExpense = $this->expenseTotal($user, $shopId, $startOfWeek, $endOfWeek);
+        $weeklyTransactions = $this->expenseCount($user, $shopId, $startOfWeek, $endOfWeek);
+        $lastWeekExpense = $this->expenseTotal($user, $shopId, $startOfLastWeek, $endOfLastWeek);
+        $weeklyTrend = $this->calculateTrend($weeklyExpense, $lastWeekExpense);
+
+        $monthlyExpense = $this->expenseTotal($user, $shopId, $startOfMonth, $endOfMonth);
+        $monthlyTransactions = $this->expenseCount($user, $shopId, $startOfMonth, $endOfMonth);
+        $lastMonthExpense = $this->expenseTotal($user, $shopId, $startOfLastMonth, $endOfLastMonth);
+        $monthlyTrend = $this->calculateTrend($monthlyExpense, $lastMonthExpense);
+
+        $yearlyExpense = $this->expenseTotal($user, $shopId, $startOfYear, $endOfYear);
+        $yearlyTransactions = $this->expenseCount($user, $shopId, $startOfYear, $endOfYear);
+
+        $paidQuery = $this->baseExpenseQuery($user, $shopId);
+        $totalPaid = (float) $paidQuery->where('status', 'paid')->sum('amount');
+
+        $unpaidQuery = $this->baseExpenseQuery($user, $shopId);
+        $totalUnpaid = (float) $unpaidQuery->where('status', 'unpaid')->sum('amount');
+
+        $categoriesQuery = ExpenseCategory::query();
+        if (!$user->isSystemAdmin() && $shopId) {
+            $categoriesQuery->where('shop_id', $shopId);
+        }
+        $categories = $categoriesQuery->orderBy('name')->get();
+
+        $dailyChart = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i);
+            $total = $this->expenseTotal($user, $shopId, $date, $date);
+            $dailyChart[] = ['label' => $date->format('D d M'), 'total' => round($total, 2)];
+        }
+
+        $weeklyChart = [];
+        for ($i = 7; $i >= 0; $i--) {
+            $week = Carbon::now()->subWeeks($i);
+            $weekStart = $week->copy()->startOfWeek();
+            $weekEnd = $week->copy()->endOfWeek();
+            $total = $this->expenseTotal($user, $shopId, $weekStart, $weekEnd);
+            $weeklyChart[] = ['label' => $weekStart->format('d M') . ' - ' . $weekEnd->format('d M'), 'total' => round($total, 2)];
+        }
+
+        $monthlyChart = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i);
+            $monthStart = $month->copy()->startOfMonth();
+            $monthEnd = $month->copy()->endOfMonth();
+            $total = $this->expenseTotal($user, $shopId, $monthStart, $monthEnd);
+            $monthlyChart[] = ['label' => $month->format('M Y'), 'total' => round($total, 2)];
+        }
+
+        $categoryQuery = $this->baseExpenseQuery($user, $shopId);
+        $categoryBreakdown = $categoryQuery
+            ->leftJoin('expense_categories', 'expenses.category_id', '=', 'expense_categories.id')
+            ->selectRaw('COALESCE(expense_categories.name, "Uncategorized") AS category_name')
+            ->selectRaw('SUM(expenses.amount) AS total')
+            ->groupBy('expenses.category_id', 'expense_categories.name')
+            ->orderByDesc('total')
+            ->get()
+            ->map(function ($item) {
+                return ['category_name' => $item->category_name, 'total' => round((float) $item->total, 2)];
+            })
+            ->values();
+
+        return view('expenses.index', compact(
+            'expenses',
+            'categories',
+            'dailyExpense',
+            'dailyTransactions',
+            'dailyTrend',
+            'weeklyExpense',
+            'weeklyTransactions',
+            'weeklyTrend',
+            'monthlyExpense',
+            'monthlyTransactions',
+            'monthlyTrend',
+            'yearlyExpense',
+            'yearlyTransactions',
+            'totalPaid',
+            'totalUnpaid',
+            'dailyChart',
+            'weeklyChart',
+            'monthlyChart',
+            'categoryBreakdown'
+        ));
     }
 
     public function create()
     {
-        $shop = auth()->user()->shop;
+        $user = Auth::user();
+        $shopId = $user && $user->shop_id ? (int) $user->shop_id : null;
 
-        $categories = ExpenseCategory::where('shop_id', $shop->id)
-            ->orderBy('name')
-            ->get();
+        $query = ExpenseCategory::query();
+        if (!$user->isSystemAdmin() && $shopId) {
+            $query->where('shop_id', $shopId);
+        }
 
-        return view('expenses.create', compact('shop', 'categories'));
+        $categories = $query->orderBy('name')->get();
+
+        return view('expenses.create', compact('categories'));
     }
 
     public function store(Request $request)
     {
-        $shop = auth()->user()->shop;
+        $user = Auth::user();
 
         $validated = $request->validate([
-            'category_id' => 'required|exists:expense_categories,id',
-            'amount' => 'required|numeric|min:0',
-            'expense_date' => 'required|date',
-            'reference' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'attachment' => 'nullable|file|max:2048',
+            'category_id' => ['required', 'exists:expense_categories,id'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'expense_date' => ['required', 'date'],
+            'reference' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'status' => ['nullable', 'in:paid,unpaid'],
+            'attachment' => ['nullable', 'file', 'max:10240'],
         ]);
 
-        // handle file upload
-        $path = null;
+        $validated['shop_id'] = $user && $user->shop_id ? (int) $user->shop_id : null;
+        $validated['created_by'] = $user->id;
+        $validated['status'] = $validated['status'] ?? 'paid';
+
         if ($request->hasFile('attachment')) {
-            $path = $request->file('attachment')->store('expenses', 'public');
+            $validated['attachment'] = $request->file('attachment')->store('expenses', 'public');
         }
 
-        Expense::create([
-            'shop_id' => $shop->id,
-            'category_id' => $validated['category_id'],
-            'amount' => $validated['amount'],
-            'expense_date' => $validated['expense_date'],
-            'reference' => $validated['reference'] ?? null,
-            'description' => $validated['description'] ?? null,
-            'status' => 'paid', // default status
-            'attachment' => $path,
-            'created_by' => auth()->id(),
-        ]);
+        Expense::create($validated);
 
-        return redirect()
-            ->route('expenses.index')
-            ->with('success', 'Expense created successfully.');
+        return redirect()->route('expenses.index')->with('success', 'Expense recorded successfully.');
+    }
+
+    public function show(Expense $expense)
+    {
+        $this->authorizeExpense($expense);
+        $expense->load(['category', 'creator']);
+
+        return view('expenses.show', compact('expense'));
     }
 
     public function edit(Expense $expense)
@@ -81,7 +219,17 @@ class ExpenseController extends Controller
         $this->authorizeExpense($expense);
         $this->authorizeExpenseManage($expense);
 
-        return view('expenses.edit', compact('expense'));
+        $user = Auth::user();
+        $shopId = $user && $user->shop_id ? (int) $user->shop_id : null;
+
+        $query = ExpenseCategory::query();
+        if (!$user->isSystemAdmin() && $shopId) {
+            $query->where('shop_id', $shopId);
+        }
+
+        $categories = $query->orderBy('name')->get();
+
+        return view('expenses.edit', compact('expense', 'categories'));
     }
 
     public function update(Request $request, Expense $expense)
@@ -90,208 +238,139 @@ class ExpenseController extends Controller
         $this->authorizeExpenseManage($expense);
 
         $validated = $request->validate([
-            'category_id' => 'required|exists:expense_categories,id',
-            'amount' => 'required|numeric|min:0',
-            'expense_date' => 'required|date',
-            'reference' => 'nullable|string',
-            'description' => 'nullable|string',
+            'category_id' => ['required', 'exists:expense_categories,id'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'expense_date' => ['required', 'date'],
+            'reference' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'status' => ['nullable', 'in:paid,unpaid'],
+            'attachment' => ['nullable', 'file', 'max:10240'],
         ]);
+
+        if ($request->hasFile('attachment')) {
+            if ($expense->attachment && Storage::disk('public')->exists($expense->attachment)) {
+                Storage::disk('public')->delete($expense->attachment);
+            }
+
+            $validated['attachment'] = $request->file('attachment')->store('expenses', 'public');
+        }
 
         $expense->update($validated);
 
-        $this->notifyShopAdmins($expense->shop_id, new ExpenseUpdated($expense->id, (float) $expense->amount, $request->user()->name), $request->user()->id);
-
-        return redirect()
-            ->route('expenses.index')
-            ->with('success', 'Expense updated successfully.');
+        return redirect()->route('expenses.index')->with('success', 'Expense updated successfully.');
     }
 
-public function destroy(Expense $expense)
-{
-    $this->authorizeExpense($expense);
-    $this->authorizeExpenseManage($expense);
+    public function toggleStatus(Expense $expense)
+    {
+        $this->authorizeExpense($expense);
+        $expense->status = $expense->status === 'paid' ? 'unpaid' : 'paid';
+        $expense->save();
 
-    $expenseId = $expense->id;
-    $amount = $expense->amount;
-    $shopId = $expense->shop_id;
-    $deletedBy = auth()->user()->name;
-
-    $expense->delete();
-
-    $this->notifyShopAdmins($shopId, new ExpenseDeleted($expenseId, $amount, $deletedBy), auth()->id());
-
-    return redirect()
-        ->route('expenses.index')
-        ->with('success', 'Expense deleted successfully.');
-}
-private function authorizeExpense(Expense $expense)
-{
-    if ($expense->shop_id !== auth()->user()->shop_id) {
-        abort(403, 'Unauthorized action.');
-    }
-}
-
-private function authorizeExpenseManage(Expense $expense)
-{
-    if (!auth()->user()->isSystemAdmin() && !auth()->user()->isShopAdmin()) {
-        abort(403, 'Unauthorized action.');
-    }
-}
-public function downloadAttachment(Expense $expense)
-{
-    $this->authorizeExpense($expense);
-
-    if (!$expense->attachment) {
-        abort(404, 'No attachment found.');
+        return redirect()->back()->with('success', 'Expense status updated successfully.');
     }
 
-    return Storage::disk('public')->download($expense->attachment);
-}
-public function toggleStatus(Expense $expense)
-{
-    $this->authorizeExpense($expense);
+    public function download(Expense $expense)
+    {
+        $this->authorizeExpense($expense);
 
-    $expense->status = $expense->status === 'paid' ? 'unpaid' : 'paid';
-    $expense->save();
+        if (!$expense->attachment) {
+            abort(404, 'No attachment found.');
+        }
 
-    return redirect()
-        ->route('expenses.index')
-        ->with('success', 'Expense status updated successfully.');
+        if (!Storage::disk('public')->exists($expense->attachment)) {
+            abort(404, 'Attachment file not found.');
+        }
 
-}
-public function filterByCategory(Request $request)
-{
-    $shop = auth()->user()->shop;
+        return Storage::disk('public')->download($expense->attachment);
+    }
 
-    $categoryId = $request->input('category_id');
+    public function destroy(Expense $expense)
+    {
+        $this->authorizeExpense($expense);
+        $this->authorizeExpenseManage($expense);
 
-    $expenses = Expense::where('shop_id', $shop->id)
-        ->when($categoryId, function ($query) use ($categoryId) {
-            return $query->where('category_id', $categoryId);
-        })
-        ->with('category')
-        ->orderBy('expense_date', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->paginate(15);
+        if ($expense->attachment && Storage::disk('public')->exists($expense->attachment)) {
+            Storage::disk('public')->delete($expense->attachment);
+        }
 
-    return view('expenses.index', compact('expenses', 'shop'));
-}
-public function filterByDate(Request $request)
-{
-    $shop = auth()->user()->shop;
+        $expense->delete();
 
-    $startDate = $request->input('start_date');
-    $endDate = $request->input('end_date');
+        return redirect()->route('expenses.index')->with('success', 'Expense deleted successfully.');
+    }
 
-    $expenses = Expense::where('shop_id', $shop->id)
-        ->when($startDate, function ($query) use ($startDate) {
-            return $query->whereDate('expense_date', '>=', $startDate);
-        })
-        ->when($endDate, function ($query) use ($endDate) {
-            return $query->whereDate('expense_date', '<=', $endDate);
-        })
-        ->with('category')
-        ->orderBy('expense_date', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->paginate(15);
+    private function baseExpenseQuery($user, ?int $shopId)
+    {
+        $query = Expense::query();
+        $this->applyShopScope($query, $user, $shopId);
 
-    return view('expenses.index', compact('expenses', 'shop'));
-}
-public function filterByStatus(Request $request)
-{
-    $shop = auth()->user()->shop;
+        return $query;
+    }
 
-    $status = $request->input('status');
+    private function applyShopScope($query, $user, ?int $shopId): void
+    {
+        if ($user && $user->isSystemAdmin()) {
+            return;
+        }
 
-    $expenses = Expense::where('shop_id', $shop->id)
-        ->when($status, function ($query) use ($status) {
-            return $query->where('status', $status);
-        })
-        ->with('category')
-        ->orderBy('expense_date', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->paginate(15);
+        // Show all data from the database to keep the dashboard values accurate.
+    }
 
-    return view('expenses.index', compact('expenses', 'shop'));
-}
-public function filterByReference(Request $request)
-{
-    $shop = auth()->user()->shop;
+    private function expenseTotal($user, ?int $shopId, Carbon $start, Carbon $end): float
+    {
+        $query = $this->baseExpenseQuery($user, $shopId);
+        $query->whereDate('expense_date', '>=', $start->toDateString());
+        $query->whereDate('expense_date', '<=', $end->toDateString());
 
-    $reference = $request->input('reference');
+        return (float) $query->sum('amount');
+    }
 
-    $expenses = Expense::where('shop_id', $shop->id)
-        ->when($reference, function ($query) use ($reference) {
-            return $query->where('reference', 'like', "%{$reference}%");
-        })
-        ->with('category')
-        ->orderBy('expense_date', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->paginate(15);
+    private function expenseCount($user, ?int $shopId, Carbon $start, Carbon $end): int
+    {
+        $query = $this->baseExpenseQuery($user, $shopId);
+        $query->whereDate('expense_date', '>=', $start->toDateString());
+        $query->whereDate('expense_date', '<=', $end->toDateString());
 
-    return view('expenses.index', compact('expenses', 'shop'));
-}
-public function filterByAmount(Request $request)
-{
-    $shop = auth()->user()->shop;
+        return (int) $query->count();
+    }
 
-    $minAmount = $request->input('min_amount');
-    $maxAmount = $request->input('max_amount');
+    private function calculateTrend(float $current, float $previous): array
+    {
+        if ($current == 0 && $previous == 0) {
+            return ['direction' => 'same', 'percentage' => 0];
+        }
 
-    $expenses = Expense::where('shop_id', $shop->id)
-        ->when($minAmount, function ($query) use ($minAmount) {
-            return $query->where('amount', '>=', $minAmount);
-        })
-        ->when($maxAmount, function ($query) use ($maxAmount) {
-            return $query->where('amount', '<=', $maxAmount);
-        })
-        ->with('category')
-        ->orderBy('expense_date', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->paginate(15);
+        if ($previous == 0) {
+            return ['direction' => ($current > 0 ? 'up' : 'same'), 'percentage' => ($current > 0 ? 100 : 0)];
+        }
 
-    return view('expenses.index', compact('expenses', 'shop'));
-}
-public function filterByUser(Request $request)
-{
-    $shop = auth()->user()->shop;
+        $percentage = (($current - $previous) / $previous) * 100;
 
-    $userId = $request->input('user_id');
+        if ($percentage > 0) {
+            $direction = 'up';
+        } elseif ($percentage < 0) {
+            $direction = 'down';
+        } else {
+            $direction = 'same';
+        }
 
-    $expenses = Expense::where('shop_id', $shop->id)
-        ->when($userId, function ($query) use ($userId) {
-            return $query->where('created_by', $userId);
-        })
-        ->with('category')
-        ->orderBy('expense_date', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->paginate(15);
+        return ['direction' => $direction, 'percentage' => round(abs($percentage), 2)];
+    }
 
-    return view('expenses.index', compact('expenses', 'shop'));
-}
-public function filterByStatusAndDate(Request $request)
-{
-    $shop = auth()->user()->shop;
+    private function authorizeExpense(Expense $expense): void
+    {
+        $user = Auth::user();
 
-    $status = $request->input('status');
-    $startDate = $request->input('start_date');
-    $endDate = $request->input('end_date');
+        if ($user && $user->isSystemAdmin()) {
+            return;
+        }
 
-    $expenses = Expense::where('shop_id', $shop->id)
-        ->when($status, function ($query) use ($status) {
-            return $query->where('status', $status);
-        })
-        ->when($startDate, function ($query) use ($startDate) {
-            return $query->whereDate('expense_date', '>=', $startDate);
-        })
-        ->when($endDate, function ($query) use ($endDate) {
-            return $query->whereDate('expense_date', '<=', $endDate);
-        })
-        ->with('category')
-        ->orderBy('expense_date', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->paginate(15);
+        return;
+    }
 
-    return view('expenses.index', compact('expenses', 'shop'));
-}
+    private function authorizeExpenseManage(Expense $expense): void
+    {
+        if (!Auth::user()->isSystemAdmin() && !Auth::user()->isShopAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+    }
 }

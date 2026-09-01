@@ -83,4 +83,48 @@ class SellerAccessTest extends TestCase
         $this->actingAs($seller)->get(route('expenses.edit', $expense))->assertForbidden();
         $this->actingAs($seller)->delete(route('expenses.destroy', $expense))->assertForbidden();
     }
+
+    public function test_expense_index_displays_total_for_today(): void
+    {
+        $shop = Shop::create([
+            'business_name' => 'Stats Shop',
+            'business_type' => 'retail',
+            'registration_number' => '54321',
+            'email' => 'stats-shop@example.com',
+            'phone' => '250788111111',
+            'country' => 'Rwanda',
+            'city' => 'Kigali',
+            'address' => 'Stats Address',
+            'slug' => 'stats-shop',
+            'status' => 'active',
+            'created_by' => 1,
+        ]);
+
+        $user = User::factory()->create([
+            'shop_id' => $shop->id,
+            'role' => 'seller',
+        ]);
+
+        $category = ExpenseCategory::create([
+            'shop_id' => $shop->id,
+            'name' => 'Office',
+            'description' => 'Office costs',
+        ]);
+
+        Expense::create([
+            'shop_id' => $shop->id,
+            'category_id' => $category->id,
+            'amount' => 30000,
+            'expense_date' => now()->toDateString(),
+            'description' => 'Stationery',
+            'status' => 'paid',
+            'created_by' => $user->id,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('expenses.index'))
+            ->assertOk()
+            ->assertViewHas('dailyExpense', 30000)
+            ->assertViewHas('dailyTransactions', 1);
+    }
 }

@@ -206,6 +206,12 @@
                                 <a href="{{ route('sales.index') }}" class="dropdown-item">
                                     {{ __('Sales') }}
                                 </a>
+                                 <a href="{{ route('other_incomes.index') }}" class="dropdown-item">
+                                    {{ __('Other Revenue') }}
+                                </a>
+                                <a href="{{ route('income_categories.index') }}" class="dropdown-item">
+                                    {{ __('Income category') }}
+                                </a>
 
                                 <a href="{{ route('expenses.index') }}" class="dropdown-item">
                                     {{ __('Expenses') }}

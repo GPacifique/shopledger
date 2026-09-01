@@ -143,18 +143,31 @@ class OtherIncomeController extends Controller
             ->count();
 
         /*
-        |--------------------------------------------------------------------------
-        | MONTHLY INCOME
-        |--------------------------------------------------------------------------
-        */
+        /*
+|--------------------------------------------------------------------------
+| MONTHLY CHART - LAST 6 MONTHS
+|--------------------------------------------------------------------------
+*/
 
-        $monthlyIncome = OtherIncome::where('shop_id', $shopId)
-            ->where('status', 'received')
-            ->whereBetween('income_date', [
-                $startOfMonth->toDateString(),
-                $endOfMonth->toDateString(),
-            ])
-            ->sum('amount');
+$sixMonthsAgo = Carbon::now()->subMonths(5)->startOfMonth();
+
+$rawMonthlyData = OtherIncome::where('shop_id', $shopId)
+    ->where('status', 'received')
+    ->where('income_date', '>=', $sixMonthsAgo->toDateString())
+    ->selectRaw("DATE_FORMAT(income_date, '%Y-%m') as ym, SUM(amount) as total")
+    ->groupBy('ym')
+    ->get()
+    ->mapWithKeys(fn ($row) => [$row->ym => (float) $row->total]);
+
+$sixMonthChart = collect(range(5, 0))->map(function ($monthsAgo) use ($rawMonthlyData) {
+    $month = Carbon::now()->subMonths($monthsAgo);
+    $key = $month->format('Y-m');
+
+    return [
+        'label' => $month->format('M Y'),
+        'total' => $rawMonthlyData[$key] ?? 0,
+    ];
+});
 
         $monthlyTransactions = OtherIncome::where('shop_id', $shopId)
             ->where('status', 'received')

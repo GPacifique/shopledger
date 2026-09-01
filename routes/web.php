@@ -24,6 +24,34 @@ use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WaiterController;
+use App\Http\Controllers\OtherIncomeController;
+use App\Http\Controllers\IncomeCategoryController;
+
+Route::middleware(['auth', 'verified', 'role:shop_admin,seller'])->group(function () {
+
+    Route::resource('expenses', ExpenseController::class);
+
+    Route::patch(
+        'expenses/{expense}/toggle-status',
+        [ExpenseController::class, 'toggleStatus']
+    )->name('expenses.toggle-status');
+
+    Route::get(
+        'expenses/{expense}/download',
+        [ExpenseController::class, 'download']
+    )->name('expenses.download');
+});
+// Other Income
+Route::resource('other_incomes', OtherIncomeController::class);
+
+// Income Categories
+Route::resource('income_categories', IncomeCategoryController::class);
+
+Route::patch(
+    'income_categories/{incomeCategory}/toggle-status',
+    [IncomeCategoryController::class, 'toggleStatus']
+)->name('income_categories.toggle-status');
+Route::resource('other_incomes', OtherIncomeController::class);
 
 Route::get('/shops/{shop}/orders/{order}/bill', [WaiterController::class, 'downloadBill'])
     ->name('shops.orders.bill.download');
