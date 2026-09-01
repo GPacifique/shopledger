@@ -312,7 +312,12 @@ class ExpenseController extends Controller
             return;
         }
 
-        // Show all data from the database to keep the dashboard values accurate.
+        if ($shopId) {
+            $query->where('shop_id', $shopId);
+            return;
+        }
+
+        $query->where('created_by', $user->id ?? null);
     }
 
     private function expenseTotal($user, ?int $shopId, Carbon $start, Carbon $end): float
@@ -364,7 +369,13 @@ class ExpenseController extends Controller
             return;
         }
 
-        return;
+        if (!$user || !$user->shop_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ((int) $expense->shop_id !== (int) $user->shop_id) {
+            abort(403, 'Unauthorized action.');
+        }
     }
 
     private function authorizeExpenseManage(Expense $expense): void
