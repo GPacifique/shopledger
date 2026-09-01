@@ -313,11 +313,11 @@ class ExpenseController extends Controller
         }
 
         if ($shopId) {
-            $query->where('shop_id', $shopId);
+            $query->where('expenses.shop_id', $shopId);
             return;
         }
 
-        $query->where('created_by', $user->id ?? null);
+        $query->where('expenses.created_by', $user->id ?? null);
     }
 
     private function expenseTotal($user, ?int $shopId, Carbon $start, Carbon $end): float
