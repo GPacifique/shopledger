@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Sale extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'shop_id', 'customer_id', 'sale_date', 'total_amount', 'payment_method','payment_status', 'created_by',
+    ];
+
+    public const PAYMENT_METHODS = [
+        'cash' => 'Cash',
+        'momo' => 'Mobile Money (MoMo)',
+        'bank' => 'Bank Transfer',
+        'card' => 'Card Payment',
+    ];
+
+    public const PAYMENT_STATUSES = [
+        'Paid' => 'paid',
+        'Unpaid' => 'unpaid',
+        'Partial' => 'partial',
+    ];
+
+    protected $casts = [
+        'sale_date' => 'date',
+    ];
+
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+}
