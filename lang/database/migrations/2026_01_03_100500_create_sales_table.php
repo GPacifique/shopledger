@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->date('sale_date');
             $table->decimal('total_amount', 14, 2)->default(0);
             $table->enum('payment_method', ['cash', 'momo', 'bank', 'card'])->default('cash');
-            $table->enum('payment_status', ['Paid','Partial', 'Unpaid'])->nullable();
+            $table->enum('payment_status', ['paid','partial', 'unpaid'])->nullable();
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
         });

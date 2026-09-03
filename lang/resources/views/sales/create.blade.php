@@ -38,14 +38,15 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('sales.store') }}"
-                  x-data="saleForm"
-                  @submit="onSubmit"
-                  data-i18n-min-item="{{ __('At least one item is required') }}"
-                  data-i18n-stock-error="{{ __('Cannot complete sale: One or more items exceed available stock. Please adjust quantities.') }}"
-                  class="pb-28 lg:pb-0">
-
-                @csrf
+            <form method="POST"
+      action="{{ route('sales.store') }}"
+      x-data="saleForm"
+      @submit="onSubmit"
+      data-payment-status="{{ old('payment_status', 'paid') }}"
+      data-i18n-min-item="{{ __('At least one item is required') }}"
+      data-i18n-stock-error="{{ __('Cannot complete sale: One or more items exceed available stock. Please adjust quantities.') }}"
+      class="pb-28 lg:pb-0">
+    @csrf
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
@@ -88,24 +89,29 @@
                                         </select>
                                     </x-form.field>
 
-                                    <x-form.field name="payment_status" :label="__('Payment Status')" required>
-                                        @php
-                                            $paymentStatuses = [
-                                                'paid' => __('Paid'),
-                                                'partial' => __('Partial'),
-                                                'unpaid' => __('Unpaid'),
-                                            ];
-                                        @endphp
-                                        <select name="payment_status" id="payment_status" required
-                                                x-model="paymentStatus"
-                                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-2.5 px-3 text-base transition-colors">
-                                            @foreach($paymentStatuses as $value => $label)
-                                                <option value="{{ $value }}" {{ old('payment_status', 'paid') === $value ? 'selected' : '' }}>
-                                                    {{ $label }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </x-form.field>
+                                   <x-form.field name="payment_status" :label="__('Payment Status')" required>
+    @php
+        $paymentStatuses = [
+            'paid' => __('paid'),
+            'partial' => __('partial'),
+            'unpaid' => __('unpaid'),
+        ];
+    @endphp
+
+    <select
+        name="payment_status"
+        id="payment_status"
+        required
+        x-model="paymentStatus"
+        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-2.5 px-3 text-base transition-colors"
+    >
+        @foreach($paymentStatuses as $value => $label)
+            <option value="{{ $value }}">
+                {{ $label }}
+            </option>
+        @endforeach
+    </select>
+</x-form.field>
                                 </div>
                             </div>
                         </div>

@@ -106,7 +106,7 @@ class SaleController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|numeric|min:0.01|decimal:0,2',
             'items.*.unit_price' => 'required|numeric|min:0',
-            'payment_status' => 'nullable|in:paid,unpaid','partial',
+            'payment_status' => 'nullable|in:paid,unpaid,partial',
         ]);
 
         $user = $request->user();
@@ -202,7 +202,7 @@ class SaleController extends Controller
             'customer_id' => 'nullable|exists:customers,id',
             'sale_date' => 'required|date',
             'payment_method' => 'required|in:cash,momo,bank,card',
-            'payment_status' => 'nullable|in:paid,unpaid','partial',
+            'payment_status' => 'nullable|in:paid,unpaid,partial',
         ]);
 
         $sale->update($validated);
@@ -318,7 +318,7 @@ protected function authorizeSaleManage(Request $request, Sale $sale): void
         $this->authorizeSale($request, $sale);
 
         $request->validate([
-            'payment_status' => 'required|in:paid,unpaid',
+            'payment_status' => 'required|in:paid,unpaid,partial',
         ]);
 
         $sale->payment_status = $request->payment_status;
