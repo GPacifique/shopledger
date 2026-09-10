@@ -33,6 +33,8 @@ class Product extends Model
         'quantity',
         'stock',
         'minimum_stock',
+        'low_stock_threshold',
+        'track_stock',
 
         // Opening inventory
         'opening_quantity',
@@ -53,6 +55,8 @@ class Product extends Model
         'quantity' => 'decimal:2',
         'stock' => 'decimal:2',
         'minimum_stock' => 'decimal:2',
+        'low_stock_threshold' => 'integer',
+        'track_stock' => 'boolean',
 
         'opening_quantity' => 'decimal:2',
         'opening_unit_cost' => 'decimal:2',

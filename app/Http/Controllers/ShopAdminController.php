@@ -173,23 +173,23 @@ class ShopAdminController extends Controller
         */
 
         $paidSales = (clone $salesQuery)
-            ->where('payment_status', 'paid')
+            ->where('payment_status', 'Paid')
             ->sum('total_amount');
 
         $unpaidSales = (clone $salesQuery)
-            ->where('payment_status', 'unpaid')
+            ->where('payment_status', 'Unpaid')
             ->sum('total_amount');
 
         $partialSales = (clone $salesQuery)
-            ->where('payment_status', 'partial')
+            ->where('payment_status', 'Partial')
             ->sum('total_amount');
 
         $totalSales = $paidSales + $unpaidSales + $partialSales;
 
         $paymentStatusStats = [
-            'paid' => $paidSales,
-            'unpaid' => $unpaidSales,
-            'partial' => $partialSales,
+            'Paid' => $paidSales,
+            'Unpaid' => $unpaidSales,
+            'Partial' => $partialSales,
         ];
 
         /*

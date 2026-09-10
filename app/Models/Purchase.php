@@ -10,7 +10,7 @@ class Purchase extends Model
     use HasFactory;
 
     protected $fillable = [
-        'shop_id', 'supplier_id', 'purchase_date', 'total_amount', 'created_by',
+        'shop_id', 'supplier_id', 'purchase_date', 'total_amount', 'created_by', 'import_reference',
     ];
 
     protected $casts = [

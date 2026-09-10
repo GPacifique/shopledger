@@ -26,7 +26,16 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WaiterController;
 use App\Http\Controllers\OtherIncomeController;
 use App\Http\Controllers\IncomeCategoryController;
+use App\Http\Controllers\ImportController;
 
+Route::get('/products/export', [ProductController::class, 'export'])
+    ->name('products.export');
+
+Route::post('/products/import', [ProductController::class, 'import'])
+    ->name('products.import');
+
+Route::get('/products/import/template', [ProductController::class, 'importTemplate'])
+    ->name('products.import.template');
 Route::middleware(['auth', 'verified', 'role:shop_admin,seller'])->group(function () {
 
     Route::resource('expenses', ExpenseController::class);
@@ -198,6 +207,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('expenses', ExpenseController::class)->except(['index', 'show']);
         Route::resource('products', ProductController::class)->except(['index', 'edit','create','show']);
     
+    });
+
+    // Bulk import/export templates
+    Route::middleware(RoleMiddleware::class . ':shop_admin,seller')->group(function () {
+        Route::get('/imports', [ImportController::class, 'index'])->name('imports.index');
+        Route::get('/imports/template/{type}', [ImportController::class, 'template'])->name('imports.template');
+        Route::post('/imports/upload', [ImportController::class, 'upload'])->name('imports.upload');
+        Route::get('/imports/preview/{token}', [ImportController::class, 'preview'])->name('imports.preview');
+        Route::post('/imports/confirm/{token}', [ImportController::class, 'confirm'])->name('imports.confirm');
+        Route::post('/imports/cancel/{token}', [ImportController::class, 'cancel'])->name('imports.cancel');
     });
 
     // Sales and purchases are accessible to both shop_admin and seller

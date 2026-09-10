@@ -206,6 +206,9 @@
                                 <a href="{{ route('sales.index') }}" class="dropdown-item">
                                     {{ __('Sales') }}
                                 </a>
+                                <a href="{{ route('imports.index') }}" class="dropdown-item">
+                                    {{ __('Import & Templates') }}
+                                </a>
                                  <a href="{{ route('other_incomes.index') }}" class="dropdown-item">
                                     {{ __('Other Revenue') }}
                                 </a>
@@ -307,6 +310,9 @@
                             >
                                 <a href="{{ route('sales.index') }}" class="dropdown-item">
                                     {{ __('Sales') }}
+                                </a>
+                                <a href="{{ route('imports.index') }}" class="dropdown-item">
+                                    {{ __('Import & Templates') }}
                                 </a>
 
                                 <a href="{{ route('purchases.index') }}" class="dropdown-item">

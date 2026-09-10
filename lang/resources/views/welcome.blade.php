@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/svg" href="{{ asset('images/MAHWILOGO.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/MAHWILOGO.png') }}">
     <title>{{ config('app.name', 'Mahwi') }} - All in one solution for  Shops|supermarkets|Pharmacy|Bars|Restaurant||| management system </title>
 
     <!-- SEO Meta Tags -->
@@ -564,6 +564,6 @@
     }
   });
 </script>
-
+<x-footer/>
 </body>
 </html>

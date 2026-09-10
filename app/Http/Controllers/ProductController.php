@@ -14,6 +14,12 @@ use App\Notifications\ProductDeleted;
 use App\Notifications\ProductUpdated;
 use App\Models\StockMovement;
 use chillerlan\QRCode\QRCode;
+use Illuminate\Support\Facades\Validator;
+use App\Exports\ProductsExport;
+use App\Exports\ImportTemplateExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Excel as ExcelFormat;
+use Carbon\Carbon;
 
 class ProductController extends Controller
 {
@@ -91,7 +97,709 @@ class ProductController extends Controller
             'expiringSoonCount'
         ));
     }
+   public function export(Request $request)
+{
+    $shopId = $request->user()->shop_id;
 
+    if (!$shopId && !$request->user()->isSystemAdmin()) {
+        return back()->with('error', 'No shop is associated with your account.');
+    }
+
+    $format = strtolower($request->get('format', 'xlsx'));
+
+    /*
+    |--------------------------------------------------------------------------
+    | Export filename
+    |--------------------------------------------------------------------------
+    */
+
+    $filename = 'products-' . now()->format('Y-m-d-H-i-s');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Excel Spreadsheet
+    |--------------------------------------------------------------------------
+    */
+
+    if ($format === 'xlsx') {
+        return Excel::download(
+            new ProductsExport($shopId),
+            $filename . '.xlsx',
+            ExcelFormat::XLSX
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CSV
+    |--------------------------------------------------------------------------
+    */
+
+    return Excel::download(
+        new ProductsExport($shopId),
+        $filename . '.csv',
+        ExcelFormat::CSV
+    );
+}
+public function importTemplate(Request $request)
+{
+    $format = strtolower($request->get('format', 'xlsx'));
+
+    /*
+    |--------------------------------------------------------------------------
+    | Excel Template
+    |--------------------------------------------------------------------------
+    */
+
+    if ($format === 'xlsx') {
+        return Excel::download(
+            new ImportTemplateExport('products'),
+            'mahwi-product-import-template.xlsx',
+            ExcelFormat::XLSX
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CSV Template
+    |--------------------------------------------------------------------------
+    */
+
+    return Excel::download(
+        new ImportTemplateExport('products'),
+        'mahwi-product-import-template.csv',
+        ExcelFormat::CSV
+    );
+}
+public function import(Request $request)
+{
+    $request->validate([
+        'file' => [
+            'required',
+            'file',
+            'mimes:csv,txt,xlsx,xls',
+            'max:10240',
+        ],
+    ]);
+
+    $shopId = $request->user()->shop_id;
+
+    if (!$shopId) {
+        return back()->with(
+            'error',
+            'No shop is associated with your account.'
+        );
+    }
+
+    try {
+        /*
+        |--------------------------------------------------------------------------
+        | Read CSV / XLSX / XLS
+        |--------------------------------------------------------------------------
+        */
+
+        $rows = Excel::toArray(
+            null,
+            $request->file('file')
+        );
+
+        if (empty($rows) || empty($rows[0])) {
+            return back()->with(
+                'error',
+                'The uploaded spreadsheet is empty.'
+            );
+        }
+
+        $sheet = $rows[0];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Header
+        |--------------------------------------------------------------------------
+        */
+
+        $header = array_shift($sheet);
+
+        $header = array_map(function ($value) {
+            $value = preg_replace(
+                '/^\xEF\xBB\xBF/',
+                '',
+                (string) $value
+            );
+
+            return strtolower(trim((string) $value));
+        }, $header);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Required Columns
+        |--------------------------------------------------------------------------
+        */
+
+        $requiredColumns = [
+            'sku',
+            'product name',
+            'category',
+            'buying price',
+            'selling price',
+            'opening quantity',
+        ];
+
+        foreach ($requiredColumns as $column) {
+            if (!in_array($column, $header, true)) {
+                return back()->with(
+                    'error',
+                    "Missing required column: {$column}"
+                );
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Import Counters
+        |--------------------------------------------------------------------------
+        */
+
+        $imported = 0;
+        $skipped = 0;
+        $errors = [];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Transaction
+        |--------------------------------------------------------------------------
+        */
+
+        DB::transaction(function () use (
+            $sheet,
+            $header,
+            $shopId,
+            $request,
+            &$imported,
+            &$skipped,
+            &$errors
+        ) {
+
+            foreach ($sheet as $index => $row) {
+
+                $rowNumber = $index + 2;
+
+                /*
+                |--------------------------------------------------------------------------
+                | Skip empty rows
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    empty(array_filter(
+                        $row,
+                        fn ($value) => trim((string) $value) !== ''
+                    ))
+                ) {
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Normalize row
+                |--------------------------------------------------------------------------
+                */
+
+                $row = array_pad(
+                    $row,
+                    count($header),
+                    null
+                );
+
+                $data = array_combine(
+                    $header,
+                    array_slice($row, 0, count($header))
+                );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Basic fields
+                |--------------------------------------------------------------------------
+                */
+
+                $sku = trim(
+                    (string) ($data['sku'] ?? '')
+                );
+
+                $name = trim(
+                    (string) ($data['product name'] ?? '')
+                );
+
+                $categoryName = trim(
+                    (string) ($data['category'] ?? '')
+                );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Required validation
+                |--------------------------------------------------------------------------
+                */
+
+                if ($sku === '') {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: SKU is required.";
+
+                    continue;
+                }
+
+                if ($name === '') {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: Product Name is required.";
+
+                    continue;
+                }
+
+                if ($categoryName === '') {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: Category is required.";
+
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | SKU duplicate
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    Product::where('shop_id', $shopId)
+                        ->where('sku', $sku)
+                        ->exists()
+                ) {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: SKU '{$sku}' already exists.";
+
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Product Name duplicate
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    Product::where('shop_id', $shopId)
+                        ->where('name', $name)
+                        ->exists()
+                ) {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: Product '{$name}' already exists.";
+
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Category
+                |--------------------------------------------------------------------------
+                */
+
+                $category = Category::where(
+                    'shop_id',
+                    $shopId
+                )
+                    ->whereRaw(
+                        'LOWER(name) = ?',
+                        [strtolower($categoryName)]
+                    )
+                    ->first();
+
+                if (!$category) {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: Category '{$categoryName}' does not exist in this shop.";
+
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Supplier
+                |--------------------------------------------------------------------------
+                */
+
+                $supplier = null;
+
+                $supplierName = trim(
+                    (string) ($data['supplier'] ?? '')
+                );
+
+                if ($supplierName !== '') {
+
+                    $supplier = Supplier::where(
+                        'shop_id',
+                        $shopId
+                    )
+                        ->whereRaw(
+                            'LOWER(name) = ?',
+                            [strtolower($supplierName)]
+                        )
+                        ->first();
+
+                    if (!$supplier) {
+                        $skipped++;
+
+                        $errors[] =
+                            "Row {$rowNumber}: Supplier '{$supplierName}' does not exist in this shop.";
+
+                        continue;
+                    }
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Barcode
+                |--------------------------------------------------------------------------
+                */
+
+                $barcode = trim(
+                    (string) ($data['barcode'] ?? '')
+                );
+
+                $barcode = $barcode !== ''
+                    ? $barcode
+                    : null;
+
+                if (
+                    $barcode &&
+                    Product::where('shop_id', $shopId)
+                        ->where('barcode', $barcode)
+                        ->exists()
+                ) {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: Barcode '{$barcode}' already exists.";
+
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | QR Code
+                |--------------------------------------------------------------------------
+                */
+
+                $qrCode = trim(
+                    (string) ($data['qr code'] ?? '')
+                );
+
+                $qrCode = $qrCode !== ''
+                    ? $qrCode
+                    : null;
+
+                if (
+                    $qrCode &&
+                    Product::where('shop_id', $shopId)
+                        ->where('qr_code', $qrCode)
+                        ->exists()
+                ) {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: QR Code '{$qrCode}' already exists.";
+
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Prices
+                |--------------------------------------------------------------------------
+                */
+
+                $buyingPrice = $data['buying price'] ?? 0;
+                $sellingPrice = $data['selling price'] ?? 0;
+
+                if (
+                    !is_numeric($buyingPrice) ||
+                    (float) $buyingPrice < 0
+                ) {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: Invalid Buying Price.";
+
+                    continue;
+                }
+
+                if (
+                    !is_numeric($sellingPrice) ||
+                    (float) $sellingPrice < 0
+                ) {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: Invalid Selling Price.";
+
+                    continue;
+                }
+
+                $buyingPrice = (float) $buyingPrice;
+                $sellingPrice = (float) $sellingPrice;
+
+                /*
+                |--------------------------------------------------------------------------
+                | Opening Quantity
+                |--------------------------------------------------------------------------
+                */
+
+                $openingQuantity =
+                    $data['opening quantity'] ?? 0;
+
+                if (
+                    !is_numeric($openingQuantity) ||
+                    (float) $openingQuantity < 0
+                ) {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: Invalid Opening Quantity.";
+
+                    continue;
+                }
+
+                $openingQuantity = (float) $openingQuantity;
+
+                /*
+                |--------------------------------------------------------------------------
+                | Opening Unit Cost
+                |--------------------------------------------------------------------------
+                */
+
+                $openingUnitCost =
+                    $data['opening unit cost'] ?? null;
+
+                if (
+                    $openingUnitCost === null ||
+                    $openingUnitCost === ''
+                ) {
+                    $openingUnitCost = $buyingPrice;
+                }
+
+                if (
+                    !is_numeric($openingUnitCost) ||
+                    (float) $openingUnitCost < 0
+                ) {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: Invalid Opening Unit Cost.";
+
+                    continue;
+                }
+
+                $openingUnitCost = (float) $openingUnitCost;
+
+                /*
+                |--------------------------------------------------------------------------
+                | Minimum Stock
+                |--------------------------------------------------------------------------
+                */
+
+                $minimumStock =
+                    $data['minimum stock'] ?? 0;
+
+                if (
+                    !is_numeric($minimumStock) ||
+                    (float) $minimumStock < 0
+                ) {
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: Invalid Minimum Stock.";
+
+                    continue;
+                }
+
+                $minimumStock = (float) $minimumStock;
+
+                /*
+                |--------------------------------------------------------------------------
+                | Expiry Date
+                |--------------------------------------------------------------------------
+                */
+
+                $expiryDate = null;
+
+                if (!empty($data['expiry date'])) {
+                    try {
+                        $expiryDate = Carbon::parse(
+                            $data['expiry date']
+                        )->format('Y-m-d');
+                    } catch (\Throwable $e) {
+                        $skipped++;
+
+                        $errors[] =
+                            "Row {$rowNumber}: Invalid Expiry Date.";
+
+                        continue;
+                    }
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Status
+                |--------------------------------------------------------------------------
+                */
+
+                $status = strtolower(
+                    trim(
+                        (string) (
+                            $data['status'] ?? 'active'
+                        )
+                    )
+                );
+
+                if (
+                    !in_array(
+                        $status,
+                        ['active', 'inactive'],
+                        true
+                    )
+                ) {
+                    $status = 'active';
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Product Image
+                |--------------------------------------------------------------------------
+                */
+
+                $productImage = trim(
+                    (string) (
+                        $data['product image'] ?? ''
+                    )
+                );
+
+                $productImage =
+                    $productImage !== ''
+                        ? $productImage
+                        : null;
+
+                /*
+                |--------------------------------------------------------------------------
+                | Description
+                |--------------------------------------------------------------------------
+                */
+
+                $description = trim(
+                    (string) (
+                        $data['description'] ?? ''
+                    )
+                );
+
+                $description =
+                    $description !== ''
+                        ? $description
+                        : null;
+
+                /*
+                |--------------------------------------------------------------------------
+                | Create Product
+                |--------------------------------------------------------------------------
+                */
+
+                $product = Product::create([
+                    'shop_id' => $shopId,
+                    'sku' => $sku,
+                    'name' => $name,
+                    'category_id' => $category->id,
+                    'supplier_id' => $supplier?->id,
+                    'barcode' => $barcode,
+                    'qr_code' => $qrCode,
+                    'description' => $description,
+                    'buying_price' => $buyingPrice,
+                    'selling_price' => $sellingPrice,
+                    'quantity' => $openingQuantity,
+                    'stock' => $openingQuantity,
+                    'minimum_stock' => $minimumStock,
+                    'expiry_date' => $expiryDate,
+                    'product_image' => $productImage,
+                    'status' => $status,
+                ]);
+
+                /*
+                |--------------------------------------------------------------------------
+                | Opening Stock Audit
+                |--------------------------------------------------------------------------
+                */
+
+                if ($openingQuantity > 0) {
+
+                    $openingTotalCost = round(
+                        $openingQuantity * $openingUnitCost,
+                        2
+                    );
+
+                    StockMovement::create([
+                        'shop_id' => $shopId,
+                        'product_id' => $product->id,
+                        'type' => 'opening',
+                        'reference_type' => 'product',
+                        'reference_id' => $product->id,
+                        'quantity_change' => $openingQuantity,
+                        'quantity_after' => $openingQuantity,
+                        'unit_cost' => $openingUnitCost,
+                        'total_cost' => $openingTotalCost,
+                        'movement_date' => now(),
+                        'created_by' => $request->user()->id,
+                        'note' =>
+                            'Opening stock imported from spreadsheet.',
+                    ]);
+                }
+
+                $imported++;
+            }
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Result
+        |--------------------------------------------------------------------------
+        */
+
+        $message =
+            "{$imported} product(s) imported successfully.";
+
+        if ($skipped > 0) {
+            $message .=
+                " {$skipped} row(s) were skipped.";
+        }
+
+        return back()
+            ->with('success', $message)
+            ->with('import_errors', $errors);
+
+    } catch (\Throwable $e) {
+
+        report($e);
+
+        return back()->with(
+            'error',
+            'Product import failed: ' . $e->getMessage()
+        );
+    }
+}
     public function create()
     {
         $shopId = request()->user()->shop_id;
