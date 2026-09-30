@@ -1,1121 +1,529 @@
-<nav
-    x-data="{ open: false, openGroupMobile: null }"
-    class="bg-white border-b border-gray-100 shadow-sm relative z-50"
->
-    @php
-        $currentUser = Auth::user();
+@php
+    $currentUser = Auth::user();
+    $currentShop = $shop ?? $currentUser?->shop;
 
-        // Current shop
-        $currentShop = $shop ?? $currentUser?->shop;
+    $isAdmin  = $currentUser?->isAdmin();
+    $isSeller = $currentUser?->isSeller();
+    $isWaiter = $currentUser?->role === 'waiter';
 
-        // Roles
-        $isAdmin = $currentUser?->isAdmin();
-        $isSeller = $currentUser?->isSeller();
-        $isWaiter = $currentUser?->role === 'waiter';
+    // Orders
+    $ordersRoute = null;
+    $pendingOrdersCount = 0;
 
-        // Orders
-        $ordersRoute = null;
-        $pendingOrdersCount = 0;
+    if ($currentShop) {
+        $ordersRoute = route('shops.orders.index', ['shop' => $currentShop]);
 
-        if ($currentShop) {
-            $ordersRoute = route('shops.orders.index', [
-                'shop' => $currentShop
-            ]);
-
-            if (!$isWaiter) {
-                $pendingOrdersCount = $currentShop
-                    ->orders()
-                    ->pending()
-                    ->count();
-            }
+        if (!$isWaiter) {
+            $pendingOrdersCount = $currentShop->orders()->pending()->count();
         }
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Profile Image
-        |--------------------------------------------------------------------------
-        | Supports:
-        | 1. profile_photo_path
-        | 2. profile_image
-        | 3. avatar
-        |
-        | Change the priority below if your users table uses another field.
-        */
-        $profileImage = null;
-
-        if (!empty($currentUser?->profile_photo_path)) {
-            $profileImage = asset('storage/' . $currentUser->profile_photo_path);
-        } elseif (!empty($currentUser?->profile_image)) {
-            $profileImage = asset('storage/' . $currentUser->profile_image);
-        } elseif (!empty($currentUser?->avatar)) {
-            $profileImage = asset('storage/' . $currentUser->avatar);
+    // Profile image
+    $profileImage = null;
+    foreach (['profile_photo_path', 'profile_image', 'avatar'] as $field) {
+        if (!empty($currentUser?->{$field})) {
+            $profileImage = asset('storage/' . $currentUser->{$field});
+            break;
         }
+    }
 
-        $userInitials = collect(
-            preg_split('/\s+/', trim($currentUser?->name ?? 'U'))
-        )
+    // Initials
+    $userInitials = collect(preg_split('/\s+/', trim($currentUser?->name ?? 'U')))
         ->filter()
         ->map(fn ($part) => strtoupper(substr($part, 0, 1)))
         ->take(2)
         ->implode('');
 
-        $userRole = match ($currentUser?->role) {
-            'admin', 'shop_admin' => __('Administrator'),
-            'seller' => __('Seller'),
-            'waiter' => __('Waiter'),
-            'accountant' => __('Accountant'),
-            'owner' => __('Owner'),
-            default => ucfirst(str_replace('_', ' ', $currentUser?->role ?? 'User')),
-        };
-    @endphp
+    $shopInitials = $currentShop ? strtoupper(mb_substr($currentShop->name, 0, 2)) : '';
 
-    <!-- ============================================================
-         DESKTOP / TABLET NAVIGATION
-    ============================================================= -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    // Role label
+    $userRole = match ($currentUser?->role) {
+        'admin', 'shop_admin' => __('Administrator'),
+        'seller'              => __('Seller'),
+        'waiter'              => __('Waiter'),
+        'accountant'          => __('Accountant'),
+        'owner'               => __('Owner'),
+        default               => ucfirst(str_replace('_', ' ', $currentUser?->role ?? 'User')),
+    };
 
-        <div class="min-h-[72px] flex items-center justify-between gap-4">
+    // Icons (heroicons outline paths)
+    $icons = [
+        'home'     => 'M3 12l9-9 9 9M5 10v10h14V10M9 20v-6h6v6',
+        'box'      => 'M20 7l-8-4-8 4m16 0v10l-8 4m8-14l-8 4m0 0L4 7m8 4v10',
+        'money'    => 'M9 14l6-6M8 8h.01M16 16h.01M19 5H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2z',
+        'report'   => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h8l4 4v12a2 2 0 01-2 2z',
+        'team'     => 'M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m4-8a4 4 0 110-8 4 4 0 010 8zm6 4a3 3 0 10-6 0 3 3 0 006 0z',
+        'chart'    => 'M3 3v18h18M7 16l4-5 3 3 5-7',
+        'cart'     => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 2h12m-9 4a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z',
+        'expense'  => 'M12 8v8m-4-4h8M5 5h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z',
+        'orders'   => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a3 3 0 006 0M9 5h6',
+        'user'     => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+        'logout'   => 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
+        'globe'    => 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+        'chevron'  => 'M19 9l-7 7-7-7',
+        'collapse' => 'M15 19l-7-7 7-7',
+    ];
 
-            <!-- LEFT SIDE -->
-            <div class="flex items-center min-w-0">
+    // Admin groups: [label, route, active pattern]
+    $groups = $isAdmin ? [
+        'inventory' => [
+            'label' => __('Inventory'),
+            'icon'  => 'box',
+            'items' => [
+                [__('Products'),   'products.index',   'products.*'],
+                [__('Categories'), 'categories.index', 'categories.*'],
+                [__('Suppliers'),  'suppliers.index',  'suppliers.*'],
+                [__('Customers'),  'customers.index',  'customers.*'],
+            ],
+        ],
+        'transactions' => [
+            'label' => __('Transactions'),
+            'icon'  => 'money',
+            'items' => [
+                [__('Sales'),              'sales.index',              'sales.*'],
+                [__('Purchases'),          'purchases.index',          'purchases.*'],
+                [__('Expenses'),           'expenses.index',           'expenses.*'],
+                [__('Expense Categories'), 'expensecategories.index',  'expensecategories.*'],
+                [__('Other Revenue'),      'other_incomes.index',      'other_incomes.*'],
+                [__('Income Categories'),  'income_categories.index',  'income_categories.*'],
+                [__('Import & Templates'), 'imports.index',            'imports.*'],
+            ],
+        ],
+        'reports' => [
+            'label' => __('Reports'),
+            'icon'  => 'report',
+            'items' => [
+                [__('Overview'),       'reports.index',   'reports.index'],
+                [__('Daily Report'),   'reports.daily',   'reports.daily'],
+                [__('Weekly Report'),  'reports.weekly',  'reports.weekly'],
+                [__('Monthly Report'), 'reports.monthly', 'reports.monthly'],
+                [__('Yearly Report'),  'reports.yearly',  'reports.yearly'],
+            ],
+        ],
+        'team' => [
+            'label' => __('Team'),
+            'icon'  => 'team',
+            'items' => [
+                [__('Staff'), 'staff.index', 'staff.*'],
+            ],
+        ],
+    ] : [];
 
-                <!-- Logo -->
-                <div class="shrink-0">
-                    <a
-                        href="{{ route('dashboard') }}"
-                        class="flex items-center"
-                    >
-                        <x-application-logo
-                            class="block h-9 w-auto fill-current text-gray-800"
-                        />
-                    </a>
-                </div>
+    $openGroups = collect($groups)
+        ->map(fn ($g) => collect($g['items'])->contains(fn ($i) => request()->routeIs($i[2])))
+        ->all();
 
-                <!-- Desktop Navigation -->
-                <div class="hidden lg:flex items-center ml-8 gap-2">
+    // Seller links: [label, route, active pattern, icon]
+    $sellerLinks = $isSeller ? [
+        [__('Sales'),     'sales.index',     'sales.*',     'chart'],
+        [__('Products'),  'products.index',  'products.*',  'box'],
+        [__('Purchases'), 'purchases.index', 'purchases.*', 'cart'],
+        [__('Expenses'),  'expenses.index',  'expenses.*',  'expense'],
+    ] : [];
 
-                    <!-- Dashboard -->
-                    <x-nav-link
-                        :href="route('dashboard')"
-                        :active="
-                            request()->routeIs('dashboard') ||
-                            request()->routeIs('shop.dashboard') ||
-                            request()->routeIs('admin.dashboard') ||
-                            request()->routeIs('seller.dashboard') ||
-                            request()->routeIs('accountant.dashboard')
-                        "
-                    >
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+    $languages = ['en' => ['🇬🇧', 'English'], 'fr' => ['🇫🇷', 'Français'], 'rw' => ['🇷🇼', 'Kinyarwanda'], 'sw' => ['🇹🇿', 'Kiswahili']];
 
-                    {{-- ==================================================
-                         ADMIN
-                    =================================================== --}}
-                    @if($isAdmin)
+    $dashboardActive = request()->routeIs('dashboard', 'shop.dashboard', 'admin.dashboard', 'seller.dashboard', 'accountant.dashboard');
+@endphp
 
-                        <!-- Inventory -->
-                        <div x-data="{ open: false }" class="relative">
+<aside
+    id="app-sidebar"
+    x-data="{
+        collapsed: document.documentElement.classList.contains('sidebar-collapsed'),
+        open: @js($openGroups),
+        flyout: null, flyoutTop: 0,
+        tip: '', tipTop: 0,
+        timer: null,
 
-                            <button
-                                @click="open = !open"
-                                @keydown.escape.window="open = false"
-                                type="button"
-                                class="nav-menu-button"
-                            >
-                                {{ __('Inventory') }}
+        toggle() {
+            this.collapsed = !this.collapsed;
+            document.documentElement.classList.toggle('sidebar-collapsed', this.collapsed);
+            try { localStorage.setItem('sidebar-collapsed', this.collapsed ? '1' : '0'); } catch (e) {}
+            this.flyout = null;
+            this.tip = '';
+        },
+        hold() { clearTimeout(this.timer); },
+        release() { this.timer = setTimeout(() => { this.flyout = null; this.tip = ''; }, 120); },
+        showFlyout(key, el, height) {
+            if (!this.collapsed) return;
+            this.hold();
+            this.tip = '';
+            this.flyoutTop = Math.max(8, Math.min(el.getBoundingClientRect().top, window.innerHeight - height - 8));
+            this.flyout = key;
+        },
+        showTip(label, el) {
+            if (!this.collapsed) return;
+            this.hold();
+            this.flyout = null;
+            const r = el.getBoundingClientRect();
+            this.tipTop = r.top + r.height / 2;
+            this.tip = label;
+        },
+        groupClick(key, el, height) {
+            if (!this.collapsed) { this.open[key] = !this.open[key]; return; }
+            this.flyout === key ? this.flyout = null : this.showFlyout(key, el, height);
+        }
+    }"
+    class="fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-slate-200 shadow-sm"
+>
 
-                                <svg
-                                    :class="{ 'rotate-180': open }"
-                                    class="w-4 h-4 transition-transform"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M19 9l-7 7-7-7"
-                                    />
-                                </svg>
-                            </button>
+    {{-- Collapse toggle --}}
+    <button
+        type="button"
+        @click="toggle()"
+        :aria-label="collapsed ? '{{ __('Expand sidebar') }}' : '{{ __('Collapse sidebar') }}'"
+        class="absolute -right-3 top-7 z-10 h-6 w-6 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm text-slate-500 hover:text-emerald-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+    >
+        <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': collapsed }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="{{ $icons['collapse'] }}"/>
+        </svg>
+    </button>
 
-                            <div
-                                x-show="open"
-                                x-cloak
-                                @click.outside="open = false"
-                                x-transition
-                                class="dropdown-menu w-52"
-                            >
-                                <a href="{{ route('products.index') }}" class="dropdown-item">
-                                    {{ __('Products') }}
-                                </a>
+    {{-- Brand --}}
+    <div class="h-20 shrink-0 flex items-center px-5 border-b border-slate-200 overflow-hidden sidebar-row">
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-3 min-w-0">
+            <x-application-logo class="block h-9 w-auto shrink-0 fill-current text-gray-800" />
+            <span class="sb-label text-base font-semibold text-slate-800 truncate">{{ config('app.name') }}</span>
+        </a>
+    </div>
 
-                                <a href="{{ route('categories.index') }}" class="dropdown-item">
-                                    {{ __('Categories') }}
-                                </a>
-
-                                <a href="{{ route('suppliers.index') }}" class="dropdown-item">
-                                    {{ __('Suppliers') }}
-                                </a>
-
-                                <a href="{{ route('customers.index') }}" class="dropdown-item">
-                                    {{ __('Customers') }}
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Transactions -->
-                        <div x-data="{ open: false }" class="relative">
-
-                            <button
-                                @click="open = !open"
-                                @keydown.escape.window="open = false"
-                                type="button"
-                                class="nav-menu-button"
-                            >
-                                {{ __('Transactions') }}
-
-                                <svg
-                                    :class="{ 'rotate-180': open }"
-                                    class="w-4 h-4 transition-transform"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M19 9l-7 7-7-7"
-                                    />
-                                </svg>
-                            </button>
-
-                            <div
-                                x-show="open"
-                                x-cloak
-                                @click.outside="open = false"
-                                x-transition
-                                class="dropdown-menu w-56"
-                            >
-                                <a href="{{ route('purchases.index') }}" class="dropdown-item">
-                                    {{ __('Purchases') }}
-                                </a>
-
-                                <a href="{{ route('sales.index') }}" class="dropdown-item">
-                                    {{ __('Sales') }}
-                                </a>
-                                <a href="{{ route('imports.index') }}" class="dropdown-item">
-                                    {{ __('Import & Templates') }}
-                                </a>
-                                 <a href="{{ route('other_incomes.index') }}" class="dropdown-item">
-                                    {{ __('Other Revenue') }}
-                                </a>
-                                <a href="{{ route('income_categories.index') }}" class="dropdown-item">
-                                    {{ __('Income category') }}
-                                </a>
-
-                                <a href="{{ route('expenses.index') }}" class="dropdown-item">
-                                    {{ __('Expenses') }}
-                                </a>
-
-                                <a href="{{ route('expensecategories.index') }}" class="dropdown-item">
-                                    {{ __('Expense Categories') }}
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Team -->
-                        <div x-data="{ open: false }" class="relative">
-
-                            <button
-                                @click="open = !open"
-                                @keydown.escape.window="open = false"
-                                type="button"
-                                class="nav-menu-button"
-                            >
-                                {{ __('Team') }}
-
-                                <svg
-                                    :class="{ 'rotate-180': open }"
-                                    class="w-4 h-4 transition-transform"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M19 9l-7 7-7-7"
-                                    />
-                                </svg>
-                            </button>
-
-                            <div
-                                x-show="open"
-                                x-cloak
-                                @click.outside="open = false"
-                                x-transition
-                                class="dropdown-menu w-44"
-                            >
-                                <a href="{{ route('staff.index') }}" class="dropdown-item">
-                                    {{ __('Staff') }}
-                                </a>
-                            </div>
-                        </div>
-
-                    @endif
-
-
-                    {{-- ==================================================
-                         SELLER
-                    =================================================== --}}
-                    @if($isSeller)
-
-                        <!-- Transactions -->
-                        <div x-data="{ open: false }" class="relative">
-
-                            <button
-                                @click="open = !open"
-                                @keydown.escape.window="open = false"
-                                type="button"
-                                class="nav-menu-button"
-                            >
-                                {{ __('Transactions') }}
-
-                                <svg
-                                    :class="{ 'rotate-180': open }"
-                                    class="w-4 h-4 transition-transform"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M19 9l-7 7-7-7"
-                                    />
-                                </svg>
-                            </button>
-
-                            <div
-                                x-show="open"
-                                x-cloak
-                                @click.outside="open = false"
-                                x-transition
-                                class="dropdown-menu w-48"
-                            >
-                                <a href="{{ route('sales.index') }}" class="dropdown-item">
-                                    {{ __('Sales') }}
-                                </a>
-                                <a href="{{ route('imports.index') }}" class="dropdown-item">
-                                    {{ __('Import & Templates') }}
-                                </a>
-
-                                <a href="{{ route('purchases.index') }}" class="dropdown-item">
-                                    {{ __('Purchases') }}
-                                </a>
-
-                                <a href="{{ route('expenses.index') }}" class="dropdown-item">
-                                    {{ __('Expenses') }}
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Inventory -->
-                        <div x-data="{ open: false }" class="relative">
-
-                            <button
-                                @click="open = !open"
-                                @keydown.escape.window="open = false"
-                                type="button"
-                                class="nav-menu-button"
-                            >
-                                {{ __('Inventory') }}
-
-                                <svg
-                                    :class="{ 'rotate-180': open }"
-                                    class="w-4 h-4 transition-transform"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M19 9l-7 7-7-7"
-                                    />
-                                </svg>
-                            </button>
-
-                            <div
-                                x-show="open"
-                                x-cloak
-                                @click.outside="open = false"
-                                x-transition
-                                class="dropdown-menu w-48"
-                            >
-                                <a href="{{ route('products.index') }}" class="dropdown-item">
-                                    {{ __('Products') }}
-                                </a>
-
-                                <a href="{{ route('categories.index') }}" class="dropdown-item">
-                                    {{ __('Categories') }}
-                                </a>
-                            </div>
-                        </div>
-
-                    @endif
-
-
-                    {{-- ==================================================
-                         ORDERS
-                    =================================================== --}}
-                    @if($currentShop && $ordersRoute)
-
-                        <a
-                            href="{{ $ordersRoute }}"
-                            class="relative inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition
-                                {{ request()->routeIs('shops.orders.*')
-                                    ? 'bg-indigo-50 text-indigo-700'
-                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}"
-                        >
-                            {{ $isWaiter ? __('Take Order') : __('Orders') }}
-
-                            @if($pendingOrdersCount > 0)
-                                <span class="min-w-[20px] h-5 px-1 inline-flex items-center justify-center rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">
-                                    {{ $pendingOrdersCount > 99 ? '99+' : $pendingOrdersCount }}
-                                </span>
-                            @endif
-                        </a>
-
-                    @endif
-
-                </div>
+    {{-- Shop --}}
+    @if($currentShop)
+        <div
+            class="sidebar-shop mx-4 mt-4 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-3"
+            @mouseenter="showTip(@js($currentShop->name), $el)"
+            @mouseleave="release()"
+        >
+            <div class="h-8 w-8 shrink-0 rounded-lg bg-emerald-600 text-white text-xs font-bold flex items-center justify-center">
+                {{ $shopInitials }}
             </div>
-
-
-            <!-- ========================================================
-                 RIGHT SIDE
-            ========================================================= -->
-            <div class="hidden lg:flex items-center gap-3 shrink-0">
-
-                <!-- Language -->
-                <x-language-switcher />
-
-                <!-- User Profile -->
-                <div x-data="{ open: false }" class="relative">
-
-                    <button
-                        @click="open = !open"
-                        @keydown.escape.window="open = false"
-                        type="button"
-                        class="flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-gray-50 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                    >
-
-                        <!-- Avatar -->
-                        <div class="relative shrink-0">
-
-                            @if($profileImage)
-                                <img
-                                    src="{{ $profileImage }}"
-                                    alt="{{ $currentUser->name }}"
-                                    class="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm ring-1 ring-gray-200"
-                                >
-                            @else
-                                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-1 ring-indigo-200">
-                                    {{ $userInitials ?: 'U' }}
-                                </div>
-                            @endif
-
-                            <!-- Online indicator -->
-                            <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white"></span>
-                        </div>
-
-                        <!-- Name -->
-                        <div class="text-left max-w-[140px] hidden xl:block">
-                            <div class="text-sm font-semibold text-gray-800 truncate">
-                                {{ $currentUser->name }}
-                            </div>
-
-                            <div class="text-[11px] text-gray-500 truncate">
-                                {{ $userRole }}
-                            </div>
-                        </div>
-
-                        <svg
-                            :class="{ 'rotate-180': open }"
-                            class="w-4 h-4 text-gray-400 transition-transform"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M19 9l-7 7-7-7"
-                            />
-                        </svg>
-
-                    </button>
-
-
-                    <!-- User Dropdown -->
-                    <div
-                        x-show="open"
-                        x-cloak
-                        @click.outside="open = false"
-                        x-transition
-                        class="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
-                    >
-
-                        <!-- Profile Header -->
-                        <div class="p-4 bg-gradient-to-br from-indigo-50 via-white to-purple-50 border-b border-gray-100">
-
-                            <div class="flex items-center gap-3">
-
-                                @if($profileImage)
-                                    <img
-                                        src="{{ $profileImage }}"
-                                        alt="{{ $currentUser->name }}"
-                                        class="h-12 w-12 rounded-full object-cover border-2 border-white shadow ring-1 ring-gray-200"
-                                    >
-                                @else
-                                    <div class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold shadow">
-                                        {{ $userInitials ?: 'U' }}
-                                    </div>
-                                @endif
-
-                                <div class="min-w-0">
-                                    <p class="font-semibold text-gray-900 truncate">
-                                        {{ $currentUser->name }}
-                                    </p>
-
-                                    <p class="text-xs text-gray-500 truncate">
-                                        {{ $currentUser->email }}
-                                    </p>
-
-                                    <span class="inline-flex mt-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-semibold">
-                                        {{ $userRole }}
-                                    </span>
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <!-- Links -->
-                        <div class="p-2">
-
-                            <a
-                                href="{{ route('profile.edit') }}"
-                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition"
-                            >
-                                <span class="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                    </svg>
-                                </span>
-
-                                <span>{{ __('Profile Settings') }}</span>
-                            </a>
-
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-
-                                <button
-                                    type="submit"
-                                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-600 hover:bg-red-50 transition"
-                                >
-                                    <span class="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                                        </svg>
-                                    </span>
-
-                                    <span>{{ __('Log Out') }}</span>
-                                </button>
-                            </form>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+            <div class="sb-label min-w-0">
+                <div class="text-xs text-slate-400">{{ __('Shop') }}</div>
+                <div class="text-sm font-semibold text-slate-800 truncate">{{ $currentShop->name }}</div>
             </div>
+        </div>
+    @endif
 
+    {{-- Navigation --}}
+    <nav class="flex-1 overflow-y-auto overflow-x-hidden whitespace-nowrap px-3 py-5 space-y-1">
 
-            <!-- ========================================================
-                 MOBILE HEADER
-            ========================================================= -->
-            <div class="flex lg:hidden items-center gap-2">
+        {{-- Dashboard --}}
+        <a
+            href="{{ route('dashboard') }}"
+            class="sidebar-link {{ $dashboardActive ? 'sidebar-link-active' : '' }}"
+            @mouseenter="showTip(@js(__('Dashboard')), $el)"
+            @mouseleave="release()"
+        >
+            <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['home'] }}"/></svg>
+            <span class="sb-label">{{ __('Dashboard') }}</span>
+        </a>
 
-                <!-- Small Avatar -->
-                <div class="shrink-0">
+        {{-- Admin groups --}}
+        @foreach($groups as $key => $group)
+            @php
+                $groupActive = $openGroups[$key];
+                $panelHeight = count($group['items']) * 36 + 48;
+            @endphp
 
-                    @if($profileImage)
-                        <img
-                            src="{{ $profileImage }}"
-                            alt="{{ $currentUser->name }}"
-                            class="h-9 w-9 rounded-full object-cover border border-gray-200"
-                        >
-                    @else
-                        <div class="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs">
-                            {{ $userInitials ?: 'U' }}
-                        </div>
-                    @endif
-
-                </div>
-
-                <!-- Hamburger -->
+            <div>
                 <button
-                    @click="open = !open"
                     type="button"
-                    class="inline-flex items-center justify-center h-10 w-10 rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                    @click="groupClick('{{ $key }}', $el, {{ $panelHeight }})"
+                    @mouseenter="showFlyout('{{ $key }}', $el, {{ $panelHeight }})"
+                    @mouseleave="release()"
+                    :aria-expanded="collapsed ? flyout === '{{ $key }}' : open.{{ $key }}"
+                    class="sidebar-group-button {{ $groupActive ? 'sidebar-group-active' : '' }}"
                 >
-                    <svg
-                        class="h-6 w-6"
-                        stroke="currentColor"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            :class="{ 'hidden': open, 'inline-flex': !open }"
-                            class="inline-flex"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M4 6h16M4 12h16M4 18h16"
-                        />
+                    <span class="flex items-center gap-3">
+                        <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons[$group['icon']] }}"/></svg>
+                        <span class="sb-label">{{ $group['label'] }}</span>
+                    </span>
 
-                        <path
-                            :class="{ 'hidden': !open, 'inline-flex': open }"
-                            class="hidden"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M6 18L18 6M6 6l12-12"
-                        />
+                    <svg class="sb-hide w-4 h-4 transition-transform" :class="{ 'rotate-180': open.{{ $key }} }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['chevron'] }}"/>
                     </svg>
                 </button>
 
-            </div>
-
-        </div>
-    </div>
-
-
-    <!-- ================================================================
-         MOBILE NAVIGATION
-    ================================================================= -->
-    <div
-        x-show="open"
-        x-cloak
-        x-transition
-        class="lg:hidden border-t border-gray-100 bg-white shadow-lg"
-    >
-
-        <div class="max-h-[calc(100vh-72px)] overflow-y-auto">
-
-            <!-- Mobile User Header -->
-            <div class="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-100">
-
-                <div class="flex items-center gap-3">
-
-                    @if($profileImage)
-                        <img
-                            src="{{ $profileImage }}"
-                            alt="{{ $currentUser->name }}"
-                            class="h-12 w-12 rounded-full object-cover border-2 border-white shadow"
-                        >
-                    @else
-                        <div class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold">
-                            {{ $userInitials ?: 'U' }}
-                        </div>
-                    @endif
-
-                    <div class="min-w-0">
-                        <div class="font-semibold text-gray-900 truncate">
-                            {{ $currentUser->name }}
-                        </div>
-
-                        <div class="text-xs text-gray-500 truncate">
-                            {{ $currentUser->email }}
-                        </div>
-
-                        <span class="inline-flex mt-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-semibold">
-                            {{ $userRole }}
-                        </span>
-                    </div>
-
+                {{-- Inline submenu (expanded mode) --}}
+                <div x-show="!collapsed && open.{{ $key }}" x-collapse x-cloak class="sidebar-submenu">
+                    @foreach($group['items'] as [$label, $routeName, $pattern])
+                        <a href="{{ route($routeName) }}" class="sidebar-sub-link {{ request()->routeIs($pattern) ? 'sidebar-sub-link-active' : '' }}">
+                            {{ $label }}
+                        </a>
+                    @endforeach
                 </div>
-
             </div>
+        @endforeach
 
+        {{-- Seller links --}}
+        @if($isSeller)
+            <div class="sidebar-section-title sb-label">{{ __('Sales') }}</div>
 
-            <!-- Mobile Navigation -->
-            <div class="p-3 space-y-1">
-
-                <x-responsive-nav-link
-                    :href="route('dashboard')"
-                    :active="
-                        request()->routeIs('dashboard') ||
-                        request()->routeIs('shop.dashboard') ||
-                        request()->routeIs('admin.dashboard') ||
-                        request()->routeIs('seller.dashboard') ||
-                        request()->routeIs('accountant.dashboard')
-                    "
-                >
-                    {{ __('Dashboard') }}
-                </x-responsive-nav-link>
-
-
-                {{-- =====================================================
-                     ADMIN MOBILE
-                ====================================================== --}}
-                @if($isAdmin)
-
-                    <!-- Inventory -->
-                    <div class="mobile-group">
-
-                        <button
-                            @click="openGroupMobile = openGroupMobile === 'inventory' ? null : 'inventory'"
-                            type="button"
-                            class="mobile-group-button"
-                        >
-                            <span>{{ __('Inventory') }}</span>
-
-                            <svg
-                                :class="{ 'rotate-180': openGroupMobile === 'inventory' }"
-                                class="w-4 h-4 transition-transform"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </button>
-
-                        <div
-                            x-show="openGroupMobile === 'inventory'"
-                            x-cloak
-                            x-transition
-                            class="mobile-submenu"
-                        >
-                            <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                                {{ __('Products') }}
-                            </x-responsive-nav-link>
-
-                            <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
-                                {{ __('Categories') }}
-                            </x-responsive-nav-link>
-
-                            <x-responsive-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
-                                {{ __('Suppliers') }}
-                            </x-responsive-nav-link>
-
-                            <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
-                                {{ __('Customers') }}
-                            </x-responsive-nav-link>
-                        </div>
-
-                    </div>
-
-
-                    <!-- Transactions -->
-                    <div class="mobile-group">
-
-                        <button
-                            @click="openGroupMobile = openGroupMobile === 'transactions' ? null : 'transactions'"
-                            type="button"
-                            class="mobile-group-button"
-                        >
-                            <span>{{ __('Transactions') }}</span>
-
-                            <svg
-                                :class="{ 'rotate-180': openGroupMobile === 'transactions' }"
-                                class="w-4 h-4 transition-transform"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </button>
-
-                        <div
-                            x-show="openGroupMobile === 'transactions'"
-                            x-cloak
-                            x-transition
-                            class="mobile-submenu"
-                        >
-                            <x-responsive-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">
-                                {{ __('Purchases') }}
-                            </x-responsive-nav-link>
-
-                            <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
-                                {{ __('Sales') }}
-                            </x-responsive-nav-link>
-
-                            <x-responsive-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.*')">
-                                {{ __('Expenses') }}
-                            </x-responsive-nav-link>
-
-                            <x-responsive-nav-link :href="route('expensecategories.index')" :active="request()->routeIs('expensecategories.*')">
-                                {{ __('Expense Categories') }}
-                            </x-responsive-nav-link>
-                        </div>
-
-                    </div>
-
-
-                    <!-- Team -->
-                    <div class="mobile-group">
-
-                        <button
-                            @click="openGroupMobile = openGroupMobile === 'team' ? null : 'team'"
-                            type="button"
-                            class="mobile-group-button"
-                        >
-                            <span>{{ __('Team') }}</span>
-
-                            <svg
-                                :class="{ 'rotate-180': openGroupMobile === 'team' }"
-                                class="w-4 h-4 transition-transform"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </button>
-
-                        <div
-                            x-show="openGroupMobile === 'team'"
-                            x-cloak
-                            x-transition
-                            class="mobile-submenu"
-                        >
-                            <x-responsive-nav-link :href="route('staff.index')" :active="request()->routeIs('staff.*')">
-                                {{ __('Staff') }}
-                            </x-responsive-nav-link>
-                        </div>
-
-                    </div>
-
-                @endif
-
-
-                {{-- =====================================================
-                     SELLER MOBILE
-                ====================================================== --}}
-                @if($isSeller)
-
-                    <!-- Transactions -->
-                    <div class="mobile-group">
-
-                        <button
-                            @click="openGroupMobile = openGroupMobile === 'seller-transactions' ? null : 'seller-transactions'"
-                            type="button"
-                            class="mobile-group-button"
-                        >
-                            <span>{{ __('Transactions') }}</span>
-
-                            <svg
-                                :class="{ 'rotate-180': openGroupMobile === 'seller-transactions' }"
-                                class="w-4 h-4 transition-transform"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </button>
-
-                        <div
-                            x-show="openGroupMobile === 'seller-transactions'"
-                            x-cloak
-                            x-transition
-                            class="mobile-submenu"
-                        >
-                            <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
-                                {{ __('Sales') }}
-                            </x-responsive-nav-link>
-
-                            <x-responsive-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">
-                                {{ __('Purchases') }}
-                            </x-responsive-nav-link>
-
-                            <x-responsive-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.*')">
-                                {{ __('Expenses') }}
-                            </x-responsive-nav-link>
-                        </div>
-
-                    </div>
-
-
-                    <!-- Inventory -->
-                    <div class="mobile-group">
-
-                        <button
-                            @click="openGroupMobile = openGroupMobile === 'seller-inventory' ? null : 'seller-inventory'"
-                            type="button"
-                            class="mobile-group-button"
-                        >
-                            <span>{{ __('Inventory') }}</span>
-
-                            <svg
-                                :class="{ 'rotate-180': openGroupMobile === 'seller-inventory' }"
-                                class="w-4 h-4 transition-transform"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </button>
-
-                        <div
-                            x-show="openGroupMobile === 'seller-inventory'"
-                            x-cloak
-                            x-transition
-                            class="mobile-submenu"
-                        >
-                            <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                                {{ __('Products') }}
-                            </x-responsive-nav-link>
-
-                            <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
-                                {{ __('Categories') }}
-                            </x-responsive-nav-link>
-                        </div>
-
-                    </div>
-
-                @endif
-
-
-                {{-- =====================================================
-                     ORDERS MOBILE
-                ====================================================== --}}
-                @if($currentShop && $ordersRoute)
-
-                    <a
-                        href="{{ $ordersRoute }}"
-                        class="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition
-                            {{ request()->routeIs('shops.orders.*')
-                                ? 'bg-indigo-50 text-indigo-700'
-                                : 'text-gray-700 hover:bg-gray-50' }}"
-                    >
-                        <span>
-                            {{ $isWaiter ? __('Take Order') : __('Orders') }}
-                        </span>
-
-                        @if($pendingOrdersCount > 0)
-                            <span class="inline-flex items-center justify-center min-w-[22px] h-5 px-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">
-                                {{ $pendingOrdersCount > 99 ? '99+' : $pendingOrdersCount }}
-                            </span>
-                        @endif
-                    </a>
-
-                @endif
-
-            </div>
-
-
-            <!-- ========================================================
-                 MOBILE ACCOUNT
-            ========================================================= -->
-            <div class="border-t border-gray-100 p-3">
-
+            @foreach($sellerLinks as [$label, $routeName, $pattern, $icon])
                 <a
-                    href="{{ route('profile.edit') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition"
+                    href="{{ route($routeName) }}"
+                    class="sidebar-link {{ request()->routeIs($pattern) ? 'sidebar-link-active' : '' }}"
+                    @mouseenter="showTip(@js($label), $el)"
+                    @mouseleave="release()"
                 >
-                    @if($profileImage)
-                        <img
-                            src="{{ $profileImage }}"
-                            alt="{{ $currentUser->name }}"
-                            class="h-9 w-9 rounded-full object-cover"
-                        >
-                    @else
-                        <div class="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-xs font-bold">
-                            {{ $userInitials ?: 'U' }}
-                        </div>
-                    @endif
-
-                    <div class="min-w-0 flex-1">
-                        <p class="text-sm font-semibold text-gray-800 truncate">
-                            {{ $currentUser->name }}
-                        </p>
-
-                        <p class="text-xs text-gray-500">
-                            {{ __('Profile Settings') }}
-                        </p>
-                    </div>
-
-                    <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
+                    <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons[$icon] }}"/></svg>
+                    <span class="sb-label">{{ $label }}</span>
                 </a>
+            @endforeach
+        @endif
 
+        {{-- Orders --}}
+        @if($currentShop && $ordersRoute)
+            @php $ordersLabel = $isWaiter ? __('Take Order') : __('Orders'); @endphp
 
-                <!-- Language -->
-                <div class="px-4 py-3">
+            <div class="pt-4 mt-4 border-t border-slate-200">
+                <a
+                    href="{{ $ordersRoute }}"
+                    class="sidebar-link {{ request()->routeIs('shops.orders.*') ? 'sidebar-link-active' : '' }}"
+                    @mouseenter="showTip(@js($ordersLabel), $el)"
+                    @mouseleave="release()"
+                >
+                    <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['orders'] }}"/></svg>
+                    <span class="sb-label flex-1">{{ $ordersLabel }}</span>
 
-                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
-                        {{ __('Language') }}
-                    </p>
-
-                    <div class="flex flex-wrap gap-2">
-
-                        @foreach([
-                            'en' => '🇬🇧',
-                            'fr' => '🇫🇷',
-                            'rw' => '🇷🇼',
-                            'sw' => '🇹🇿'
-                        ] as $code => $flag)
-
-                            <a
-                                href="{{ route('language.switch', $code) }}"
-                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition
-                                    {{ app()->getLocale() === $code
-                                        ? 'bg-indigo-100 text-indigo-700 ring-1 ring-indigo-200'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
-                            >
-                                <span>{{ $flag }}</span>
-                                {{ strtoupper($code) }}
-                            </a>
-
-                        @endforeach
-
-                    </div>
-
-                </div>
-
-
-                <!-- Logout -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <button
-                        type="submit"
-                        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition"
-                    >
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
-
-                        {{ __('Log Out') }}
-                    </button>
-                </form>
-
+                    @if($pendingOrdersCount > 0)
+                        <span class="sb-label min-w-[22px] h-5 px-1 inline-flex items-center justify-center rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">
+                            {{ $pendingOrdersCount > 99 ? '99+' : $pendingOrdersCount }}
+                        </span>
+                        <span class="sb-dot" aria-hidden="true"></span>
+                    @endif
+                </a>
             </div>
+        @endif
+    </nav>
 
+    {{-- User area --}}
+    <div class="shrink-0 border-t border-slate-200 p-3 whitespace-nowrap">
+
+        <div class="sidebar-row flex items-center gap-3 px-2 py-2">
+            @if($profileImage)
+                <img src="{{ $profileImage }}" alt="{{ $currentUser->name }}" class="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-slate-100">
+            @else
+                <div class="h-10 w-10 shrink-0 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
+                    {{ $userInitials ?: 'U' }}
+                </div>
+            @endif
+
+            <div class="sb-label min-w-0 flex-1">
+                <div class="text-sm font-semibold text-slate-800 truncate">{{ $currentUser->name }}</div>
+                <div class="text-xs text-slate-500 truncate">{{ $userRole }}</div>
+            </div>
+        </div>
+
+        <a
+            href="{{ route('profile.edit') }}"
+            class="sidebar-bottom-link"
+            @mouseenter="showTip(@js(__('Profile Settings')), $el)"
+            @mouseleave="release()"
+        >
+            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['user'] }}"/></svg>
+            <span class="sb-label">{{ __('Profile Settings') }}</span>
+        </a>
+
+        {{-- Language: chips when expanded, flyout when collapsed --}}
+        <div class="sb-label px-2 py-3">
+            <div class="text-xs font-medium text-slate-400 mb-2">{{ __('Language') }}</div>
+            <div class="flex gap-1.5 flex-wrap">
+                @foreach($languages as $code => [$flag])
+                    <a
+                        href="{{ route('language.switch', $code) }}"
+                        class="px-2 py-1 rounded-md text-[11px] font-semibold transition {{ app()->getLocale() === $code ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}"
+                    >
+                        {{ $flag }} {{ strtoupper($code) }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
+
+        <button
+            type="button"
+            class="sb-collapsed-only sidebar-bottom-link"
+            @click="flyout === 'language' ? flyout = null : showFlyout('language', $el, 200)"
+            @mouseenter="showFlyout('language', $el, 200)"
+            @mouseleave="release()"
+            aria-label="{{ __('Language') }}"
+        >
+            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['globe'] }}"/></svg>
+        </button>
+
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button
+                type="submit"
+                class="sidebar-bottom-link text-red-600 hover:!bg-red-50 hover:!text-red-600"
+                @mouseenter="showTip(@js(__('Log Out')), $el)"
+                @mouseleave="release()"
+            >
+                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['logout'] }}"/></svg>
+                <span class="sb-label">{{ __('Log Out') }}</span>
+            </button>
+        </form>
+    </div>
+
+    {{-- Flyouts (collapsed mode). Fixed-position so the nav's overflow can't clip them. --}}
+    @foreach($groups as $key => $group)
+        <div
+            x-show="collapsed && flyout === '{{ $key }}'"
+            x-cloak
+            x-transition.opacity.duration.100ms
+            @mouseenter="hold()"
+            @mouseleave="release()"
+            :style="`top:${flyoutTop}px`"
+            class="fixed left-[4.5rem] z-[60] pl-2"
+        >
+            <div class="w-56 rounded-xl border border-slate-200 bg-white shadow-lg p-1.5">
+                <div class="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-slate-400">{{ $group['label'] }}</div>
+                @foreach($group['items'] as [$label, $routeName, $pattern])
+                    <a href="{{ route($routeName) }}" class="sidebar-sub-link {{ request()->routeIs($pattern) ? 'sidebar-sub-link-active' : '' }}">
+                        {{ $label }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @endforeach
+
+    <div
+        x-show="collapsed && flyout === 'language'"
+        x-cloak
+        x-transition.opacity.duration.100ms
+        @mouseenter="hold()"
+        @mouseleave="release()"
+        :style="`top:${flyoutTop}px`"
+        class="fixed left-[4.5rem] z-[60] pl-2"
+    >
+        <div class="w-48 rounded-xl border border-slate-200 bg-white shadow-lg p-1.5">
+            <div class="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-slate-400">{{ __('Language') }}</div>
+            @foreach($languages as $code => [$flag, $name])
+                <a href="{{ route('language.switch', $code) }}" class="sidebar-sub-link {{ app()->getLocale() === $code ? 'sidebar-sub-link-active' : '' }}">
+                    {{ $flag }} {{ $name }}
+                </a>
+            @endforeach
         </div>
     </div>
 
+    {{-- Tooltip for single links (collapsed mode) --}}
+    <div
+        x-show="collapsed && tip"
+        x-cloak
+        :style="`top:${tipTop}px`"
+        x-text="tip"
+        class="fixed left-[4.5rem] ml-2 z-[60] -translate-y-1/2 px-2.5 py-1.5 rounded-md bg-slate-800 text-white text-xs font-medium whitespace-nowrap pointer-events-none"
+    ></div>
+</aside>
 
-    <!-- ================================================================
-         NAVIGATION STYLES
-    ================================================================= -->
-    <style>
-        [x-cloak] {
-            display: none !important;
-        }
 
-        .nav-menu-button {
-            display: inline-flex;
-            align-items: center;
-            gap: .5rem;
-            padding: .5rem .75rem;
-            border-radius: .625rem;
-            font-size: .875rem;
-            font-weight: 500;
-            color: #4b5563;
-            background: transparent;
-            transition: all .15s ease;
-        }
+<style>
+    [x-cloak] { display: none !important; }
 
-        .nav-menu-button:hover {
-            background: #f9fafb;
-            color: #111827;
-        }
+    /* Width is a CSS variable so the page content can follow it */
+    :root { --sidebar-w: 18rem; }
+    html.sidebar-collapsed { --sidebar-w: 4.5rem; }
 
-        .nav-menu-button:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, .15);
-        }
+    #app-sidebar {
+        width: var(--sidebar-w);
+        transition: width .2s ease;
+    }
 
-        .dropdown-menu {
-            position: absolute;
-            left: 0;
-            top: 100%;
-            z-index: 100;
-            margin-top: .5rem;
-            overflow: hidden;
-            border-radius: .875rem;
-            border: 1px solid #e5e7eb;
-            background: white;
-            box-shadow:
-                0 10px 15px -3px rgba(0,0,0,.08),
-                0 4px 6px -4px rgba(0,0,0,.08);
-            padding: .35rem;
-        }
+    /* Collapsed state */
+    html.sidebar-collapsed #app-sidebar .sb-label,
+    html.sidebar-collapsed #app-sidebar .sb-hide { display: none; }
 
-        .dropdown-item {
-            display: block;
-            padding: .65rem .8rem;
-            border-radius: .625rem;
-            font-size: .875rem;
-            color: #4b5563;
-            transition: all .15s ease;
-        }
+    .sb-collapsed-only { display: none; }
+    html.sidebar-collapsed #app-sidebar .sb-collapsed-only { display: flex; }
 
-        .dropdown-item:hover {
-            background: #f3f4f6;
-            color: #111827;
-        }
+    html.sidebar-collapsed #app-sidebar .sidebar-link,
+    html.sidebar-collapsed #app-sidebar .sidebar-group-button,
+    html.sidebar-collapsed #app-sidebar .sidebar-bottom-link {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
 
-        .mobile-group {
-            border-radius: .875rem;
-            overflow: hidden;
-        }
+    html.sidebar-collapsed #app-sidebar .sidebar-row { justify-content: center; padding-left: 0; padding-right: 0; }
+    html.sidebar-collapsed #app-sidebar .sidebar-shop { justify-content: center; padding-left: 0; padding-right: 0; margin-left: .75rem; margin-right: .75rem; }
 
-        .mobile-group-button {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: .75rem 1rem;
-            border-radius: .75rem;
-            font-size: .875rem;
-            font-weight: 600;
-            color: #374151;
-            transition: all .15s ease;
-        }
+    .sb-dot {
+        display: none;
+        position: absolute;
+        top: .55rem;
+        right: 1.05rem;
+        width: .5rem;
+        height: .5rem;
+        border-radius: 9999px;
+        background-color: #f59e0b;
+        box-shadow: 0 0 0 2px #fff;
+    }
+    html.sidebar-collapsed #app-sidebar .sb-dot { display: block; }
 
-        .mobile-group-button:hover {
-            background: #f9fafb;
-        }
+    /* Links */
+    .sidebar-link,
+    .sidebar-group-button,
+    .sidebar-bottom-link {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        border-radius: .7rem;
+        font-size: .875rem;
+        font-weight: 500;
+        color: #475569;
+        transition: background-color .15s ease, color .15s ease;
+    }
 
-        .mobile-submenu {
-            margin: .15rem 0 .35rem;
-            padding-left: .5rem;
-            border-left: 2px solid #eef2ff;
-        }
+    .sidebar-link       { gap: .75rem; padding: .7rem .8rem; }
+    .sidebar-group-button { justify-content: space-between; padding: .7rem .8rem; }
+    .sidebar-bottom-link { gap: .65rem; padding: .6rem .7rem; font-size: .8125rem; color: #64748b; }
 
-        @media (max-width: 640px) {
-            .dropdown-menu {
-                max-width: calc(100vw - 2rem);
-            }
-        }
-    </style>
+    .sidebar-link:hover,
+    .sidebar-group-button:hover,
+    .sidebar-bottom-link:hover { background-color: #f8fafc; color: #0f172a; }
 
-</nav>
+    .sidebar-link:focus-visible,
+    .sidebar-group-button:focus-visible,
+    .sidebar-bottom-link:focus-visible,
+    .sidebar-sub-link:focus-visible { outline: 2px solid #10b981; outline-offset: -2px; }
+
+    .sidebar-link-active { background-color: #ecfdf5; color: #047857; font-weight: 600; }
+    .sidebar-link-active:hover { background-color: #d1fae5; color: #047857; }
+
+    /* Group that contains the current page */
+    .sidebar-group-active { color: #047857; font-weight: 600; }
+
+    .sidebar-icon { width: 1.15rem; height: 1.15rem; flex-shrink: 0; color: currentColor; }
+
+    .sidebar-submenu {
+        margin: .2rem 0 .3rem 1.1rem;
+        padding-left: .8rem;
+        border-left: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        gap: .1rem;
+    }
+
+    .sidebar-sub-link {
+        display: block;
+        padding: .55rem .7rem;
+        border-radius: .55rem;
+        font-size: .8125rem;
+        color: #64748b;
+        transition: background-color .15s ease, color .15s ease;
+    }
+    .sidebar-sub-link:hover { background-color: #f8fafc; color: #0f172a; }
+    .sidebar-sub-link-active { background-color: #f0fdf4; color: #047857; font-weight: 600; }
+
+    .sidebar-section-title {
+        padding: .9rem .8rem .35rem;
+        font-size: .75rem;
+        font-weight: 600;
+        color: #94a3b8;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        #app-sidebar { transition: none; }
+    }
+</style>

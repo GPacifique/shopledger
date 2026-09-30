@@ -27,7 +27,59 @@ use App\Http\Controllers\WaiterController;
 use App\Http\Controllers\OtherIncomeController;
 use App\Http\Controllers\IncomeCategoryController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\ReportController;
 
+Route::middleware(['auth'])
+    ->prefix('reports')
+    ->name('reports.')
+    ->group(function () {
+
+        Route::get('/', [ReportController::class, 'index'])
+            ->name('index');
+
+        Route::get('/daily', [ReportController::class, 'daily'])
+            ->name('daily');
+
+        Route::get('/weekly', [ReportController::class, 'weekly'])
+            ->name('weekly');
+
+        Route::get('/monthly', [ReportController::class, 'monthly'])
+            ->name('monthly');
+
+        Route::get('/yearly', [ReportController::class, 'yearly'])
+            ->name('yearly');
+
+        Route::get('/sales', [ReportController::class, 'sales'])
+            ->name('sales');
+
+        Route::get('/purchases', [ReportController::class, 'purchases'])
+            ->name('purchases');
+
+        Route::get('/expenses', [ReportController::class, 'expenses'])
+            ->name('expenses');
+
+        Route::get('/other-income', [ReportController::class, 'otherIncome'])
+            ->name('other-income');
+
+        Route::get('/profit-loss', [ReportController::class, 'profitLoss'])
+            ->name('profit-loss');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | REPORT EXPORTS
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/export/pdf', [ReportController::class, 'exportPdf'])
+            ->name('export.pdf');
+
+        Route::get('/export/excel', [ReportController::class, 'exportExcel'])
+            ->name('export.excel');
+
+        Route::get('/export/csv', [ReportController::class, 'exportCsv'])
+            ->name('export.csv');
+    });
 Route::get('/products/export', [ProductController::class, 'export'])
     ->name('products.export');
 
