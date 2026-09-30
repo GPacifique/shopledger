@@ -18,33 +18,7 @@
         }
     }
 
-    // Profile image
-    $profileImage = null;
-    foreach (['profile_photo_path', 'profile_image', 'avatar'] as $field) {
-        if (!empty($currentUser?->{$field})) {
-            $profileImage = asset('storage/' . $currentUser->{$field});
-            break;
-        }
-    }
-
-    // Initials
-    $userInitials = collect(preg_split('/\s+/', trim($currentUser?->name ?? 'U')))
-        ->filter()
-        ->map(fn ($part) => strtoupper(substr($part, 0, 1)))
-        ->take(2)
-        ->implode('');
-
     $shopInitials = $currentShop ? strtoupper(mb_substr($currentShop->name, 0, 2)) : '';
-
-    // Role label
-    $userRole = match ($currentUser?->role) {
-        'admin', 'shop_admin' => __('Administrator'),
-        'seller'              => __('Seller'),
-        'waiter'              => __('Waiter'),
-        'accountant'          => __('Accountant'),
-        'owner'               => __('Owner'),
-        default               => ucfirst(str_replace('_', ' ', $currentUser?->role ?? 'User')),
-    };
 
     // Icons (heroicons outline paths)
     $icons = [
@@ -57,9 +31,6 @@
         'cart'     => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 2h12m-9 4a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z',
         'expense'  => 'M12 8v8m-4-4h8M5 5h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z',
         'orders'   => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a3 3 0 006 0M9 5h6',
-        'user'     => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-        'logout'   => 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
-        'globe'    => 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
         'chevron'  => 'M19 9l-7 7-7-7',
         'collapse' => 'M15 19l-7-7 7-7',
     ];
@@ -121,8 +92,6 @@
         [__('Expenses'),  'expenses.index',  'expenses.*',  'expense'],
     ] : [];
 
-    $languages = ['en' => ['🇬🇧', 'English'], 'fr' => ['🇫🇷', 'Français'], 'rw' => ['🇷🇼', 'Kinyarwanda'], 'sw' => ['🇹🇿', 'Kiswahili']];
-
     $dashboardActive = request()->routeIs('dashboard', 'shop.dashboard', 'admin.dashboard', 'seller.dashboard', 'accountant.dashboard');
 @endphp
 
@@ -130,11 +99,17 @@
     id="app-sidebar"
     x-data="{
         collapsed: document.documentElement.classList.contains('sidebar-collapsed'),
+        desktop: window.matchMedia('(min-width: 1024px)').matches,
+        canHover: window.matchMedia('(hover: hover)').matches,
         open: @js($openGroups),
         flyout: null, flyoutTop: 0,
         tip: '', tipTop: 0,
         timer: null,
 
+        get rail() { return this.collapsed && this.desktop; },
+        init() {
+            window.matchMedia('(min-width: 1024px)').addEventListener('change', e => { this.desktop = e.matches; this.flyout = null; this.tip = ''; });
+        },
         toggle() {
             this.collapsed = !this.collapsed;
             document.documentElement.classList.toggle('sidebar-collapsed', this.collapsed);
@@ -144,15 +119,17 @@
         },
         hold() { clearTimeout(this.timer); },
         release() { this.timer = setTimeout(() => { this.flyout = null; this.tip = ''; }, 120); },
+        hoverFlyout(key, el, height) { if (this.canHover) this.showFlyout(key, el, height); },
+        hoverTip(label, el) { if (this.canHover) this.showTip(label, el); },
         showFlyout(key, el, height) {
-            if (!this.collapsed) return;
+            if (!this.rail) return;
             this.hold();
             this.tip = '';
             this.flyoutTop = Math.max(8, Math.min(el.getBoundingClientRect().top, window.innerHeight - height - 8));
             this.flyout = key;
         },
         showTip(label, el) {
-            if (!this.collapsed) return;
+            if (!this.rail) return;
             this.hold();
             this.flyout = null;
             const r = el.getBoundingClientRect();
@@ -160,11 +137,15 @@
             this.tip = label;
         },
         groupClick(key, el, height) {
-            if (!this.collapsed) { this.open[key] = !this.open[key]; return; }
+            if (!this.rail) { this.open[key] = !this.open[key]; return; }
             this.flyout === key ? this.flyout = null : this.showFlyout(key, el, height);
         }
     }"
-    class="fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-slate-200 shadow-sm"
+    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+    :inert="!sidebarOpen && !desktop"
+    @click.outside="flyout = null; tip = ''"
+    @keydown.escape.window="flyout = null; tip = ''"
+    class="fixed inset-y-0 left-0 z-50 flex max-w-[85vw] flex-col bg-white border-r border-slate-200 shadow-xl lg:shadow-sm lg:translate-x-0"
 >
 
     {{-- Collapse toggle --}}
@@ -172,7 +153,7 @@
         type="button"
         @click="toggle()"
         :aria-label="collapsed ? '{{ __('Expand sidebar') }}' : '{{ __('Collapse sidebar') }}'"
-        class="absolute -right-3 top-7 z-10 h-6 w-6 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm text-slate-500 hover:text-emerald-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+        class="absolute -right-3 top-5 z-10 h-6 w-6 hidden lg:flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm text-slate-500 hover:text-emerald-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
     >
         <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': collapsed }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="{{ $icons['collapse'] }}"/>
@@ -180,7 +161,7 @@
     </button>
 
     {{-- Brand --}}
-    <div class="h-20 shrink-0 flex items-center px-5 border-b border-slate-200 overflow-hidden sidebar-row">
+    <div class="h-16 shrink-0 flex items-center px-5 border-b border-slate-200 overflow-hidden sidebar-row">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-3 min-w-0">
             <x-application-logo class="block h-9 w-auto shrink-0 fill-current text-gray-800" />
             <span class="sb-label text-base font-semibold text-slate-800 truncate">{{ config('app.name') }}</span>
@@ -191,7 +172,7 @@
     @if($currentShop)
         <div
             class="sidebar-shop mx-4 mt-4 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-3"
-            @mouseenter="showTip(@js($currentShop->name), $el)"
+            @mouseenter="hoverTip(@js($currentShop->name), $el)"
             @mouseleave="release()"
         >
             <div class="h-8 w-8 shrink-0 rounded-lg bg-emerald-600 text-white text-xs font-bold flex items-center justify-center">
@@ -205,13 +186,13 @@
     @endif
 
     {{-- Navigation --}}
-    <nav class="flex-1 overflow-y-auto overflow-x-hidden whitespace-nowrap px-3 py-5 space-y-1">
+    <nav class="flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain whitespace-nowrap px-3 py-5 space-y-1">
 
         {{-- Dashboard --}}
         <a
             href="{{ route('dashboard') }}"
             class="sidebar-link {{ $dashboardActive ? 'sidebar-link-active' : '' }}"
-            @mouseenter="showTip(@js(__('Dashboard')), $el)"
+            @mouseenter="hoverTip(@js(__('Dashboard')), $el)"
             @mouseleave="release()"
         >
             <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['home'] }}"/></svg>
@@ -229,9 +210,9 @@
                 <button
                     type="button"
                     @click="groupClick('{{ $key }}', $el, {{ $panelHeight }})"
-                    @mouseenter="showFlyout('{{ $key }}', $el, {{ $panelHeight }})"
+                    @mouseenter="hoverFlyout('{{ $key }}', $el, {{ $panelHeight }})"
                     @mouseleave="release()"
-                    :aria-expanded="collapsed ? flyout === '{{ $key }}' : open.{{ $key }}"
+                    :aria-expanded="rail ? flyout === '{{ $key }}' : open.{{ $key }}"
                     class="sidebar-group-button {{ $groupActive ? 'sidebar-group-active' : '' }}"
                 >
                     <span class="flex items-center gap-3">
@@ -245,7 +226,7 @@
                 </button>
 
                 {{-- Inline submenu (expanded mode) --}}
-                <div x-show="!collapsed && open.{{ $key }}" x-collapse x-cloak class="sidebar-submenu">
+                <div x-show="!rail && open.{{ $key }}" x-collapse x-cloak class="sidebar-submenu">
                     @foreach($group['items'] as [$label, $routeName, $pattern])
                         <a href="{{ route($routeName) }}" class="sidebar-sub-link {{ request()->routeIs($pattern) ? 'sidebar-sub-link-active' : '' }}">
                             {{ $label }}
@@ -263,7 +244,7 @@
                 <a
                     href="{{ route($routeName) }}"
                     class="sidebar-link {{ request()->routeIs($pattern) ? 'sidebar-link-active' : '' }}"
-                    @mouseenter="showTip(@js($label), $el)"
+                    @mouseenter="hoverTip(@js($label), $el)"
                     @mouseleave="release()"
                 >
                     <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons[$icon] }}"/></svg>
@@ -280,7 +261,7 @@
                 <a
                     href="{{ $ordersRoute }}"
                     class="sidebar-link {{ request()->routeIs('shops.orders.*') ? 'sidebar-link-active' : '' }}"
-                    @mouseenter="showTip(@js($ordersLabel), $el)"
+                    @mouseenter="hoverTip(@js($ordersLabel), $el)"
                     @mouseleave="release()"
                 >
                     <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['orders'] }}"/></svg>
@@ -297,78 +278,10 @@
         @endif
     </nav>
 
-    {{-- User area --}}
-    <div class="shrink-0 border-t border-slate-200 p-3 whitespace-nowrap">
-
-        <div class="sidebar-row flex items-center gap-3 px-2 py-2">
-            @if($profileImage)
-                <img src="{{ $profileImage }}" alt="{{ $currentUser->name }}" class="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-slate-100">
-            @else
-                <div class="h-10 w-10 shrink-0 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
-                    {{ $userInitials ?: 'U' }}
-                </div>
-            @endif
-
-            <div class="sb-label min-w-0 flex-1">
-                <div class="text-sm font-semibold text-slate-800 truncate">{{ $currentUser->name }}</div>
-                <div class="text-xs text-slate-500 truncate">{{ $userRole }}</div>
-            </div>
-        </div>
-
-        <a
-            href="{{ route('profile.edit') }}"
-            class="sidebar-bottom-link"
-            @mouseenter="showTip(@js(__('Profile Settings')), $el)"
-            @mouseleave="release()"
-        >
-            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['user'] }}"/></svg>
-            <span class="sb-label">{{ __('Profile Settings') }}</span>
-        </a>
-
-        {{-- Language: chips when expanded, flyout when collapsed --}}
-        <div class="sb-label px-2 py-3">
-            <div class="text-xs font-medium text-slate-400 mb-2">{{ __('Language') }}</div>
-            <div class="flex gap-1.5 flex-wrap">
-                @foreach($languages as $code => [$flag])
-                    <a
-                        href="{{ route('language.switch', $code) }}"
-                        class="px-2 py-1 rounded-md text-[11px] font-semibold transition {{ app()->getLocale() === $code ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}"
-                    >
-                        {{ $flag }} {{ strtoupper($code) }}
-                    </a>
-                @endforeach
-            </div>
-        </div>
-
-        <button
-            type="button"
-            class="sb-collapsed-only sidebar-bottom-link"
-            @click="flyout === 'language' ? flyout = null : showFlyout('language', $el, 200)"
-            @mouseenter="showFlyout('language', $el, 200)"
-            @mouseleave="release()"
-            aria-label="{{ __('Language') }}"
-        >
-            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['globe'] }}"/></svg>
-        </button>
-
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button
-                type="submit"
-                class="sidebar-bottom-link text-red-600 hover:!bg-red-50 hover:!text-red-600"
-                @mouseenter="showTip(@js(__('Log Out')), $el)"
-                @mouseleave="release()"
-            >
-                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['logout'] }}"/></svg>
-                <span class="sb-label">{{ __('Log Out') }}</span>
-            </button>
-        </form>
-    </div>
-
     {{-- Flyouts (collapsed mode). Fixed-position so the nav's overflow can't clip them. --}}
     @foreach($groups as $key => $group)
         <div
-            x-show="collapsed && flyout === '{{ $key }}'"
+            x-show="rail && flyout === '{{ $key }}'"
             x-cloak
             x-transition.opacity.duration.100ms
             @mouseenter="hold()"
@@ -387,28 +300,9 @@
         </div>
     @endforeach
 
-    <div
-        x-show="collapsed && flyout === 'language'"
-        x-cloak
-        x-transition.opacity.duration.100ms
-        @mouseenter="hold()"
-        @mouseleave="release()"
-        :style="`top:${flyoutTop}px`"
-        class="fixed left-[4.5rem] z-[60] pl-2"
-    >
-        <div class="w-48 rounded-xl border border-slate-200 bg-white shadow-lg p-1.5">
-            <div class="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-slate-400">{{ __('Language') }}</div>
-            @foreach($languages as $code => [$flag, $name])
-                <a href="{{ route('language.switch', $code) }}" class="sidebar-sub-link {{ app()->getLocale() === $code ? 'sidebar-sub-link-active' : '' }}">
-                    {{ $flag }} {{ $name }}
-                </a>
-            @endforeach
-        </div>
-    </div>
-
     {{-- Tooltip for single links (collapsed mode) --}}
     <div
-        x-show="collapsed && tip"
+        x-show="rail && tip"
         x-cloak
         :style="`top:${tipTop}px`"
         x-text="tip"
@@ -420,32 +314,19 @@
 <style>
     [x-cloak] { display: none !important; }
 
-    /* Width is a CSS variable so the page content can follow it */
-    :root { --sidebar-w: 18rem; }
-    html.sidebar-collapsed { --sidebar-w: 4.5rem; }
-
+    /* --sidebar-w is defined in layouts/app.blade.php */
     #app-sidebar {
-        width: var(--sidebar-w);
-        transition: width .2s ease;
+        width: 18rem;
+        height: 100vh;
+        height: 100dvh;
+        transition: width .2s ease, transform .2s ease;
     }
 
-    /* Collapsed state */
-    html.sidebar-collapsed #app-sidebar .sb-label,
-    html.sidebar-collapsed #app-sidebar .sb-hide { display: none; }
-
-    .sb-collapsed-only { display: none; }
-    html.sidebar-collapsed #app-sidebar .sb-collapsed-only { display: flex; }
-
-    html.sidebar-collapsed #app-sidebar .sidebar-link,
-    html.sidebar-collapsed #app-sidebar .sidebar-group-button,
-    html.sidebar-collapsed #app-sidebar .sidebar-bottom-link {
-        justify-content: center;
-        padding-left: 0;
-        padding-right: 0;
+    /* Phones and tablets: keep content clear of notches and the home indicator */
+    @media (max-width: 1023px) {
+        #app-sidebar { padding-left: env(safe-area-inset-left, 0px); }
+        #app-sidebar nav { padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); }
     }
-
-    html.sidebar-collapsed #app-sidebar .sidebar-row { justify-content: center; padding-left: 0; padding-right: 0; }
-    html.sidebar-collapsed #app-sidebar .sidebar-shop { justify-content: center; padding-left: 0; padding-right: 0; margin-left: .75rem; margin-right: .75rem; }
 
     .sb-dot {
         display: none;
@@ -458,12 +339,30 @@
         background-color: #f59e0b;
         box-shadow: 0 0 0 2px #fff;
     }
-    html.sidebar-collapsed #app-sidebar .sb-dot { display: block; }
+
+    /* Collapsed rail: desktop only. The mobile drawer is always full width. */
+    @media (min-width: 1024px) {
+        #app-sidebar { width: var(--sidebar-w, 18rem); }
+
+        html.sidebar-collapsed #app-sidebar .sb-label,
+        html.sidebar-collapsed #app-sidebar .sb-hide { display: none; }
+
+        html.sidebar-collapsed #app-sidebar .sb-dot { display: block; }
+
+        html.sidebar-collapsed #app-sidebar .sidebar-link,
+        html.sidebar-collapsed #app-sidebar .sidebar-group-button {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        html.sidebar-collapsed #app-sidebar .sidebar-row { justify-content: center; padding-left: 0; padding-right: 0; }
+        html.sidebar-collapsed #app-sidebar .sidebar-shop { justify-content: center; padding-left: 0; padding-right: 0; margin-left: .75rem; margin-right: .75rem; }
+    }
 
     /* Links */
     .sidebar-link,
-    .sidebar-group-button,
-    .sidebar-bottom-link {
+    .sidebar-group-button {
         position: relative;
         display: flex;
         align-items: center;
@@ -477,15 +376,12 @@
 
     .sidebar-link       { gap: .75rem; padding: .7rem .8rem; }
     .sidebar-group-button { justify-content: space-between; padding: .7rem .8rem; }
-    .sidebar-bottom-link { gap: .65rem; padding: .6rem .7rem; font-size: .8125rem; color: #64748b; }
 
     .sidebar-link:hover,
-    .sidebar-group-button:hover,
-    .sidebar-bottom-link:hover { background-color: #f8fafc; color: #0f172a; }
+    .sidebar-group-button:hover { background-color: #f8fafc; color: #0f172a; }
 
     .sidebar-link:focus-visible,
     .sidebar-group-button:focus-visible,
-    .sidebar-bottom-link:focus-visible,
     .sidebar-sub-link:focus-visible { outline: 2px solid #10b981; outline-offset: -2px; }
 
     .sidebar-link-active { background-color: #ecfdf5; color: #047857; font-weight: 600; }
