@@ -31,6 +31,7 @@
         'cart'     => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 2h12m-9 4a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z',
         'expense'  => 'M12 8v8m-4-4h8M5 5h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z',
         'orders'   => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a3 3 0 006 0M9 5h6',
+        'logout'   => 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
         'chevron'  => 'M19 9l-7 7-7-7',
         'collapse' => 'M15 19l-7-7 7-7',
     ];
@@ -186,7 +187,7 @@
     @endif
 
     {{-- Navigation --}}
-    <nav class="flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain whitespace-nowrap px-3 py-5 space-y-1">
+    <nav class="flex flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain whitespace-nowrap px-3 py-5 space-y-1">
 
         {{-- Dashboard --}}
         <a
@@ -276,6 +277,23 @@
                 </a>
             </div>
         @endif
+
+        {{-- Pushes Log Out to the bottom when the list is short; collapses when the list is long --}}
+        <div class="flex-1" style="min-height: 1rem"></div>
+
+        {{-- Log out --}}
+        <form method="POST" action="{{ route('logout') }}" class="border-t border-slate-200 pt-3">
+            @csrf
+            <button
+                type="submit"
+                class="sidebar-link sidebar-link-danger"
+                @mouseenter="hoverTip(@js(__('Log Out')), $el)"
+                @mouseleave="release()"
+            >
+                <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['logout'] }}"/></svg>
+                <span class="sb-label">{{ __('Log Out') }}</span>
+            </button>
+        </form>
     </nav>
 
     {{-- Flyouts (collapsed mode). Fixed-position so the nav's overflow can't clip them. --}}
@@ -383,6 +401,9 @@
     .sidebar-link:focus-visible,
     .sidebar-group-button:focus-visible,
     .sidebar-sub-link:focus-visible { outline: 2px solid #10b981; outline-offset: -2px; }
+
+    .sidebar-link.sidebar-link-danger { color: #dc2626; }
+    .sidebar-link.sidebar-link-danger:hover { background-color: #fef2f2; color: #b91c1c; }
 
     .sidebar-link-active { background-color: #ecfdf5; color: #047857; font-weight: 600; }
     .sidebar-link-active:hover { background-color: #d1fae5; color: #047857; }
