@@ -40,7 +40,7 @@
     @endif
 
     {{-- Apply saved theme and sidebar state before first paint (prevents flashes) --}}
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         (() => {
             try {
                 const theme = localStorage.getItem('mahwi-theme');
@@ -382,7 +382,7 @@
 
 
     {{-- Alpine app state --}}
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         function mahwiApp() {
             return {
                 darkMode: false,
