@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
-
+use App\Models\User;
 class Order extends Model
 {
     use HasFactory, SoftDeletes;
@@ -120,4 +120,9 @@ class Order extends Model
         $this->total_amount = $subtotal - $this->discount_amount + $this->tax_amount;
         $this->save();
     }
+    
+public function user()
+{
+    return $this->belongsTo(User::class, 'user_id');
+}
 }
