@@ -112,8 +112,38 @@
                          ADMIN
                     =================================================== --}}
                     @if($isAdmin)
+                    <a
+    href="{{ route('pos.index') }}"
+    class="sidebar-link flex items-center gap-3"
+>
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 3h18v18H3V3zm4 4h10M7 11h10M7 15h6"
+        />
+    </svg>
+
+    <span>POS</span>
+</a>
 
                         <!-- Inventory -->
+                         <a
+    href="{{ route('pos.index') }}"
+    class="sidebar-link flex items-center gap-3"
+>
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 3h18v18H3V3zm4 4h10M7 11h10M7 15h6"
+        />
+    </svg>
+
+    <span>Quick Sale</span>
+</a>
                         <div x-data="{ open: false }" class="relative">
 
                             <button
@@ -318,7 +348,21 @@
                                 </a>
                             </div>
                         </div>
+<a
+    href="{{ route('pos.index') }}"
+    class="sidebar-link flex items-center gap-3"
+>
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 3h18v18H3V3zm4 4h10M7 11h10M7 15h6"
+        />
+    </svg>
 
+    <span>Quick Sale</span>
+</a>
                         <!-- Inventory -->
                         <div x-data="{ open: false }" class="relative">
 
@@ -674,6 +718,21 @@
                      ADMIN MOBILE
                 ====================================================== --}}
                 @if($isAdmin)
+                <a
+    href="{{ route('pos.index') }}"
+    class="sidebar-link flex items-center gap-3"
+>
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 3h18v18H3V3zm4 4h10M7 11h10M7 15h6"
+        />
+    </svg>
+
+    <span>Quick Sale</span>
+</a>
 
                     <!-- Inventory -->
                     <div class="mobile-group">
@@ -853,7 +912,21 @@
 
                     </div>
 
+<a
+    href="{{ route('pos.index') }}"
+    class="sidebar-link flex items-center gap-3"
+>
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 3h18v18H3V3zm4 4h10M7 11h10M7 15h6"
+        />
+    </svg>
 
+    <span>Quick Sale</span>
+</a>
                     <!-- Inventory -->
                     <div class="mobile-group">
 

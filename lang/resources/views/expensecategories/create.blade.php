@@ -36,7 +36,7 @@
 
                 <button type="submit"
                         class="w-full bg-rose-600 text-white py-2 rounded-xl hover:bg-rose-700">
-                    Save Category
+                    Save 
                 </button>
 
             </form>

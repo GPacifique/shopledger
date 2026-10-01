@@ -10,7 +10,7 @@
                        h-9 w-9 rounded-lg
                        text-gray-500
                        hover:text-gray-700
-                       hover:bg-gray-100
+                       hover:bg-red-100
                        transition"
             >
                 <svg
@@ -29,11 +29,11 @@
             </a>
 
             <div>
-                <h2 class="font-semibold text-lg sm:text-xl text-gray-800">
+                <h2 class="font-semibold text-lg sm:text-3xl text-blue-800">
                     {{ __('Add New Product') }}
                 </h2>
 
-                <p class="text-xs sm:text-sm text-gray-500 mt-0.5">
+                <p class="text-xs sm:text-sm text-red-500 mt-0.5">
                     {{ __('Create the product and record its opening inventory.') }}
                 </p>
             </div>
@@ -866,7 +866,7 @@
                             />
                         </svg>
 
-                        {{ __('Create Product') }}
+                        {{ __('save') }}
 
                     </button>
 

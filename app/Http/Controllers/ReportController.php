@@ -449,7 +449,7 @@ public function exportExcel(Request $request)
 
     return Excel::download(
         new ReportExport($data['items']),
-        'mahwi-sales-' .
+        'report-sales-' .
         $startDate->format('Y-m-d') .
         '-to-' .
         $endDate->format('Y-m-d') .

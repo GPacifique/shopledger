@@ -39,7 +39,7 @@
                             {{ __('Cancel') }}
                         </a>
                         <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                            {{ __('Create Category') }}
+                            {{ __('Save') }}
                         </button>
                     </div>
                 </form>

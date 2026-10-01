@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-bold text-xl text-gray-800">
+            <h2 class="font-bold text-3xl text-blue-800">
                 {{ __('Expense Categories') }}
             </h2>
 

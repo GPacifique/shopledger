@@ -28,6 +28,12 @@ use App\Http\Controllers\OtherIncomeController;
 use App\Http\Controllers\IncomeCategoryController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\PosController;
+
+Route::middleware('auth')->group(function () {
+    Route::get('/pos', [PosController::class, 'index'])
+        ->name('pos.index');
+});
 
 Route::middleware(['auth'])
     ->prefix('reports')

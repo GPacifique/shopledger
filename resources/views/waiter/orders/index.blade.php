@@ -1,5 +1,7 @@
-<x-app-layout>
-    <x-slot name="header">
+@extends('layouts.app')
+
+@section('content')
+    <div name="header">
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="font-semibold text-xl leading-tight" style="font-family:'Fraunces',serif; color:#F7F3EC;">
@@ -16,7 +18,7 @@
                 {{ __('+ New Order') }}
             </a>
         </div>
-    </x-slot>
+</div>
 
     <div class="relative min-h-screen -mt-6 -mx-4 sm:-mx-6 lg:-mx-8" style="background:#14110D;">
 
@@ -154,4 +156,4 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
     </style>
-</x-app-layout>
+@endsection

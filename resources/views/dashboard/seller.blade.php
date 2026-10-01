@@ -10,11 +10,11 @@
                 </div>
 
                 <div>
-                    <h2 class="font-bold text-xl text-gray-800 leading-tight">
+                    <h2 class="font-bold text-2xl text-blue-800 leading-tight">
                         {{ __('Seller Dashboard') }}
                     </h2>
 
-                    <p class="text-sm text-gray-500">
+                    <p class="font-bold text-sm text-green-500">
                         {{ $shop->business_name ?? $shop->name ?? __('Shop') }}
                     </p>
                 </div>
@@ -120,11 +120,11 @@
                             </span>
                         </div>
 
-                        <h3 class="text-sm font-medium text-gray-500 mb-2">
+                        <h3 class="text-sm font-medium text-green-500 mb-2">
                             {{ __('Shop Sales') }}
                         </h3>
 
-                        <p class="text-2xl font-bold text-gray-900">
+                        <p class="text-2xl font-bold text-green-900">
                             {{ rwf($todaySales) }}
                         </p>
                     </div>
@@ -155,7 +155,7 @@
                             </span>
                         </div>
 
-                        <h3 class="text-sm font-medium text-gray-500 mb-2">
+                        <h3 class="text-sm font-medium text-green-500 mb-2">
                             {{ __('Your Sales') }}
                         </h3>
 
@@ -190,7 +190,7 @@
                             </span>
                         </div>
 
-                        <h3 class="text-sm font-medium text-gray-500 mb-2">
+                        <h3 class="text-sm font-medium text-green-500 mb-2">
                             {{ __('Average Sale') }}
                         </h3>
 
@@ -262,7 +262,7 @@
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                    <p class="text-sm text-gray-500">
+                    <p class="text-sm text-yellow-500">
                         {{ __('Low Stock') }}
                     </p>
 
@@ -272,7 +272,7 @@
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                    <p class="text-sm text-gray-500">
+                    <p class="text-sm text-red-500">
                         {{ __('Out of Stock') }}
                     </p>
 
@@ -340,7 +340,7 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
 
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900">
+                        <h3 class="text-lg font-semibold text-yellow-300">
                             {{ __('Low Stock Alerts') }}
                         </h3>
 

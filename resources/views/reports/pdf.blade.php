@@ -87,8 +87,7 @@
 
 <div class="header">
 
-    <h1>MAHWI BUSINESS REPORT</h1>
-
+    <h1> MAHWI-BMS BUSINESS REPORT</h1>
     <div>
         Period:
         {{ $startDate->format('d M Y') }}
@@ -98,13 +97,13 @@
 
     @if($shop)
         <div>
-            Shop: {{ $shop->name }}
+            BUSINESS: {{ $shop->business_name }}
         </div>
     @endif
 
     <div>
         Generated:
-        {{ now()->format('d M Y H:i') }}
+        {{ now()->format('d M Y H:i') }} By MAHWI
     </div>
 
 </div>
@@ -330,7 +329,7 @@
                 </td>
 
                 <td>
-                    {{ $expense->category ?? 'Other' }}
+                    {{ $expense->category->name ?? 'Other' }}
                 </td>
 
                 <td>
@@ -403,7 +402,7 @@
                 </td>
 
                 <td>
-                    {{ $income->source ?? $income->category ?? '-' }}
+                    {{ $income->source ?? $income->category->name ?? '-' }}
                 </td>
 
                 <td>

@@ -77,16 +77,16 @@
                         $quantity = (float) ($item->quantity ?? 0);
 
                         $sellingPrice = (float) (
-                            $item->selling_price
+                            $item->cost_price_at_sale
                             ?? $item->unit_price
-                            ?? $item->price
+                            ?? $item->line_total
                             ?? 0
                         );
 
                         $buyingPrice = (float) (
-                            $item->buying_price
-                            ?? $item->cost_price
-                            ?? $product?->buying_price
+                            $item->unit_price
+                            ?? $item->cost_price_at_sale
+                            ?? $product?->line_total
                             ?? 0
                         );
 

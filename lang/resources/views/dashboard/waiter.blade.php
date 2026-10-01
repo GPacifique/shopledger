@@ -1,16 +1,17 @@
-{{-- resources/views/orders/waiter.blade.php --}}
 
-<x-application-layout>
+@extends('layouts.app')
 
-    <x-slot name="header">
-        <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+@section('content')
+
+    <div name="header">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-lg sm:text-xl font-semibold text-gray-800">
                     Take Order
                 </h2>
 
                 <p class="text-xs sm:text-sm text-gray-500">
-                    {{ $shop->name }}
+                    {{ $shop->business_name }}
                 </p>
             </div>
 
@@ -18,7 +19,7 @@
                 Order Management
             </span>
         </div>
-    </x-slot>
+</div>
 
 
     <div
@@ -1279,4 +1280,4 @@
         }
     </style>
 
-</x-application-layout>
+@endsection

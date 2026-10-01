@@ -29,11 +29,11 @@
             </a>
 
             <div>
-                <h2 class="font-semibold text-lg sm:text-xl text-gray-800">
+                <h2 class="font-semibold text-lg sm:text-xl text-blue-800">
                     {{ __('Add New Product') }}
                 </h2>
 
-                <p class="text-xs sm:text-sm text-gray-500 mt-0.5">
+                <p class="text-xs sm:text-sm text-red-500 mt-0.5">
                     {{ __('Create the product and record its opening inventory.') }}
                 </p>
             </div>

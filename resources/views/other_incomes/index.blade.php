@@ -4,8 +4,8 @@
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
             <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    {{ __('Other Income') }}
+                <h2 class="font-semibold text-2xl text-green-800 leading-tight">
+                    {{ __('All Other Incomes') }}
                 </h2>
 
                 <p class="text-sm text-gray-500 mt-1">

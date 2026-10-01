@@ -1,15 +1,15 @@
 <x-app-layout>
 <x-slot name="header">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                Expenses
+                    <div>
+            <h2 class="text-2xl font-semibold leading-tight text-red-800">
+                {{_('Expenses Overview') }}
             </h2>
 
-            <p class="mt-1 text-sm text-gray-500">
-                Track and manage your business expenses.
+            <p class="mt-1 text-sm text-blue-500">
+                {{_('Track and manage your business Expenses.') }}
             </p>
-        </div>
+</div>
 
         @if (auth()->user()->isSystemAdmin() || auth()->user()->isShopAdmin())
             <a

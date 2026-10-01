@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800">
+            <h2 class="font-semibold text-2xl text-red-800">
                 {{ __('Create Expense') }}
             </h2>
 
@@ -113,6 +113,16 @@
                                name="attachment"
                                class="mt-1 w-full border-gray-300 rounded-xl">
                     </div>
+                     <x-form.field name="payment_method" :label="__('Payment Method')" required>
+                                        <select name="payment_method" id="payment_method" required
+                                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-2.5 px-3 text-base transition-colors">
+                                            @foreach(\App\Models\Sale::PAYMENT_METHODS as $value => $label)
+                                                <option value="{{ $value }}" {{ old('payment_method', 'cash') === $value ? 'selected' : '' }}>
+                                                    {{ $label }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </x-form.field>
 
                     <!-- SUBMIT -->
                     <div class="flex justify-end">

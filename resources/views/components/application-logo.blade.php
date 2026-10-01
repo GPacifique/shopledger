@@ -83,6 +83,6 @@
         font-weight="600"
         letter-spacing="3"
         fill="#6B7280">
-        YOUR BUSINESS BACK BONE
+        BMS
     </text>
 </svg>

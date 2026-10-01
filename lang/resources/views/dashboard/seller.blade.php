@@ -10,7 +10,7 @@
                 </div>
 
                 <div>
-                    <h2 class="font-bold text-xl text-gray-800 leading-tight">
+                    <h2 class="font-bold text-2xl text-blue-800 leading-tight">
                         {{ __('Seller Dashboard') }}
                     </h2>
 
@@ -21,7 +21,7 @@
             </div>
 
             <div class="text-right hidden md:block">
-                <p class="text-xs text-gray-500">
+                <p class="text-xs text-green-500">
                     {{ __('Welcome back') }}
                 </p>
 
@@ -120,7 +120,7 @@
                             </span>
                         </div>
 
-                        <h3 class="text-sm font-medium text-gray-500 mb-2">
+                        <h3 class="text-sm font-medium text-green-500 mb-2">
                             {{ __('Shop Sales') }}
                         </h3>
 

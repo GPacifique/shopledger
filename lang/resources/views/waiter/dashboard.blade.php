@@ -2,8 +2,8 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="font-semibold text-xl leading-tight" style="font-family:'Fraunces',serif; color:#F7F3EC;">
-                    {{ __('Front Desk') }}
+                <h2 class="font-semibold text-2xl leading-tight" style="font-family:'Fraunces',serif; color:blue;">
+                    {{ __('Counter') }}
                 </h2>
                 <p class="text-sm mt-1" style="color:#C9BFAE;">
                     {{ $shop->business_name }}
@@ -131,7 +131,7 @@
             @endphp
 
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold" style="font-family:'Fraunces',serif; color:#F7F3EC;">
+                <h3 class="text-lg font-semibold" style="font-family:'Fraunces',serif; color:blue;">
                     Recent Orders
                 </h3>
                 <a href="{{ route('shops.orders.index', $shop) }}" class="text-sm font-medium hover:underline" style="color:#E3A857;">

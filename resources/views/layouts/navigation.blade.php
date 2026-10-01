@@ -165,7 +165,7 @@
     <div class="h-16 shrink-0 flex items-center px-5 border-b border-slate-200 overflow-hidden sidebar-row">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-3 min-w-0">
             <x-application-logo class="block h-9 w-auto shrink-0 fill-current text-gray-800" />
-            <span class="sb-label text-base font-semibold text-slate-800 truncate">{{ config('app.name') }}</span>
+        
         </a>
     </div>
 
@@ -176,12 +176,12 @@
             @mouseenter="hoverTip(@js($currentShop->name), $el)"
             @mouseleave="release()"
         >
-            <div class="h-8 w-8 shrink-0 rounded-lg bg-emerald-600 text-white text-xs font-bold flex items-center justify-center">
-                {{ $shopInitials }}
+            <div class="h-8 w-8 shrink-0 rounded-lg bg-emerald-200 text-white text-xs font-bold flex items-center justify-center">
+                {{ strtoupper(substr($currentShop->business_name, 0, 2)) }}
             </div>
             <div class="sb-label min-w-0">
-                <div class="text-xs text-slate-400">{{ __('Shop') }}</div>
-                <div class="text-sm font-semibold text-slate-800 truncate">{{ $currentShop->name }}</div>
+                <div class="text-xs text-slate-400">{{ __('Business name') }}</div>
+                <div class="text-sm font-semibold text-green-800 truncate">{{ $currentShop->business_name }}</div>
             </div>
         </div>
     @endif
@@ -253,6 +253,21 @@
                 </a>
             @endforeach
         @endif
+        <a
+    href="{{ route('pos.index') }}"
+    class="sidebar-link flex items-center gap-3"
+>
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 3h18v18H3V3zm4 4h10M7 11h10M7 15h6"
+        />
+    </svg>
+
+    <span>Quick Sale</span>
+</a>
 
         {{-- Orders --}}
         @if($currentShop && $ordersRoute)

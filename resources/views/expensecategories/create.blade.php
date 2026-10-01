@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-bold text-xl text-gray-800">
+        <h2 class="font-bold text-2xl text-blue-800">
             {{ __('Create Expense Category') }}
         </h2>
     </x-slot>

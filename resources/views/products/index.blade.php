@@ -5,11 +5,11 @@
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
 
             <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                <h2 class="font-semibold text-3xl text-blue-800 leading-tight">
                     {{ __('Products') }}
                 </h2>
 
-                <p class="text-sm text-gray-500 mt-1">
+                <p class="text-sm text-red-500 mt-1">
                     {{ __('Manage products, inventory, imports and exports.') }}
                 </p>
             </div>

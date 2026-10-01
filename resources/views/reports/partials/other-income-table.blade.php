@@ -53,7 +53,7 @@
                         </td>
 
                         <td class="px-4 py-3">
-                            {{ $income->source ?? $income->category ?? '-' }}
+                            {{ $income->source ?? $income->category->name ?? '-' }}
                         </td>
 
                         <td class="px-4 py-3">

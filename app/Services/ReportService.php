@@ -7,6 +7,7 @@ use App\Models\Purchase;
 use App\Models\Expense;
 use App\Models\OtherIncome;
 use Carbon\Carbon;
+use App\Models\Sale;
 use Illuminate\Support\Collection;
 
 class ReportService
@@ -132,10 +133,10 @@ class ReportService
                 );
 
                 $buyingPrice = (float) (
-                    $item->buying_price
-                    ?? $item->cost_price
-                    ?? $product?->buying_price
-                    ?? $product?->purchase_price
+                    $item->unit_price
+                    ?? $item->cost_price_at_sale
+                    ?? $product?->unit_price
+                    ?? $product?->price_at_sale
                     ?? 0
                 );
 

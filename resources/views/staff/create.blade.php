@@ -49,6 +49,7 @@
                             <option value="">{{ __('Select Role') }}</option>
                             <option value="seller" {{ old('role') == 'seller' ? 'selected' : '' }}>{{ __('Seller - Can create sales') }}</option>
                             <option value="accountant" {{ old('role') == 'accountant' ? 'selected' : '' }}>{{ __('Accountant - Can view reports') }}</option>
+                          <option value="accountant" {{ old('role') == 'waiter' ? 'selected' : '' }}>{{ __('Waiter - Can make orders') }}</option>
                         </select>
                         @error('role')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

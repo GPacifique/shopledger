@@ -118,7 +118,7 @@
                     <div class="flex justify-end">
                         <button type="submit"
                                 class="px-6 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
-                            Save Expense
+                            Save 
                         </button>
                     </div>
 
