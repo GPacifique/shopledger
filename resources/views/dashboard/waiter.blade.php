@@ -10,7 +10,7 @@
                 </h2>
 
                 <p class="text-xs sm:text-sm text-gray-500">
-                    {{ $shop->name }}
+                    {{ $shop->business_name }}
                 </p>
             </div>
 

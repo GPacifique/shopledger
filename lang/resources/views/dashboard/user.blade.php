@@ -95,7 +95,7 @@
                                     </svg>
                                     Shop Name
                                 </span>
-                                <span class="font-semibold text-gray-900">{{ $shop->name ?? 'Not registered' }}</span>
+                                <span class="font-semibold text-gray-900">{{ $shop->business_name ?? 'Not registered' }}</span>
                             </div>
                             <div class="flex justify-between items-center py-3 border-b border-gray-200">
                                 <span class="text-gray-500 flex items-center">

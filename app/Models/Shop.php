@@ -66,4 +66,14 @@ public function orders(): HasMany
 {
     return $this->hasMany(Order::class);
 }
+public function reportSchedules(): HasMany
+{
+    return $this->hasMany(ReportSchedule::class);
+}
+
+public function reportDeliveries(): HasMany
+{
+    return $this->hasMany(ReportDelivery::class);
+}
+
 }

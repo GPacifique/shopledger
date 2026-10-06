@@ -252,10 +252,10 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center">
                                         <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mr-4">
-                                            <span class="text-lg font-bold text-gray-600">{{ strtoupper(substr($shop->name, 0, 2)) }}</span>
+                                            <span class="text-lg font-bold text-gray-600">{{ strtoupper(substr($shop->business_name, 0, 2)) }}</span>
                                         </div>
                                         <div>
-                                            <div class="text-sm font-bold text-gray-900">{{ $shop->name }}</div>
+                                            <div class="text-sm font-bold text-gray-900">{{ $shop->business_name }}</div>
                                             <div class="text-xs text-gray-500 font-mono">{{ $shop->slug }}</div>
                                         </div>
                                     </div>
@@ -354,10 +354,10 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center">
                                         <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center mr-3">
-                                            <span class="text-sm font-bold text-indigo-600">{{ strtoupper(substr($shop->name, 0, 2)) }}</span>
+                                            <span class="text-sm font-bold text-indigo-600">{{ strtoupper(substr($shop->business_name, 0, 2)) }}</span>
                                         </div>
                                         <div>
-                                            <div class="text-sm font-semibold text-gray-900">{{ $shop->name }}</div>
+                                            <div class="text-sm font-semibold text-gray-900">{{ $shop->business_name }}</div>
                                             <div class="text-xs text-gray-500 font-mono">{{ $shop->slug }}</div>
                                         </div>
                                     </div>

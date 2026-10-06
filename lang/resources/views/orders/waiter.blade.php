@@ -9,7 +9,7 @@
             </h2>
 
             <span class="text-sm text-gray-500 break-anywhere">
-                {{ $shop->name }}
+                {{ $shop->business_name }}
             </span>
         </div>
     </x-slot>

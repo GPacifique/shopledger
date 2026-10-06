@@ -11,7 +11,7 @@
                 </h2>
 
                 <p class="text-xs sm:text-sm text-gray-500 break-anywhere">
-                    {{ $shop->name }}
+                    {{ $shop->business_name }}
                     <span class="hidden sm:inline">·</span>
                     <span class="sm:ml-1">
                         {{ $order->created_at->format('M j, Y g:ia') }}

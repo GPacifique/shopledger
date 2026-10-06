@@ -3,7 +3,7 @@
         <div class="flex justify-between items-center">
             <div class="flex items-center space-x-4">
                 <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg transform hover:scale-105 transition-transform">
-                    {{ strtoupper(substr($shop->name, 0, 2)) }}
+                    {{ strtoupper(substr($shop->business_name, 0, 2)) }}
                 </div>
 
             <div>

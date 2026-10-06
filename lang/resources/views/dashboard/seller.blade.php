@@ -15,7 +15,7 @@
                     </h2>
 
                     <p class="text-sm text-gray-500">
-                        {{ $shop->business_name ?? $shop->name ?? __('Shop') }}
+                        {{ $shop->business_name ?? $shop->business_name ?? __('Shop') }}
                     </p>
                 </div>
             </div>
