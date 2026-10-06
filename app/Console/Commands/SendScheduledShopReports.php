@@ -3,16 +3,19 @@
 namespace App\Console\Commands;
 
 use App\Jobs\SendShopReportJob;
+use App\Models\ReportDelivery;
 use App\Models\ReportSchedule;
 use App\Services\ReportDeliveryService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use InvalidArgumentException;
 
 class SendScheduledShopReports extends Command
 {
     protected $signature = 'reports:send-scheduled
                             {--type= : Send only a specific report type}
-                            {--date= : Reference date in Y-m-d format}';
+                            {--date= : Reference date in Y-m-d format}
+                            {--force : Ignore the configured send time and frequency}';
 
     protected $description = 'Dispatch scheduled MahWi shop reports';
 
@@ -24,6 +27,7 @@ class SendScheduledShopReports extends Command
             : now();
 
         $requestedType = $this->option('type');
+        $force = (bool) $this->option('force');
 
         $query = ReportSchedule::query()
             ->with('shop')
@@ -50,48 +54,64 @@ class SendScheduledShopReports extends Command
         foreach ($schedules as $schedule) {
             $type = strtolower(trim($schedule->report_type));
 
-            /*
-             * Validate the report type and calculate its period.
-             */
-            try {
-                [$startDate, $endDate] =
-                    $reportDeliveryService->resolvePeriod(
-                        $type,
-                        $referenceDate->copy()
-                    );
-            } catch (\InvalidArgumentException $exception) {
-                $this->warn(
-                    "Skipping schedule #{$schedule->id}: "
-                    . $exception->getMessage()
-                );
-
-                $skipped++;
-
-                continue;
-            }
-
-            /*
-             * Make sure the shop still exists.
-             */
             if (!$schedule->shop) {
                 $this->warn(
                     "Skipping schedule #{$schedule->id}: shop not found."
                 );
 
                 $skipped++;
-
                 continue;
             }
 
             /*
-             * Prevent duplicate delivery for the same shop,
+             * When running normally, only process schedules
+             * that are actually due.
+             *
+             * --force is useful for testing.
+             */
+            if (!$force && !$this->isDue($schedule, $referenceDate)) {
+                $this->line(
+                    "Not due: "
+                    . $schedule->shop->business_name
+                    . " / "
+                    . $type
+                );
+
+                $skipped++;
+                continue;
+            }
+
+            try {
+                [$startDate, $endDate] =
+                    $reportDeliveryService->resolvePeriod(
+                        $type,
+                        $referenceDate->copy()
+                    );
+            } catch (InvalidArgumentException $exception) {
+                $this->warn(
+                    "Skipping schedule #{$schedule->id}: "
+                    . $exception->getMessage()
+                );
+
+                $skipped++;
+                continue;
+            }
+
+            /*
+             * Prevent duplicate reports for the same shop,
              * report type and reporting period.
              */
-            $alreadySent = \App\Models\ReportDelivery::query()
+            $alreadySent = ReportDelivery::query()
                 ->where('shop_id', $schedule->shop_id)
                 ->where('report_type', $type)
-                ->whereDate('period_start', $startDate->toDateString())
-                ->whereDate('period_end', $endDate->toDateString())
+                ->whereDate(
+                    'period_start',
+                    $startDate->toDateString()
+                )
+                ->whereDate(
+                    'period_end',
+                    $endDate->toDateString()
+                )
                 ->where('status', 'sent')
                 ->exists();
 
@@ -108,16 +128,9 @@ class SendScheduledShopReports extends Command
                 );
 
                 $skipped++;
-
                 continue;
             }
 
-            /*
-             * Dispatch the report job.
-             *
-             * The reference date is passed explicitly so retries
-             * always generate the same reporting period.
-             */
             SendShopReportJob::dispatch(
                 $schedule->shop,
                 $type,
@@ -145,4 +158,65 @@ class SendScheduledShopReports extends Command
 
         return self::SUCCESS;
     }
+
+    /**
+     * Determine whether a schedule is due.
+     */
+    protected function isDue(
+        ReportSchedule $schedule,
+        Carbon $referenceDate
+    ): bool {
+        /*
+         * Match configured time.
+         *
+         * Scheduler will eventually run this command every minute,
+         * so comparing HH:mm is sufficient.
+         */
+        if ($schedule->send_at) {
+            $scheduledTime = Carbon::parse(
+                $schedule->send_at
+            )->format('H:i');
+
+            if ($referenceDate->format('H:i') !== $scheduledTime) {
+                return false;
+            }
+        }
+
+        return match (strtolower(trim($schedule->report_type))) {
+            'daily' => true,
+
+            /*
+             * ISO day:
+             * Monday = 1
+             * Sunday = 7
+             *
+             * If day_of_week is NULL, default to Monday.
+             */
+            'weekly' => $referenceDate->dayOfWeekIso === (
+                $schedule->day_of_week ?: 1
+            ),
+
+            /*
+             * If day_of_month is NULL, default to
+             * the first day of the month.
+             */
+            'monthly' => $referenceDate->day === (
+                $schedule->day_of_month ?: 1
+            ),
+
+            /*
+             * Yearly reports run on January 1 by default.
+             *
+             * If day_of_month is configured, it is used
+             * together with January.
+             */
+            'yearly' => $referenceDate->month === 1
+                && $referenceDate->day === (
+                    $schedule->day_of_month ?: 1
+                ),
+
+            default => false,
+        };
+    }
 }
+
