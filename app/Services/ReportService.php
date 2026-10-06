@@ -2,410 +2,203 @@
 
 namespace App\Services;
 
-use App\Models\Order;
-use App\Models\Purchase;
 use App\Models\Expense;
 use App\Models\OtherIncome;
-use Carbon\Carbon;
+use App\Models\Purchase;
 use App\Models\Sale;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 class ReportService
 {
-    /**
-     * Generate the complete report.
-     */
-    public function generate(
-        ?int $shopId,
-        Carbon $startDate,
-        Carbon $endDate
-    ): array {
-
+    public function generate(?int $shopId, Carbon $startDate, Carbon $endDate): array
+    {
         return [
-            'sales' => $this->sales(
-                $shopId,
-                $startDate,
-                $endDate
-            ),
-
-            'purchases' => $this->purchases(
-                $shopId,
-                $startDate,
-                $endDate
-            ),
-
-            'expenses' => $this->expenses(
-                $shopId,
-                $startDate,
-                $endDate
-            ),
-
-            'other_income' => $this->otherIncome(
-                $shopId,
-                $startDate,
-                $endDate
-            ),
-
-            'summary' => $this->summary(
-                $shopId,
-                $startDate,
-                $endDate
-            ),
-
-            'daily_breakdown' => $this->dailyBreakdown(
-                $shopId,
-                $startDate,
-                $endDate
-            ),
+            'sales' => $this->sales($shopId, $startDate, $endDate),
+            'purchases' => $this->purchases($shopId, $startDate, $endDate),
+            'expenses' => $this->expenses($shopId, $startDate, $endDate),
+            'other_income' => $this->otherIncome($shopId, $startDate, $endDate),
+            'summary' => $this->summary($shopId, $startDate, $endDate),
+            'daily_breakdown' => $this->dailyBreakdown($shopId, $startDate, $endDate),
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | SALES
-    |--------------------------------------------------------------------------
-    */
+    public function sales(?int $shopId, Carbon $startDate, Carbon $endDate): array
+    {
+        $query = Sale::query()
+            ->with(['items.product', 'customer', 'shop'])
+            ->whereBetween('sale_date', [
+                $startDate->toDateString(),
+                $endDate->toDateString(),
+            ]);
 
-    public function sales(
-        ?int $shopId,
-        Carbon $startDate,
-        Carbon $endDate
-    ): array {
-
-        $query = Order::query()
-            ->with([
-                'items.product',
-                'user',
-            ])
-            ->whereBetween(
-                'created_at',
-                [$startDate, $endDate]
-            );
-
-        if ($shopId) {
+        if ($shopId !== null) {
             $query->where('shop_id', $shopId);
         }
 
-        $orders = $query
-            ->latest()
-            ->get();
-
+        $sales = $query->latest('sale_date')->latest('id')->get();
         $items = collect();
 
-        foreach ($orders as $order) {
-
-            foreach ($order->items ?? [] as $item) {
-
+        foreach ($sales as $sale) {
+            foreach ($sale->items as $item) {
                 $items->push([
-                    'order' => $order,
+                    'sale' => $sale,
                     'item' => $item,
-                    'product' => $item->product ?? null,
+                    'product' => $item->product,
                 ]);
             }
         }
 
+        $quantity = (float) $items->sum(fn ($row) => (float) ($row['item']->quantity ?? 0));
+        $revenue = (float) $sales->sum(fn ($sale) => (float) ($sale->total_amount ?? 0));
+        $cost = (float) $items->sum(function ($row) {
+            return (float) ($row['item']->quantity ?? 0)
+                * (float) ($row['item']->cost_price_at_sale ?? 0);
+        });
+
         return [
-            'orders' => $orders,
+            'sales' => $sales,
+            'orders' => $sales, // Backward-compatible with existing views.
             'items' => $items,
-
-            'order_count' => $orders->count(),
-
-            'quantity' => $items->sum(function ($row) {
-                return (float) ($row['item']->quantity ?? 0);
-            }),
-
-            'total' => $orders->sum(function ($order) {
-                return (float) (
-                    $order->total
-                    ?? $order->total_amount
-                    ?? $order->grand_total
-                    ?? 0
-                );
-            }),
-
-            'cost' => $items->sum(function ($row) {
-
-                $item = $row['item'];
-                $product = $row['product'];
-
-                $quantity = (float) (
-                    $item->quantity ?? 0
-                );
-
-                $buyingPrice = (float) (
-                    $item->unit_price
-                    ?? $item->cost_price_at_sale
-                    ?? $product?->unit_price
-                    ?? $product?->price_at_sale
-                    ?? 0
-                );
-
-                return $quantity * $buyingPrice;
-            }),
+            'count' => $sales->count(),
+            'order_count' => $sales->count(),
+            'quantity' => $quantity,
+            'total' => $revenue,
+            'revenue' => $revenue,
+            'cost' => $cost,
+            'cogs' => $cost,
+            'gross_profit' => $revenue - $cost,
         ];
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | PURCHASES
-    |--------------------------------------------------------------------------
-    */
-
-    public function purchases(
-        ?int $shopId,
-        Carbon $startDate,
-        Carbon $endDate
-    ): array {
-
+    public function purchases(?int $shopId, Carbon $startDate, Carbon $endDate): array
+    {
         $query = Purchase::query()
-            ->with([
-                'items.product',
-                'supplier',
-            ])
-            ->whereBetween(
-                'created_at',
-                [$startDate, $endDate]
-            );
+            ->with(['items.product', 'supplier', 'shop'])
+            ->whereBetween('purchase_date', [
+                $startDate->toDateString(),
+                $endDate->toDateString(),
+            ]);
 
-        if ($shopId) {
+        if ($shopId !== null) {
             $query->where('shop_id', $shopId);
         }
 
-        $purchases = $query
-            ->latest()
-            ->get();
-
+        $purchases = $query->latest('purchase_date')->latest('id')->get();
         $items = collect();
 
         foreach ($purchases as $purchase) {
-
-            foreach ($purchase->items ?? [] as $item) {
-
+            foreach ($purchase->items as $item) {
                 $items->push([
                     'purchase' => $purchase,
                     'item' => $item,
-                    'product' => $item->product ?? null,
+                    'product' => $item->product,
                 ]);
             }
         }
 
         return [
             'purchases' => $purchases,
-
             'items' => $items,
-
             'count' => $purchases->count(),
-
-            'quantity' => $items->sum(function ($row) {
-                return (float) ($row['item']->quantity ?? 0);
-            }),
-
-            'total' => $purchases->sum(function ($purchase) {
-                return (float) (
-                    $purchase->total
-                    ?? $purchase->total_amount
-                    ?? $purchase->grand_total
-                    ?? 0
-                );
-            }),
+            'quantity' => (float) $items->sum(fn ($row) => (float) ($row['item']->quantity ?? 0)),
+            'total' => (float) $purchases->sum(fn ($purchase) => (float) ($purchase->total_amount ?? 0)),
         ];
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | EXPENSES
-    |--------------------------------------------------------------------------
-    */
-
-    public function expenses(
-        ?int $shopId,
-        Carbon $startDate,
-        Carbon $endDate
-    ): array {
-
+    public function expenses(?int $shopId, Carbon $startDate, Carbon $endDate): array
+    {
         $query = Expense::query()
-            ->whereBetween(
-                'created_at',
-                [$startDate, $endDate]
-            );
+            ->with(['category', 'shop', 'creator'])
+            ->whereBetween('expense_date', [
+                $startDate->toDateString(),
+                $endDate->toDateString(),
+            ]);
 
-        if ($shopId) {
+        if ($shopId !== null) {
             $query->where('shop_id', $shopId);
         }
 
-        $expenses = $query
-            ->latest()
-            ->get();
+        $expenses = $query->latest('expense_date')->latest('id')->get();
 
         return [
             'expenses' => $expenses,
-
             'count' => $expenses->count(),
-
-            'total' => $expenses->sum(function ($expense) {
-                return (float) (
-                    $expense->amount
-                    ?? $expense->total
-                    ?? 0
-                );
-            }),
+            'total' => (float) $expenses->sum(fn ($expense) => (float) ($expense->amount ?? 0)),
         ];
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | OTHER INCOME
-    |--------------------------------------------------------------------------
-    */
-
-    public function otherIncome(
-        ?int $shopId,
-        Carbon $startDate,
-        Carbon $endDate
-    ): array {
-
+    public function otherIncome(?int $shopId, Carbon $startDate, Carbon $endDate): array
+    {
         $query = OtherIncome::query()
-            ->whereBetween(
-                'created_at',
-                [$startDate, $endDate]
-            );
+            ->with(['category', 'shop', 'creator'])
+            ->whereBetween('income_date', [
+                $startDate->toDateString(),
+                $endDate->toDateString(),
+            ]);
 
-        if ($shopId) {
+        if ($shopId !== null) {
             $query->where('shop_id', $shopId);
         }
 
-        $income = $query
-            ->latest()
-            ->get();
+        $income = $query->latest('income_date')->latest('id')->get();
 
         return [
             'items' => $income,
-
             'count' => $income->count(),
-
-            'total' => $income->sum(function ($item) {
-                return (float) (
-                    $item->amount
-                    ?? $item->total
-                    ?? 0
-                );
-            }),
+            'total' => (float) $income->sum(fn ($item) => (float) ($item->amount ?? 0)),
         ];
     }
 
+    public function summary(?int $shopId, Carbon $startDate, Carbon $endDate): array
+    {
+        $sales = $this->sales($shopId, $startDate, $endDate);
+        $purchases = $this->purchases($shopId, $startDate, $endDate);
+        $expenses = $this->expenses($shopId, $startDate, $endDate);
+        $otherIncome = $this->otherIncome($shopId, $startDate, $endDate);
 
-    /*
-    |--------------------------------------------------------------------------
-    | SUMMARY
-    |--------------------------------------------------------------------------
-    */
-
-    public function summary(
-        ?int $shopId,
-        Carbon $startDate,
-        Carbon $endDate
-    ): array {
-
-        $sales = $this->sales(
-            $shopId,
-            $startDate,
-            $endDate
-        );
-
-        $purchases = $this->purchases(
-            $shopId,
-            $startDate,
-            $endDate
-        );
-
-        $expenses = $this->expenses(
-            $shopId,
-            $startDate,
-            $endDate
-        );
-
-        $otherIncome = $this->otherIncome(
-            $shopId,
-            $startDate,
-            $endDate
-        );
-
-        $grossProfit =
-            $sales['total']
-            - $sales['cost'];
-
-        $netProfit =
-            $grossProfit
-            - $expenses['total']
-            + $otherIncome['total'];
+        $grossProfit = $sales['total'] - $sales['cost'];
+        $netProfit = $grossProfit - $expenses['total'] + $otherIncome['total'];
 
         return [
-
             'sales' => $sales['total'],
-
             'sales_cost' => $sales['cost'],
-
+            'cogs' => $sales['cost'],
             'gross_profit' => $grossProfit,
-
             'purchases' => $purchases['total'],
-
             'expenses' => $expenses['total'],
-
             'other_income' => $otherIncome['total'],
-
             'orders' => $sales['order_count'],
-
+            'sales_count' => $sales['count'],
             'products_sold' => $sales['quantity'],
-
+            'products_purchased' => $purchases['quantity'],
             'net_profit' => $netProfit,
         ];
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | DAILY BREAKDOWN
-    |--------------------------------------------------------------------------
-    */
-
-    public function dailyBreakdown(
-        ?int $shopId,
-        Carbon $startDate,
-        Carbon $endDate
-    ): Collection {
-
+    public function dailyBreakdown(?int $shopId, Carbon $startDate, Carbon $endDate): Collection
+    {
         $days = collect();
-
         $date = $startDate->copy()->startOfDay();
+        $lastDate = $endDate->copy()->startOfDay();
 
-        while ($date <= $endDate) {
-
-            $dayStart = $date->copy()->startOfDay();
-            $dayEnd = $date->copy()->endOfDay();
-
+        while ($date->lte($lastDate)) {
             $summary = $this->summary(
                 $shopId,
-                $dayStart,
-                $dayEnd
+                $date->copy()->startOfDay(),
+                $date->copy()->endOfDay()
             );
 
             $days->push([
                 'date' => $date->copy(),
-
                 'sales' => $summary['sales'],
-
                 'purchases' => $summary['purchases'],
-
                 'expenses' => $summary['expenses'],
-
                 'other_income' => $summary['other_income'],
-
                 'gross_profit' => $summary['gross_profit'],
-
                 'net_profit' => $summary['net_profit'],
+                'orders' => $summary['orders'],
+                'products_sold' => $summary['products_sold'],
             ]);
 
             $date->addDay();
