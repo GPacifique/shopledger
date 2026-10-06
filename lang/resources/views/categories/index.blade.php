@@ -22,7 +22,7 @@
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+            <div class="bg-blue overflow-hidden shadow-sm rounded-lg">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -41,7 +41,7 @@
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-blue divide-y divide-gray-200">
                             @forelse ($categories as $category)
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

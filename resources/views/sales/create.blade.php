@@ -55,7 +55,7 @@
                         <!-- Sale Date / Payment Method / Payment Status / Customer -->
                         <div class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-2xl">
                             <div class="px-5 sm:px-6 py-4 border-b border-gray-100">
-                                <h3 class="text-sm font-semibold text-gray-900 tracking-wide">{{ __('Sale Details') }}</h3>
+                                <h3 class="text-xl font-bold text-blue-900 tracking-wide">{{ __('Sale Details') }}</h3>
                             </div>
                             <div class="p-5 sm:p-6">
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -114,7 +114,7 @@
                         <div class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-2xl">
                             <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex justify-between items-center gap-3">
                                 <div>
-                                    <h3 class="text-sm font-semibold text-gray-900 tracking-wide">{{ __('Sale Items') }}</h3>
+                                    <h3 class="text-xl font-semibold text-blue-900 tracking-wide">{{ __('Sale Items') }}</h3>
                                     <p class="text-xs text-gray-400 mt-0.5" x-show="items.length" x-text="`${items.length} ${items.length === 1 ? '{{ __('item') }}' : '{{ __('items') }}'}`"></p>
                                 </div>
                                 <button type="button" @click="addItem()"
@@ -224,8 +224,8 @@
                     <div class="lg:col-span-1">
                         <div class="hidden lg:block sticky top-6 space-y-4">
                             <div class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-2xl p-6">
-                                <h3 class="text-sm font-semibold text-gray-900 tracking-wide mb-4">{{ __('Summary') }}</h3>
-                                <div class="space-y-2 text-sm text-gray-500 mb-4">
+                                <h3 class="text-xl font-semibold text-blue-900 tracking-wide mb-4">{{ __('Summary') }}</h3>
+                                <div class="space-y-2 text-l text-gray-500 mb-4">
                                     <div class="flex justify-between">
                                         <span x-text="`${items.length} ${items.length === 1 ? '{{ __('item') }}' : '{{ __('items') }}'}`"></span>
                                         <span x-text="formatCurrency(grandTotal)"></span>

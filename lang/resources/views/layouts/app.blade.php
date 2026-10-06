@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Mahwi POS') }}</title>
+    <title>{{ config('app.name', 'Mahwi|Business management system designed for modern enterprises|It tracks inventory, sales, and more') }}</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
@@ -19,7 +19,7 @@
     @stack('styles')
 </head>
 
-<body class="font-sans antialiased bg-gray-50 text-gray-900">
+<body class="font-sans antialiased bg-gray-50 text-blue-900">
 
     {{--
         Shared layout state (used by navigation.blade.php too):
@@ -57,7 +57,7 @@
             :class="collapsed ? 'md:pl-[76px]' : 'md:pl-[272px]'"
         >
             @isset($header)
-                <header class="border-b border-gray-200 bg-white">
+                <header class="border-b border-green-200 bg-white">
                     <div class="px-4 py-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>

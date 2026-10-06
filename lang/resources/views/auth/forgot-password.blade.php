@@ -21,7 +21,7 @@
             </div>
 
             {{-- Forgot Password Card --}}
-            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8">
+            <div class="bg-blue rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8">
 
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-gray-900">

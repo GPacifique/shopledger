@@ -346,7 +346,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
 
             {{-- Today's Sales --}}
-            <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -391,7 +391,7 @@
 
 
             {{-- Today's Other Income --}}
-            <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -436,7 +436,7 @@
 
 
             {{-- Today's Purchases --}}
-            <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -481,7 +481,7 @@
 
 
             {{-- Stock In --}}
-            <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -526,7 +526,7 @@
 
 
             {{-- Stock Out --}}
-            <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -575,7 +575,7 @@
 
 
             {{-- Products --}}
-            <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -739,19 +739,18 @@
                     <div class="flex items-center mb-6">
 
                         <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                            {{ strtoupper(substr($shop->name, 0, 2)) }}
+                            {{ strtoupper(substr($shop->business_name, 0, 2)) }}
                         </div>
 
                         <div class="ml-4">
 
                             <h4 class="text-lg font-bold text-gray-900">
-                                {{ $shop->name }}
+                                {{ $shop->business_name }}
                             </h4>
 
-                            <p class="text-sm text-gray-500 font-mono">
-                                {{ $shop->slug }}
+                            <p class="text-sm text-red-500 font-mono">
+                                {{ $shop->businesss_name }}
                             </p>
-
                         </div>
 
                     </div>
@@ -797,6 +796,17 @@
 
                             <span class="font-medium text-gray-900 text-sm">
                                 {{ $stats['total_suppliers'] }}
+                            </span>
+
+                        </div>
+                        <div class="flex justify-between items-center py-2.5 px-4 rounded-xl">
+
+                            <span class="text-gray-500 text-sm">
+                                {{ __('Staff') }}
+                            </span>
+
+                            <span class="font-medium text-gray-900 text-sm">
+                                {{ $stats['total_staff'] }}
                             </span>
 
                         </div>
@@ -966,7 +976,7 @@
 
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 
-                    <h3 class="text-lg font-semibold text-gray-900">
+                    <h3 class="text-lg font-semibold text-green-600">
                         {{ __("Today's Sales by Payment Method") }}
                     </h3>
 

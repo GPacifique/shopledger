@@ -13,7 +13,7 @@
 
     <div class="py-8">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-6 md:p-8">
+            <div class="bg-blue shadow-sm rounded-2xl border border-gray-100 p-6 md:p-8">
                 <form action="{{ route('admin.users.update', $user) }}" method="POST" class="space-y-6">
                     @csrf
                     @method('PUT')

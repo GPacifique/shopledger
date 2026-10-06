@@ -111,7 +111,7 @@
 
                     <div class="max-w-2xl">
                         <span class="inline-flex items-center rounded-full
-                                     bg-white/10 px-3 py-1 text-xs font-semibold
+                                     bg-blue/10 px-3 py-1 text-xs font-semibold
                                      uppercase tracking-wider text-indigo-100 mb-4">
                             Built for growing businesses
                         </span>

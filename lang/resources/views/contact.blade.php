@@ -10,7 +10,7 @@
             Have questions about MahWi Management System? We'd love to hear from you.
         </p>
 
-        <div class="bg-white shadow-lg rounded-lg p-8">
+        <div class="bg-blue shadow-lg rounded-lg p-8">
             <form method="POST" action="#">
                 @csrf
 

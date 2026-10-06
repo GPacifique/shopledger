@@ -154,7 +154,7 @@
         {{-- Page Heading --}}
         @isset($header)
 
-            <header class="bg-white shadow-sm border-b border-gray-200">
+            <header class="bg-blue shadow-sm border-b border-gray-200">
 
                 <div class="
                     w-full

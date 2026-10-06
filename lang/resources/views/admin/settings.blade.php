@@ -11,7 +11,7 @@
                 </div>
             @endif
 
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <form action="{{ route('admin.settings.update') }}" method="POST" class="p-6 space-y-6">
                     @csrf
                     <p class="text-gray-500 text-sm">System-wide settings will appear here.</p>

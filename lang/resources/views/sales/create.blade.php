@@ -55,7 +55,7 @@
                         <!-- Sale Date / Payment Method / Payment Status / Customer -->
                         <div class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-2xl">
                             <div class="px-5 sm:px-6 py-4 border-b border-gray-100">
-                                <h3 class="text-sm font-semibold text-gray-900 tracking-wide">{{ __('Sale Details') }}</h3>
+                                <h3 class="text-sm font-semibold text-blue-400 tracking-wide">{{ __('Sale Details') }}</h3>
                             </div>
                             <div class="p-5 sm:p-6">
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">

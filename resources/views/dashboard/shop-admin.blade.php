@@ -166,7 +166,7 @@
                         </h3>
 
                         <p class="text-indigo-100">
-                            {{ __("Here's what's happening with your shop today.") }}
+                            {{ __("Here's what's happening with ") }}{{ $shop->business_name }}{{__("   today")}}  
                         </p>
 
                     </div>
@@ -346,7 +346,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
 
             {{-- Today's Sales --}}
-            <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -391,7 +391,7 @@
 
 
             {{-- Today's Other Income --}}
-            <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -436,7 +436,7 @@
 
 
             {{-- Today's Purchases --}}
-            <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -481,7 +481,7 @@
 
 
             {{-- Stock In --}}
-            <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -526,7 +526,7 @@
 
 
             {{-- Stock Out --}}
-            <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -575,7 +575,7 @@
 
 
             {{-- Products --}}
-            <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -628,7 +628,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
 
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 
@@ -724,7 +724,7 @@
 
 
             {{-- Shop Info --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 
@@ -739,16 +739,16 @@
                     <div class="flex items-center mb-6">
 
                         <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                            {{ strtoupper(substr($shop->name, 0, 2)) }}
+                            {{ strtoupper(substr($shop->business_name, 0, 2)) }}
                         </div>
 
                         <div class="ml-4">
 
-                            <h4 class="text-lg font-bold text-gray-900">
-                                {{ $shop->name }}
+                            <h4 class="text-lg font-bold text-blue-600">
+                                {{ $shop->business_name }}
                             </h4>
 
-                            <p class="text-sm text-gray-500 font-mono">
+                            <p class="text-sm text-green-500 font-italic">
                                 {{ $shop->slug }}
                             </p>
 
@@ -792,13 +792,46 @@
                         <div class="flex justify-between items-center py-2.5 px-4 rounded-xl">
 
                             <span class="text-gray-500 text-sm">
+                                {{ __('Staff') }}
+                            </span>
+
+                            <span class="font-medium text-gray-900 text-sm">
+                                {{ $stats['total_staff'] }}
+                            </span>
+                             
+                        </div>
+                        <div class="flex justify-between items-center py-2.5 px-4 rounded-xl">
+
+                            <span class="text-gray-500 text-sm">
                                 {{ __('Suppliers') }}
                             </span>
 
                             <span class="font-medium text-gray-900 text-sm">
                                 {{ $stats['total_suppliers'] }}
                             </span>
+                             
+                        </div>
+                        <div class="flex justify-between items-center py-2.5 px-4 rounded-xl">
 
+                            <span class="text-gray-500 text-sm">
+                                {{ __('Products') }}
+                            </span>
+
+                            <span class="font-medium text-gray-900 text-sm">
+                                {{ $stats['total_products'] }}
+                            </span>
+                             
+                        </div>
+                        <div class="flex justify-between items-center py-2.5 px-4 rounded-xl">
+
+                            <span class="text-gray-500 text-sm">
+                                {{ __('Yearly Net profit') }}
+                            </span>
+
+                            <span class="font-medium text-gray-900 text-sm">
+                                {{ $stats['yearlyNetProfit'] }}
+                            </span>
+                             
                         </div>
 
                     </div>
@@ -809,7 +842,7 @@
 
 
             {{-- Payment Status --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 
@@ -962,11 +995,11 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
             {{-- Today --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 
-                    <h3 class="text-lg font-semibold text-gray-900">
+                    <h3 class="text-lg font-semibold text-green-600">
                         {{ __("Today's Sales by Payment Method") }}
                     </h3>
 
@@ -1023,11 +1056,11 @@
 
 
             {{-- Month --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 
-                    <h3 class="text-lg font-semibold text-gray-900">
+                    <h3 class="text-lg font-semibold text-green-600">
                         {{ __("This Month's Sales by Payment Method") }}
                     </h3>
 
@@ -1091,11 +1124,11 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100">
 
-                    <h3 class="text-lg font-semibold text-gray-900">
+                    <h3 class="text-lg font-semibold text-green-700">
                         {{ __('Sales by Category') }}
                     </h3>
 
@@ -1112,11 +1145,11 @@
             </div>
 
 
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100">
 
-                    <h3 class="text-lg font-semibold text-gray-900">
+                    <h3 class="text-lg font-semibold text-red-600">
                         {{ __('Expenses by Category') }}
                     </h3>
 
@@ -1142,18 +1175,18 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
             {{-- Daily --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 
-                    <h3 class="text-lg font-semibold text-gray-900">
+                    <h3 class="text-lg font-semibold text-blue-900">
                         {{ __('Last 7 Days') }}
                     </h3>
 
                     <div class="flex flex-wrap gap-4 mt-2 text-xs">
 
                         <span class="flex items-center">
-                            <span class="w-3 h-3 rounded-full bg-green-500 mr-1"></span>
+                            <span class="w-3 h-3 rounded-full bg-green-500 mr-1 "></span>
                             {{ __('Sales') }}
                         </span>
 
@@ -1186,11 +1219,11 @@
 
 
             {{-- Monthly --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 
-                    <h3 class="text-lg font-semibold text-gray-900">
+                    <h3 class="text-lg font-semibold text-blue-900">
                         {{ __('Monthly Trend') }}
                     </h3>
 
@@ -1216,7 +1249,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
 
             {{-- Quick Actions --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100">
 
@@ -1306,6 +1339,91 @@
                         </span>
 
                     </a>
+                    <a href="{{ route('reports.index') }}"
+                       class="flex items-center p-3 rounded-xl hover:bg-purple-50 transition-all group">
+
+                        <div class="h-10 w-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                            +
+                        </div>
+
+                        <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">
+                            {{ __('View Reports') }}
+                        </span>
+
+                    </a>
+            <a href="{{ route('pos.index')}}"
+                       class="flex items-center p-3 rounded-xl hover:bg-purple-50 transition-all group">
+
+                        <div class="h-10 w-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                            +
+                        </div>
+
+                        <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">
+                            {{ __('POS') }}
+                        </span>
+
+                    </a>
+<a href="{{ route('customers.create') }}"
+                       class="flex items-center p-3 rounded-xl hover:bg-purple-50 transition-all group">
+
+                        <div class="h-10 w-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                            +
+                        </div>
+
+                        <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">
+                            {{ __('Add customer') }}
+                        </span>
+
+                    </a>
+<a href="{{ route('categories.create') }}"
+                       class="flex items-center p-3 rounded-xl hover:bg-purple-50 transition-all group">
+
+                        <div class="h-10 w-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                            +
+                        </div>
+
+                        <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">
+                             {{ __('Add products Category') }}
+                        </span>
+
+                    </a>
+<a href="{{ route('expenses.create') }}"
+                       class="flex items-center p-3 rounded-xl hover:bg-purple-50 transition-all group">
+
+                        <div class="h-10 w-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                            +
+                        </div>
+
+                        <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">
+                            {{ __('Add Expenses') }}
+                        </span>
+
+                    </a>
+<a href="{{ route('expensecategories.create') }}"
+                       class="flex items-center p-3 rounded-xl hover:bg-purple-50 transition-all group">
+
+                        <div class="h-10 w-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                            +
+                        </div>
+
+                        <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">
+                            {{ __('Add Expense Category') }}
+                        </span>
+
+                    </a>
+<a href="{{ route('income_categories.create') }}"
+                       class="flex items-center p-3 rounded-xl hover:bg-purple-50 transition-all group">
+
+                        <div class="h-10 w-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                            +
+                        </div>
+
+                        <span class="ml-3 font-medium text-gray-700 group-hover:text-purple-700">
+                            {{ __('Add Income Category') }}
+                        </span>
+
+                    </a>
+
 
                 </div>
 
@@ -1313,7 +1431,7 @@
 
 
             {{-- Recent Activity --}}
-            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="lg:col-span-2 bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100">
 
@@ -1624,7 +1742,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {{-- Low Stock --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
 
@@ -1685,7 +1803,7 @@
 
 
             {{-- Stock Movements --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100">
 
@@ -1793,7 +1911,7 @@
             STAFF DIRECTORY
         ============================================================ --}}
 
-        <div class="mt-6 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="mt-6 bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
             <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
 

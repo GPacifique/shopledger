@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-blue-800 leading-tight">
                 {{ __('messages.Expense Details') }}
             </h2>
             <a href="{{ route('expenses.index') }}"

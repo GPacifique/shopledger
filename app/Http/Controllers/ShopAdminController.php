@@ -334,18 +334,18 @@ class ShopAdminController extends Controller
         $recentSales = Sale::where('shop_id', $shopId)
             ->with('items.product')
             ->orderByDesc('created_at')
-            ->take(5)
+            ->take(20)
             ->get();
 
         $recentPurchases = Purchase::where('shop_id', $shopId)
             ->with(['supplier', 'items.product'])
             ->orderByDesc('created_at')
-            ->take(5)
+            ->take(20)
             ->get();
 
         $recentOtherIncomes = OtherIncome::where('shop_id', $shopId)
             ->orderByDesc('created_at')
-            ->take(5)
+            ->take(20)
             ->get();
 
         /*
@@ -357,7 +357,7 @@ class ShopAdminController extends Controller
         $recentStockMovements = StockMovement::where('shop_id', $shopId)
             ->with(['product', 'creator'])
             ->orderByDesc('created_at')
-            ->take(10)
+            ->take(30)
             ->get();
 
         // Positive quantity_change = stock coming in

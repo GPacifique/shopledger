@@ -188,11 +188,11 @@
 {{-- ====================================================================
      MOBILE HEADER (below md only)
 ===================================================================== --}}
-<header class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-gray-200 bg-white px-4 md:hidden">
+<header class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-gray-200 bg-blue px-4 md:hidden">
     <button
         type="button"
         @click="sidebarOpen = true"
-        class="-ml-2 inline-flex h-11 w-11 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+        class="-ml-2 inline-flex h-11 w-11 items-center justify-center rounded-lg text-blue-600 transition hover:bg-green-100 hover:text-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         aria-label="{{ __('Open navigation menu') }}"
         aria-controls="app-sidebar"
         :aria-expanded="sidebarOpen.toString()"
@@ -201,7 +201,7 @@
     </button>
 
     <a href="{{ route('dashboard') }}" class="flex min-w-0 items-center gap-2">
-        <x-application-logo class="block h-7 w-auto fill-current text-gray-800" />
+        <x-application-logo class="block h-7 w-auto fill-current text-green-800" />
         <span class="truncate text-base font-bold tracking-tight text-gray-900">MAHWI</span>
     </a>
 </header>
@@ -241,7 +241,7 @@
             this.openGroup = this.openGroup === key ? null : key;
         }
     }"
-    class="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] -translate-x-full transform flex-col border-r border-gray-200 bg-white transition-[transform,width] duration-200 ease-out md:max-w-none md:translate-x-0"
+    class="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] -translate-x-full transform flex-col border-r border-gray-200 bg-blue transition-[transform,width] duration-200 ease-out md:max-w-none md:translate-x-0"
     :class="[
         sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         collapsed ? 'md:w-[76px]' : 'md:w-[272px]'
@@ -305,7 +305,7 @@
                             :class="collapsed ? 'md:justify-center md:px-0' : ''"
                         >
                             @if ($item['active'])
-                                <span class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-indigo-600" aria-hidden="true"></span>
+                                <span class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-blue-600" aria-hidden="true"></span>
                             @endif
 
                             <span class="relative">

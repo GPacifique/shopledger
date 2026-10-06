@@ -25,7 +25,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Stats -->
             <div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 p-6">
                     <div class="flex items-center">
                         <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center mr-4">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

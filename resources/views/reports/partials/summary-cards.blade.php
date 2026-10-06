@@ -1,8 +1,8 @@
 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
 
     {{-- Sales --}}
-    <div class="bg-white rounded-xl border p-5">
-        <p class="text-sm text-slate-500">
+    <div class="bg-green rounded-xl border p-5">
+        <p class="text-xl font-semi-bold text-green-500">
             Sales
         </p>
 
@@ -14,8 +14,8 @@
 
 
     {{-- Purchases --}}
-    <div class="bg-white rounded-xl border p-5">
-        <p class="text-sm text-slate-500">
+    <div class="bg-blue rounded-xl border p-5">
+        <p class="text-xl font-bold text-red-500">
             Purchases
         </p>
 
@@ -27,8 +27,8 @@
 
 
     {{-- Expenses --}}
-    <div class="bg-white rounded-xl border p-5">
-        <p class="text-sm text-slate-500">
+    <div class="bg-blue rounded-xl border p-5">
+        <p class="text-xl font-bold text-red-500">
             Expenses
         </p>
 
@@ -40,8 +40,8 @@
 
 
     {{-- Other Income --}}
-    <div class="bg-white rounded-xl border p-5">
-        <p class="text-sm text-slate-500">
+    <div class="bg-blue rounded-xl border p-5">
+        <p class="text-xl font-bold text-green-500">
             Other Income
         </p>
 
@@ -53,20 +53,20 @@
 
 
     {{-- Orders --}}
-    <div class="bg-white rounded-xl border p-5">
-        <p class="text-sm text-slate-500">
+    <div class="bg-blue rounded-xl border p-5">
+        <p class="text-xl font-bold text-blue-500">
             Orders
         </p>
 
-        <p class="text-xl font-bold text-slate-800 mt-2">
+        <p class="text-xl font-bold text-blue-800 mt-2">
             {{ number_format($data['summary']['orders'] ?? $data['sales']['order_count'] ?? 0) }}
         </p>
     </div>
 
 
     {{-- Net Profit --}}
-    <div class="bg-white rounded-xl border p-5">
-        <p class="text-sm text-slate-500">
+    <div class="bg-blue rounded-xl border p-5">
+        <p class="text-xl font-bold text-blue-500">
             Net Profit
         </p>
 
