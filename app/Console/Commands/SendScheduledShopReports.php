@@ -19,149 +19,122 @@ class SendScheduledShopReports extends Command
 
     protected $description = 'Dispatch scheduled MahWi shop reports';
 
-    public function handle(
-        ReportDeliveryService $reportDeliveryService
-    ): int {
-        $referenceDate = $this->option('date')
-            ? Carbon::parse($this->option('date'))
-            : now();
+public function handle(
+    ReportDeliveryService $reportDeliveryService
+): void {
+    $delivery = $reportDeliveryService->prepare(
+        $this->shop,
+        $this->type,
+        $this->referenceDate->copy()
+    );
 
-        $requestedType = $this->option('type');
-        $force = (bool) $this->option('force');
+    $emails = $delivery['recipient_emails'] ?? [];
 
-        $query = ReportSchedule::query()
-            ->with('shop')
-            ->where('is_enabled', true);
+    if (empty($emails)) {
+        Log::warning(
+            'MahWi report email skipped: no recipients found.',
+            [
+                'shop_id' => $this->shop->id,
+                'shop_name' => $this->shop->business_name
+                    ?? $this->shop->name
+                    ?? null,
+                'report_type' => $this->type,
+                'period' => $delivery['period']['label'] ?? null,
+            ]
+        );
 
-        if ($requestedType) {
-            $query->where(
-                'report_type',
-                strtolower(trim($requestedType))
-            );
-        }
-
-        $schedules = $query->get();
-
-        if ($schedules->isEmpty()) {
-            $this->info('No enabled report schedules found.');
-
-            return self::SUCCESS;
-        }
-
-        $dispatched = 0;
-        $skipped = 0;
-
-        foreach ($schedules as $schedule) {
-            $type = strtolower(trim($schedule->report_type));
-
-            if (!$schedule->shop) {
-                $this->warn(
-                    "Skipping schedule #{$schedule->id}: shop not found."
-                );
-
-                $skipped++;
-                continue;
-            }
-
-            /*
-             * When running normally, only process schedules
-             * that are actually due.
-             *
-             * --force is useful for testing.
-             */
-            if (!$force && !$this->isDue($schedule, $referenceDate)) {
-                $this->line(
-                    "Not due: "
-                    . $schedule->shop->business_name
-                    . " / "
-                    . $type
-                );
-
-                $skipped++;
-                continue;
-            }
-
-            try {
-                [$startDate, $endDate] =
-                    $reportDeliveryService->resolvePeriod(
-                        $type,
-                        $referenceDate->copy()
-                    );
-            } catch (InvalidArgumentException $exception) {
-                $this->warn(
-                    "Skipping schedule #{$schedule->id}: "
-                    . $exception->getMessage()
-                );
-
-                $skipped++;
-                continue;
-            }
-
-            /*
-             * Prevent duplicate reports for the same shop,
-             * report type and reporting period.
-             */
-            $alreadySent = ReportDelivery::query()
-                ->where('shop_id', $schedule->shop_id)
-                ->where('report_type', $type)
-                ->whereDate(
-                    'period_start',
-                    $startDate->toDateString()
-                )
-                ->whereDate(
-                    'period_end',
-                    $endDate->toDateString()
-                )
-                ->where('status', 'sent')
-                ->exists();
-
-            if ($alreadySent) {
-                $this->line(
-                    "Already sent: "
-                    . $schedule->shop->business_name
-                    . " / "
-                    . $type
-                    . " / "
-                    . $startDate->toDateString()
-                    . " - "
-                    . $endDate->toDateString()
-                );
-
-                $skipped++;
-                continue;
-            }
-
-            SendShopReportJob::dispatch(
-                $schedule->shop,
-                $type,
-                $referenceDate->copy()
-            );
-
-            $this->info(
-                "Dispatched: "
-                . $schedule->shop->business_name
-                . " / "
-                . $type
-                . " / "
-                . $startDate->toDateString()
-                . " - "
-                . $endDate->toDateString()
-            );
-
-            $dispatched++;
-        }
-
-        $this->newLine();
-
-        $this->info("Dispatched: {$dispatched}");
-        $this->info("Skipped: {$skipped}");
-
-        return self::SUCCESS;
+        return;
     }
 
-    /**
-     * Determine whether a schedule is due.
+    $periodStart = $delivery['period']['start']->toDateString();
+    $periodEnd = $delivery['period']['end']->toDateString();
+
+    $reportDelivery = ReportDelivery::firstOrCreate(
+        [
+            'shop_id' => $this->shop->id,
+            'report_type' => $this->type,
+            'period_start' => $periodStart,
+            'period_end' => $periodEnd,
+        ],
+        [
+            'recipient_emails' => implode(',', $emails),
+            'status' => 'pending',
+        ]
+    );
+
+    /*
+     * The report for this exact shop/type/period has already
+     * been successfully sent. Do not send it again.
      */
+    if ($reportDelivery->status === 'sent') {
+        Log::info(
+            'MahWi report already sent. Skipping duplicate.',
+            [
+                'delivery_id' => $reportDelivery->id,
+                'shop_id' => $this->shop->id,
+                'report_type' => $this->type,
+                'period' => $delivery['period']['label'] ?? null,
+            ]
+        );
+
+        return;
+    }
+
+    try {
+        /*
+         * Keep the recipient list synchronized in case the
+         * Shop-Admin users changed before a retry.
+         */
+        $reportDelivery->update([
+            'recipient_emails' => implode(',', $emails),
+            'status' => 'pending',
+            'error_message' => null,
+        ]);
+
+        Mail::to($emails)->send(
+            new ShopReportMail($delivery)
+        );
+
+        $reportDelivery->update([
+            'status' => 'sent',
+            'sent_at' => now(),
+            'error_message' => null,
+        ]);
+
+        Log::info(
+            'MahWi report email sent successfully.',
+            [
+                'delivery_id' => $reportDelivery->id,
+                'shop_id' => $this->shop->id,
+                'shop_name' => $this->shop->business_name
+                    ?? $this->shop->name
+                    ?? null,
+                'report_type' => $this->type,
+                'period' => $delivery['period']['label'] ?? null,
+                'recipients' => $emails,
+            ]
+        );
+    } catch (Throwable $exception) {
+        $reportDelivery->update([
+            'status' => 'failed',
+            'error_message' => $exception->getMessage(),
+        ]);
+
+        Log::error(
+            'MahWi report email failed.',
+            [
+                'delivery_id' => $reportDelivery->id,
+                'shop_id' => $this->shop->id,
+                'report_type' => $this->type,
+                'period' => $delivery['period']['label'] ?? null,
+                'error' => $exception->getMessage(),
+            ]
+        );
+
+        throw $exception;
+    }
+}
+
     protected function isDue(
         ReportSchedule $schedule,
         Carbon $referenceDate
