@@ -35,12 +35,14 @@ class SendShopReportJob implements ShouldQueue
     ];
 
     public function __construct(
-        public Shop $shop,
-        public string $type,
-        public Carbon $referenceDate
-    ) {
-        $this->type = strtolower(trim($type));
-    }
+    public Shop $shop,
+    public string $type,
+    public Carbon $referenceDate
+) {
+    $this->type = strtolower(trim($type));
+
+    $this->onQueue('reports');
+}
 
     /**
      * Execute the job.
