@@ -1,6 +1,7 @@
-<div class="bg-white border rounded-xl overflow-hidden">
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
 
-    <div class="p-5 border-b">
+    {{-- Header --}}
+    <div class="p-5 border-b border-slate-200">
 
         <div class="flex items-center justify-between">
 
@@ -19,43 +20,44 @@
     </div>
 
 
+    {{-- Table --}}
     <div class="overflow-x-auto">
 
         <table class="min-w-full text-sm">
 
-            <thead class="bg-slate-50 border-b">
+            <thead class="bg-slate-50 border-b border-slate-200">
 
                 <tr>
 
-                    <th class="px-4 py-3 text-left">
+                    <th class="px-4 py-3 text-left whitespace-nowrap">
                         Date
                     </th>
 
-                    <th class="px-4 py-3 text-left">
-                        Order
+                    <th class="px-4 py-3 text-left whitespace-nowrap">
+                        Sale
                     </th>
 
-                    <th class="px-4 py-3 text-left">
+                    <th class="px-4 py-3 text-left whitespace-nowrap">
                         Product
                     </th>
 
-                    <th class="px-4 py-3 text-right">
+                    <th class="px-4 py-3 text-right whitespace-nowrap">
                         Qty
                     </th>
 
-                    <th class="px-4 py-3 text-right">
+                    <th class="px-4 py-3 text-right whitespace-nowrap">
                         Buying Price
                     </th>
 
-                    <th class="px-4 py-3 text-right">
+                    <th class="px-4 py-3 text-right whitespace-nowrap">
                         Selling Price
                     </th>
 
-                    <th class="px-4 py-3 text-right">
+                    <th class="px-4 py-3 text-right whitespace-nowrap">
                         Revenue
                     </th>
 
-                    <th class="px-4 py-3 text-right">
+                    <th class="px-4 py-3 text-right whitespace-nowrap">
                         Profit
                     </th>
 
@@ -64,85 +66,141 @@
             </thead>
 
 
-            <tbody class="divide-y">
+            <tbody class="divide-y divide-slate-100">
 
                 @forelse($data['items'] as $row)
 
                     @php
+                        /*
+                         * ReportService sales rows are expected to contain:
+                         *
+                         * [
+                         *     'sale'    => Sale model,
+                         *     'item'    => SaleItem model,
+                         *     'product' => Product model,
+                         * ]
+                         */
 
-                        $item = $row['item'];
+                        $item = $row['item'] ?? null;
 
-                        $product = $row['product'];
+                        $product = $row['product'] ?? null;
 
-                        $quantity = (float) ($item->quantity ?? 0);
+                        $sale = $row['sale'] ?? null;
 
-                        $sellingPrice = (float) (
-                            $item->cost_price_at_sale
-                            ?? $item->unit_price
-                            ?? $item->line_total
-                            ?? 0
-                        );
 
+                        /*
+                         * Quantity sold
+                         */
+                        $quantity = (float) ($item?->quantity ?? 0);
+
+
+                        /*
+                         * Actual buying/cost price at the time of sale.
+                         *
+                         * This should come from sale_items.cost_price_at_sale
+                         * when available.
+                         */
                         $buyingPrice = (float) (
-                            $item->unit_price
-                            ?? $item->cost_price_at_sale
-                            ?? $product?->line_total
+                            $item?->cost_price_at_sale
+                            ?? $product?->buying_price
                             ?? 0
                         );
 
+
+                        /*
+                         * Actual selling price.
+                         *
+                         * unit_price should represent the price charged
+                         * to the customer for one unit.
+                         */
+                        $sellingPrice = (float) (
+                            $item?->unit_price
+                            ?? 0
+                        );
+
+
+                        /*
+                         * Revenue
+                         */
                         $revenue = $quantity * $sellingPrice;
 
+
+                        /*
+                         * Cost of goods sold
+                         */
                         $cost = $quantity * $buyingPrice;
 
-                        $profit = $revenue - $cost;
 
+                        /*
+                         * Gross profit
+                         */
+                        $profit = $revenue - $cost;
                     @endphp
+
 
                     <tr class="hover:bg-slate-50">
 
-                        <td class="px-4 py-3">
-                            {{ $row['order']->created_at?->format('d/m/Y H:i') }}
+                        {{-- Sale Date --}}
+                        <td class="px-4 py-3 whitespace-nowrap text-slate-600">
+                            {{ $sale?->sale_date
+                                ? \Carbon\Carbon::parse($sale->sale_date)->format('d/m/Y')
+                                : ($sale?->created_at?->format('d/m/Y') ?? '—') }}
                         </td>
 
-                        <td class="px-4 py-3">
-                            #{{ $row['order']->id }}
+
+                        {{-- Sale --}}
+                        <td class="px-4 py-3 whitespace-nowrap font-medium text-slate-700">
+                            #{{ $sale?->id ?? '—' }}
                         </td>
 
-                        <td class="px-4 py-3 font-medium">
+
+                        {{-- Product --}}
+                        <td class="px-4 py-3 font-medium text-slate-800">
                             {{ $product?->name ?? 'Unknown Product' }}
                         </td>
 
-                        <td class="px-4 py-3 text-right">
+
+                        {{-- Quantity --}}
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
                             {{ number_format($quantity, 2) }}
                         </td>
 
-                        <td class="px-4 py-3 text-right">
+
+                        {{-- Buying Price --}}
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
                             {{ number_format($buyingPrice) }}
                         </td>
 
-                        <td class="px-4 py-3 text-right">
+
+                        {{-- Selling Price --}}
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
                             {{ number_format($sellingPrice) }}
                         </td>
 
-                        <td class="px-4 py-3 text-right font-medium">
+
+                        {{-- Revenue --}}
+                        <td class="px-4 py-3 text-right font-medium whitespace-nowrap">
                             {{ number_format($revenue) }}
                         </td>
 
-                        <td class="px-4 py-3 text-right font-medium">
+
+                        {{-- Profit --}}
+                        <td class="px-4 py-3 text-right font-medium whitespace-nowrap">
                             {{ number_format($profit) }}
                         </td>
 
                     </tr>
 
+
                 @empty
 
                     <tr>
 
-                        <td colspan="8"
-                            class="px-4 py-12 text-center text-slate-500">
-
+                        <td
+                            colspan="8"
+                            class="px-4 py-12 text-center text-slate-500"
+                        >
                             No sales found for this period.
-
                         </td>
 
                     </tr>
@@ -152,39 +210,49 @@
             </tbody>
 
 
-            <tfoot class="bg-slate-50 border-t font-semibold">
+            {{-- Totals --}}
+            <tfoot class="bg-slate-50 border-t border-slate-200 font-semibold">
 
                 <tr>
 
-                    <td colspan="3"
-                        class="px-4 py-4 text-right">
-
+                    <td
+                        colspan="3"
+                        class="px-4 py-4 text-right text-slate-700"
+                    >
                         TOTAL
-
                     </td>
 
-                    <td class="px-4 py-4 text-right">
 
-                        {{ number_format($data['quantity'], 2) }}
-
+                    {{-- Total Quantity --}}
+                    <td class="px-4 py-4 text-right whitespace-nowrap">
+                        {{ number_format((float) ($data['quantity'] ?? 0), 2) }}
                     </td>
 
-                    <td></td>
 
-                    <td></td>
-
+                    {{-- Buying Price --}}
                     <td class="px-4 py-4 text-right">
-
-                        {{ number_format($data['total']) }}
-
+                        —
                     </td>
 
-                    <td class="px-4 py-4 text-right">
 
+                    {{-- Selling Price --}}
+                    <td class="px-4 py-4 text-right">
+                        —
+                    </td>
+
+
+                    {{-- Total Revenue --}}
+                    <td class="px-4 py-4 text-right whitespace-nowrap">
+                        {{ number_format((float) ($data['total'] ?? 0)) }}
+                    </td>
+
+
+                    {{-- Total Profit --}}
+                    <td class="px-4 py-4 text-right whitespace-nowrap">
                         {{ number_format(
-                            $data['total'] - $data['cost']
+                            (float) ($data['total'] ?? 0)
+                            - (float) ($data['cost'] ?? 0)
                         ) }}
-
                     </td>
 
                 </tr>
