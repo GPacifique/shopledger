@@ -1,306 +1,388 @@
+@php
+    // Catalog for the clickable product picker (prices are still re-read from the DB when the sale is saved).
+    $catalog = collect($products ?? [])->map(fn ($p) => [
+        'id'    => $p->id,
+        'name'  => (string) $p->name,
+        'sku'   => (string) ($p->sku ?? ''),
+        'price' => (float) $p->selling_price,
+        'stock' => (float) $p->stock,
+        'min'   => (float) ($p->minimum_stock ?? 0),
+    ])->values();
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
-            <a href="{{ route('sales.index') }}"
-               class="inline-flex items-center justify-center h-9 w-9 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
-            </a>
-            <div>
-                <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
-                    {{ __('Record New Sale') }}
-                </h2>
-                <p class="text-xs text-gray-400 mt-0.5 hidden sm:block">{{ __('Add items, set payment details, and confirm the sale') }}</p>
-            </div>
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-green-800 leading-tight">{{ __('Point of Sale') }}</h2>
+            <span class="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
+                <span class="relative flex h-2.5 w-2.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                {{ __('Scanner ready') }}
+            </span>
         </div>
     </x-slot>
 
-    <div class="py-6 sm:py-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="py-8 bg-gradient-to-br from-indigo-50 via-white to-emerald-50 min-h-screen">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-            @if(session('error'))
-                <div class="mb-5 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-                    <svg class="h-5 w-5 flex-shrink-0 text-red-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
-                    </svg>
-                    <span>{{ session('error') }}</span>
-                </div>
-            @endif
+            <!-- LEFT: scanner + cart -->
+            <div class="lg:col-span-3 space-y-6">
 
-            @if($errors->any())
-                <div class="mb-5 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
-                    <ul class="list-disc list-inside text-sm space-y-0.5">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form method="POST"
-      action="{{ route('sales.store') }}"
-      x-data="saleForm"
-      @submit="onSubmit"
-      data-payment-status="{{ old('payment_status', 'paid') }}"
-      data-i18n-min-item="{{ __('At least one item is required') }}"
-      data-i18n-stock-error="{{ __('Cannot complete sale: One or more items exceed available stock. Please adjust quantities.') }}"
-      class="pb-28 lg:pb-0">
-    @csrf
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-
-                    <!-- Main column -->
-                    <div class="lg:col-span-2 space-y-6">
-
-                        <!-- Sale Date / Payment Method / Payment Status / Customer -->
-                        <div class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-2xl">
-                            <div class="px-5 sm:px-6 py-4 border-b border-gray-100">
-                                <h3 class="text-sm font-semibold text-gray-900 tracking-wide">{{ __('Sale Details') }}</h3>
-                            </div>
-                            <div class="p-5 sm:p-6">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                    <x-form.field name="sale_date" :label="__('Sale Date')" required>
-                                        <input type="date" name="sale_date" id="sale_date"
-                                               value="{{ old('sale_date', date('Y-m-d')) }}" required
-                                               class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-2.5 px-3 text-base transition-colors">
-                                    </x-form.field>
-
-                                    <x-form.field name="customer_id" :label="__('Customer')">
-                                        <select name="customer_id" id="customer_id"
-                                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-2.5 px-3 text-base transition-colors">
-                                            <option value="">{{ __('Walk-in customer') }}</option>
-                                            @foreach($customers as $customer)
-                                                <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
-                                                    {{ $customer->name }} {{ $customer->phone ? '('.$customer->phone.')' : '' }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </x-form.field>
-
-                                    <x-form.field name="payment_method" :label="__('Payment Method')" required>
-                                        <select name="payment_method" id="payment_method" required
-                                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-2.5 px-3 text-base transition-colors">
-                                            @foreach(\App\Models\Sale::PAYMENT_METHODS as $value => $label)
-                                                <option value="{{ $value }}" {{ old('payment_method', 'cash') === $value ? 'selected' : '' }}>
-                                                    {{ $label }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </x-form.field>
-
-                                   <x-form.field name="payment_status" :label="__('Payment Status')" required>
-    @php
-        $paymentStatuses = [
-            'paid' => __('paid'),
-            'partial' => __('partial'),
-            'unpaid' => __('unpaid'),
-        ];
-    @endphp
-
-    <select
-        name="payment_status"
-        id="payment_status"
-        required
-        x-model="paymentStatus"
-        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-2.5 px-3 text-base transition-colors"
-    >
-        @foreach($paymentStatuses as $value => $label)
-            <option value="{{ $value }}">
-                {{ $label }}
-            </option>
-        @endforeach
-    </select>
-</x-form.field>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Items -->
-                        <div class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-2xl">
-                            <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex justify-between items-center gap-3">
-                                <div>
-                                    <h3 class="text-sm font-semibold text-gray-900 tracking-wide">{{ __('Sale Items') }}</h3>
-                                    <p class="text-xs text-gray-400 mt-0.5" x-show="items.length" x-text="`${items.length} ${items.length === 1 ? '{{ __('item') }}' : '{{ __('items') }}'}`"></p>
-                                </div>
-                                <button type="button" @click="addItem()"
-                                        class="inline-flex items-center gap-1.5 px-3.5 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 shadow-sm transition-colors">
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15"/>
-                                    </svg>
-                                    {{ __('Add Item') }}
-                                </button>
-                            </div>
-
-                            <!-- Column headers (desktop only) -->
-                            <div class="hidden lg:grid grid-cols-12 gap-4 px-6 pt-4 text-xs font-medium text-gray-400 uppercase tracking-wide">
-                                <div class="col-span-5">{{ __('Product') }}</div>
-                                <div class="col-span-2">{{ __('Quantity') }}</div>
-                                <div class="col-span-2">{{ __('Unit Price') }}</div>
-                                <div class="col-span-2">{{ __('Line Total') }}</div>
-                                <div class="col-span-1"></div>
-                            </div>
-
-                            <div class="p-4 sm:p-6 space-y-3">
-                                <template x-for="(item, index) in items" :key="item.uid">
-                                    <div class="group relative bg-gray-50/70 hover:bg-gray-50 border border-gray-100 rounded-xl p-4 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 lg:items-center transition-colors"
-                                         :class="item.quantity > item.stock && item.productId ? 'ring-1 ring-red-200 bg-red-50/60' : ''">
-
-                                        <div class="lg:col-span-5">
-                                            <label class="text-xs font-medium text-gray-500 lg:hidden">{{ __('Product') }} *</label>
-                                            <select :name="`items[${index}][product_id]`" required
-                                                    x-model="item.productId" @change="onProductChange(item)"
-                                                    class="mt-1 lg:mt-0 w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-2.5 px-3 text-base transition-colors">
-                                                <option value="">{{ __('Select Product') }}</option>
-                                                @foreach($products as $product)
-                                                    <option value="{{ $product->id }}"
-                                                            data-price="{{ $product->selling_price }}"
-                                                            data-stock="{{ $product->stock }}"
-                                                            data-name="{{ $product->name }}">
-                                                        {{ $product->name }} (Stock: {{ $product->stock }})
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div class="lg:col-span-2">
-                                            <label class="text-xs font-medium text-gray-500 lg:hidden">{{ __('Quantity') }} *</label>
-                                            <input type="number"
-                                                   :name="`items[${index}][quantity]`"
-                                                   min="0.00001"
-                                                   step="0.00001"
-                                                   required
-                                                   x-model.number="item.quantity"
-                                                   :class="item.quantity > item.stock ? 'border-red-400 ring-1 ring-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'"
-                                                   class="mt-1 lg:mt-0 w-full rounded-lg shadow-sm py-2.5 px-3 text-base transition-colors">
-                                            <p class="text-xs mt-1 flex items-center gap-1"
-                                               :class="item.quantity > item.stock ? 'text-red-600 font-medium' : 'text-gray-400'"
-                                               x-show="item.productId">
-                                                <svg x-show="item.quantity > item.stock" class="h-3.5 w-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
-                                                </svg>
-                                                <span x-text="`{{ __('Available') }}: ${item.stock}`"></span>
-                                            </p>
-                                        </div>
-
-                                        <div class="lg:col-span-2">
-                                            <label class="text-xs font-medium text-gray-500 lg:hidden">{{ __('Unit Price') }} (RWF) *</label>
-                                            <input type="number" :name="`items[${index}][unit_price]`" min="0" step="1" required
-                                                   x-model.number="item.unitPrice"
-                                                   class="mt-1 lg:mt-0 w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 py-2.5 px-3 text-base transition-colors">
-                                        </div>
-
-                                        <div class="lg:col-span-2 flex items-center justify-between lg:block pt-1 lg:pt-0 border-t lg:border-t-0 border-gray-100">
-                                            <label class="text-xs font-medium text-gray-500 lg:hidden">{{ __('Line Total') }}</label>
-                                            <div class="text-base font-semibold text-gray-900 tabular-nums" x-text="formatCurrency(item.quantity * item.unitPrice)"></div>
-                                        </div>
-
-                                        <div class="lg:col-span-1 flex lg:justify-center">
-                                            <button type="button" @click="removeItem(index)"
-                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors">
-                                                <svg class="h-4.5 w-4.5 flex-shrink-0" style="height:1.1rem;width:1.1rem" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                                <span class="text-sm lg:hidden">{{ __('Remove') }}</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </template>
-
-                                <!-- Empty state -->
-                                <div x-show="!items.length" class="text-center py-10 px-4">
-                                    <svg class="mx-auto h-10 w-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/>
-                                    </svg>
-                                    <p class="mt-3 text-sm text-gray-500">{{ __('No items added yet') }}</p>
-                                    <button type="button" @click="addItem()"
-                                            class="mt-3 text-sm font-medium text-emerald-600 hover:text-emerald-700">
-                                        {{ __('Add your first item') }} &rarr;
-                                    </button>
-                                </div>
-
-                                @error('items')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
+                <!-- Scanner -->
+                <div class="rounded-xl shadow-md overflow-hidden bg-white border border-indigo-100">
+                    <div class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center gap-2">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6v12M8 6v12M12 6v12M16 6v12M20 6v12"/>
+                        </svg>
+                        <label for="scanInput" class="font-medium">{{ __('Scan barcode / SKU') }}</label>
                     </div>
-
-                    <!-- Summary sidebar -->
-                    <div class="lg:col-span-1">
-                        <div class="hidden lg:block sticky top-6 space-y-4">
-                            <div class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-2xl p-6">
-                                <h3 class="text-sm font-semibold text-gray-900 tracking-wide mb-4">{{ __('Summary') }}</h3>
-                                <div class="space-y-2 text-sm text-gray-500 mb-4">
-                                    <div class="flex justify-between">
-                                        <span x-text="`${items.length} ${items.length === 1 ? '{{ __('item') }}' : '{{ __('items') }}'}`"></span>
-                                        <span x-text="formatCurrency(grandTotal)"></span>
-                                    </div>
-                                </div>
-                                <div class="border-t border-gray-100 pt-4 flex justify-between items-baseline">
-                                    <span class="text-sm font-medium text-gray-900">{{ __('Total Amount') }}</span>
-                                    <span class="text-2xl font-bold text-emerald-600 tabular-nums" x-text="formatCurrency(grandTotal)"></span>
-                                </div>
-
-                                <div class="mt-6 space-y-2">
-                                    <button type="submit"
-                                            class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 transition-colors">
-                                        {{ __('Record Sale') }}
-                                    </button>
-                                    <a href="{{ route('sales.index') }}"
-                                       class="w-full inline-flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 transition-colors">
-                                        {{ __('Cancel') }}
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="p-6">
+                        <input id="scanInput" type="text" autocomplete="off" autofocus
+                               placeholder="{{ __('Scan an item or type a code and press Enter') }}"
+                               class="w-full rounded-lg border-2 border-indigo-200 bg-indigo-50/40 shadow-sm text-lg py-3 focus:border-indigo-500 focus:ring-indigo-500">
+                        <p id="scanStatus" class="mt-3 text-sm font-medium min-h-[1.5rem] text-gray-500"></p>
                     </div>
                 </div>
 
-                <!-- Mobile sticky action bar -->
-                <div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 px-4 py-3 shadow-[0_-4px_12px_-2px_rgba(0,0,0,0.06)]">
-                    <div class="flex items-center justify-between gap-3 max-w-7xl mx-auto">
-                        <div class="min-w-0">
-                            <p class="text-xs text-gray-400 leading-none">{{ __('Total Amount') }}</p>
-                            <p class="text-lg font-bold text-emerald-600 tabular-nums leading-tight" x-text="formatCurrency(grandTotal)"></p>
+                <!-- Cart -->
+                <div class="rounded-xl shadow-md overflow-hidden bg-white border border-gray-100">
+                    <div class="px-6 py-3 bg-gradient-to-r from-sky-500 to-cyan-500 text-white flex items-center justify-between">
+                        <span class="font-medium">{{ __('Current Sale') }}</span>
+                        <span class="text-sm bg-white/25 px-3 py-0.5 rounded-full">
+                            <span id="itemCount">0</span> {{ __('items') }}
+                        </span>
+                    </div>
+
+                    <div class="p-6 overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-xs uppercase tracking-wide text-sky-700 bg-sky-50">
+                                    <th class="py-2 px-2 rounded-l-md">{{ __('Product') }}</th>
+                                    <th class="py-2 px-2 w-28">{{ __('Qty') }}</th>
+                                    <th class="py-2 px-2 text-right">{{ __('Price') }}</th>
+                                    <th class="py-2 px-2 text-right">{{ __('Total') }}</th>
+                                    <th class="py-2 px-2 w-10 rounded-r-md"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cartBody"></tbody>
+                        </table>
+                        <div id="emptyCart" class="py-12 text-center">
+                            <div class="mx-auto mb-3 h-14 w-14 rounded-full bg-sky-100 flex items-center justify-center">
+                                <svg class="h-7 w-7 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.3 2.3c-.6.6-.2 1.7.7 1.7H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                            </div>
+                            <p class="text-gray-400">{{ __('Cart is empty. Scan an item or pick one from the list.') }}</p>
                         </div>
-                        <div class="flex items-center gap-2 flex-shrink-0">
-                            <a href="{{ route('sales.index') }}"
-                               class="inline-flex items-center justify-center px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 transition-colors">
-                                {{ __('Cancel') }}
-                            </a>
-                            <button type="submit"
-                                    class="inline-flex items-center justify-center px-5 py-2.5 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 transition-colors">
-                                {{ __('Record Sale') }}
+                    </div>
+
+                    <!-- Totals -->
+                    <div class="px-6 py-5 bg-gradient-to-r from-emerald-50 to-teal-50 border-t border-emerald-100">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-lg font-medium text-gray-700">{{ __('Total') }}</span>
+                            <span id="grandTotal" class="text-4xl font-extrabold text-emerald-600">RWF 0.00</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button id="clearBtn" type="button"
+                                    class="px-4 py-3 rounded-lg font-medium text-rose-700 bg-rose-100 hover:bg-rose-200 transition">
+                                {{ __('Clear') }}
+                            </button>
+                            <button id="completeBtn" type="button" disabled
+                                    class="col-span-2 px-4 py-3 rounded-lg text-white font-semibold text-lg bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-md transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                {{ __('Complete Sale') }}
                             </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Stock toast -->
-                <div x-show="toast.visible"
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 translate-y-2 sm:translate-y-0 sm:translate-x-2"
-                     x-transition:enter-end="opacity-100 translate-y-0 sm:translate-x-0"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-end="opacity-0"
-                     class="fixed top-4 right-4 left-4 sm:left-auto z-50 sm:max-w-sm">
-                    <div class="bg-red-600 text-white px-4 sm:px-5 py-4 rounded-xl shadow-xl flex items-start gap-3">
-                        <svg class="h-5 w-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
-                        </svg>
-                        <div class="min-w-0 flex-1">
-                            <p class="font-semibold text-sm">{{ __('Insufficient Stock!') }}</p>
-                            <p class="text-sm text-red-100 break-words mt-0.5" x-text="toast.message"></p>
-                        </div>
-                        <button type="button" @click="toast.visible = false" class="flex-shrink-0 text-red-200 hover:text-white">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
+            <!-- RIGHT: product picker -->
+            <div class="lg:col-span-2">
+                <div class="rounded-xl shadow-md overflow-hidden bg-white border border-amber-100 lg:sticky lg:top-4">
+                    <div class="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-between">
+                        <span class="font-medium">{{ __('Choose Products') }}</span>
+                        <span class="text-sm bg-white/25 px-3 py-0.5 rounded-full">
+                            <span id="productCount">0</span>
+                        </span>
+                    </div>
+                    <div class="p-4">
+                        <input id="productSearch" type="search" autocomplete="off"
+                               placeholder="{{ __('Search by name or SKU...') }}"
+                               class="w-full rounded-lg border-2 border-amber-200 bg-amber-50/50 text-sm focus:border-amber-500 focus:ring-amber-500">
+                        <div id="productGrid" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-1"></div>
+                        <p id="noProducts" class="hidden py-8 text-center text-gray-400 text-sm">{{ __('No products match your search.') }}</p>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
+
+    <script>
+        const LOOKUP_URL = @json(route('pos.lookup'));
+        const STORE_URL  = @json(route('pos.store'));
+        const CSRF       = @json(csrf_token());
+        const catalog    = @json($catalog);
+
+        const cart = new Map(); // product_id -> {id, name, price, stock, qty}
+        let flashId = null;
+
+        const scanInput = document.getElementById('scanInput');
+        const statusEl  = document.getElementById('scanStatus');
+        const cartBody  = document.getElementById('cartBody');
+        const grid      = document.getElementById('productGrid');
+        const searchEl  = document.getElementById('productSearch');
+
+        /* ---------- Beep (Web Audio, no sound files needed) ---------- */
+        let audioCtx = null;
+        const TONES = {
+            scan:  { freq: 1800, type: 'sine',     len: 0.12 },
+            pick:  { freq: 1200, type: 'triangle', len: 0.10 },
+            error: { freq: 300,  type: 'square',   len: 0.40 },
+        };
+        function beep(kind = 'scan') {
+            try {
+                const t = TONES[kind] || TONES.scan;
+                audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = t.type;
+                osc.frequency.value = t.freq;
+                gain.gain.value = 0.18;
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + t.len);
+            } catch (e) { /* audio blocked: ignore */ }
+        }
+
+        function setStatus(text, ok = true) {
+            statusEl.textContent = text;
+            statusEl.className = 'mt-3 text-sm font-medium min-h-[1.5rem] ' + (ok ? 'text-emerald-600' : 'text-rose-600');
+        }
+
+        const money = v => 'RWF ' + v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        /* ---------- Product picker ---------- */
+        function stockBadge(p) {
+            if (p.stock <= 0)         return ['Out of stock', 'bg-rose-100 text-rose-700'];
+            if (p.stock <= p.min)     return ['Low: ' + p.stock, 'bg-amber-100 text-amber-700'];
+            return ['In stock: ' + p.stock, 'bg-emerald-100 text-emerald-700'];
+        }
+
+        function renderProducts() {
+            const q = searchEl.value.trim().toLowerCase();
+            const list = catalog.filter(p =>
+                !q || p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q));
+
+            grid.innerHTML = '';
+            document.getElementById('productCount').textContent = list.length;
+            document.getElementById('noProducts').classList.toggle('hidden', list.length > 0);
+
+            list.forEach(p => {
+                const [label, badgeClass] = stockBadge(p);
+                const out = p.stock <= 0;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'text-left rounded-lg border-2 p-3 transition ' + (out
+                    ? 'border-gray-200 bg-gray-50 opacity-60'
+                    : 'border-indigo-100 bg-white hover:border-indigo-400 hover:bg-indigo-50 hover:shadow-md active:scale-95');
+                btn.innerHTML = `
+                    <div class="font-semibold text-gray-900 text-sm leading-snug"></div>
+                    <div class="text-xs text-gray-400 mt-0.5"></div>
+                    <div class="mt-2 flex items-center justify-between gap-2">
+                        <span class="font-bold text-indigo-600 text-sm">${money(p.price)}</span>
+                        <span class="text-[11px] font-medium px-2 py-0.5 rounded-full ${badgeClass}">${label}</span>
+                    </div>`;
+                btn.children[0].textContent = p.name;
+                btn.children[1].textContent = p.sku ? 'SKU: ' + p.sku : '';
+                btn.addEventListener('click', () => {
+                    addToCart(p, 'pick');
+                    scanInput.focus();
+                });
+                grid.appendChild(btn);
+            });
+        }
+        searchEl.addEventListener('input', renderProducts);
+
+        /* ---------- Scan handling ---------- */
+        scanInput.addEventListener('keydown', async (e) => {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+
+            const code = scanInput.value.trim();
+            scanInput.value = '';
+            if (!code) return;
+
+            try {
+                const res = await fetch(LOOKUP_URL + '?code=' + encodeURIComponent(code), {
+                    headers: { 'Accept': 'application/json' },
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.found) {
+                    beep('error');
+                    setStatus(data.message || 'Product not found.', false);
+                    return;
+                }
+                addToCart(data.product, 'scan');
+            } catch (err) {
+                beep('error');
+                setStatus('Network error. Try again.', false);
+            }
+        });
+
+        function addToCart(p, source = 'scan') {
+            const line = cart.get(p.id) || { id: p.id, name: p.name, price: p.price, stock: p.stock, qty: 0 };
+
+            if (line.qty + 1 > p.stock) {
+                beep('error');
+                setStatus(p.stock <= 0 ? `${p.name} is out of stock.` : `Only ${p.stock} of ${p.name} in stock.`, false);
+                return;
+            }
+
+            line.qty += 1;
+            line.stock = p.stock;
+            cart.set(p.id, line);
+            flashId = p.id;
+            beep(source);
+            setStatus(`Added: ${p.name}`, true);
+            render();
+        }
+
+        /* ---------- Cart rendering ---------- */
+        function render() {
+            cartBody.innerHTML = '';
+            let total = 0, count = 0;
+
+            cart.forEach(line => {
+                const lineTotal = line.qty * line.price;
+                total += lineTotal;
+                count += line.qty;
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-100 transition-colors duration-700 ' +
+                    (line.id === flashId ? 'bg-emerald-100' : 'hover:bg-sky-50/60');
+                tr.innerHTML = `
+                    <td class="py-3 px-2 font-medium text-gray-900"></td>
+                    <td class="py-3 px-2">
+                        <input type="number" min="0.01" step="0.01" value="${line.qty}"
+                               class="w-24 rounded-md border-sky-200 text-sm focus:border-sky-500 focus:ring-sky-500">
+                    </td>
+                    <td class="py-3 px-2 text-right text-gray-600">${money(line.price)}</td>
+                    <td class="py-3 px-2 text-right font-bold text-indigo-700">${money(lineTotal)}</td>
+                    <td class="py-3 px-2 text-right">
+                        <button type="button" title="Remove"
+                                class="h-8 w-8 rounded-full text-rose-600 bg-rose-50 hover:bg-rose-100 text-lg leading-none">&times;</button>
+                    </td>`;
+                tr.children[0].textContent = line.name; // textContent: no HTML injection
+
+                tr.querySelector('input').addEventListener('change', (ev) => {
+                    let q = parseFloat(ev.target.value) || 0;
+                    if (q <= 0) {
+                        cart.delete(line.id);
+                    } else if (q > line.stock) {
+                        beep('error');
+                        setStatus(`Only ${line.stock} in stock.`, false);
+                        line.qty = line.stock;
+                    } else {
+                        line.qty = q;
+                    }
+                    flashId = null;
+                    render();
+                    scanInput.focus();
+                });
+                tr.querySelector('button').addEventListener('click', () => {
+                    cart.delete(line.id);
+                    flashId = null;
+                    render();
+                    scanInput.focus();
+                });
+
+                cartBody.appendChild(tr);
+            });
+
+            document.getElementById('grandTotal').textContent = money(total);
+            document.getElementById('itemCount').textContent = count;
+            document.getElementById('emptyCart').style.display = cart.size ? 'none' : 'block';
+            document.getElementById('completeBtn').disabled = cart.size === 0;
+
+            // fade the highlight away
+            if (flashId !== null) {
+                const id = flashId;
+                setTimeout(() => {
+                    if (flashId === id) { flashId = null; render(); }
+                }, 700);
+            }
+        }
+
+        /* ---------- Save sale ---------- */
+        document.getElementById('completeBtn').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            btn.disabled = true;
+
+            const lines = [...cart.values()];
+            const items = lines.map(l => ({ product_id: l.id, quantity: l.qty }));
+
+            try {
+                const res = await fetch(STORE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': CSRF,
+                    },
+                    body: JSON.stringify({ items }),
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    const msg = data.errors ? Object.values(data.errors).flat()[0] : (data.message || 'Sale failed.');
+                    beep('error');
+                    setStatus(msg, false);
+                    btn.disabled = false;
+                    return;
+                }
+
+                beep('scan');
+                setTimeout(() => beep('scan'), 180);
+
+                // keep the picker's stock figures in step with the sale
+                lines.forEach(l => {
+                    const p = catalog.find(c => c.id === l.id);
+                    if (p) p.stock = Math.max(0, p.stock - l.qty);
+                });
+
+                cart.clear();
+                flashId = null;
+                render();
+                renderProducts();
+                setStatus(`Sale #${data.sale_id} saved: ${money(data.total)}`, true);
+            } catch (err) {
+                beep('error');
+                setStatus('Network error. Sale not saved.', false);
+                btn.disabled = false;
+            }
+            scanInput.focus();
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            cart.clear();
+            flashId = null;
+            render();
+            setStatus('');
+            scanInput.focus();
+        });
+
+        /* Keep the scanner input focused so scans are never lost */
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('input, button, select, textarea')) scanInput.focus();
+        });
+
+        renderProducts();
+        render();
+    </script>
 </x-app-layout>

@@ -94,31 +94,45 @@
             <div class="grid grid-cols-12 gap-4">
                 <div class="col-span-5">
                     <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Product') }} *</label>
-                    <select name="items[__INDEX__][product_id]" required class="product-select w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" onchange="updateItemTotal(this)">
+                    <select name="items[__INDEX__][product_id]" required
+                            class="product-select w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            onchange="fillUnitCost(this)">
                         <option value="">{{ __('Select Product') }}</option>
                         @foreach($products as $product)
-                            <option value="{{ $product->id }}" data-cost="{{ $product->cost_price }}">{{ $product->name }} (Stock: {{ $product->stock }})</option>
+                            <option value="{{ $product->id }}" data-cost="{{ $product->buying_price ?? 0 }}">
+                                {{ $product->name }} (Stock: {{ $product->stock }})
+                            </option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Quantity') }} *</label>
                     <input
-    type="number"
-    name="items[__INDEX__][quantity]"
-    min="0.01"
-    step="0.01"
-    inputmode="decimal"
-    value="0.01"
-    required
-    class="quantity-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-    placeholder="0.00"
-    oninput="updateItemTotal(this)"
->
+                        type="number"
+                        name="items[__INDEX__][quantity]"
+                        min="0.01"
+                        step="0.01"
+                        inputmode="decimal"
+                        value=""
+                        required
+                        class="quantity-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        placeholder="0.00"
+                        oninput="updateItemTotal(this)"
+                    >
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Unit Cost (RWF)') }} *</label>
-                    <input type="number" name="items[__INDEX__][unit_cost]" min="0.01" step="0.01" required class="cost-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" oninput="updateItemTotal(this)">
+                    <input
+                        type="number"
+                        name="items[__INDEX__][unit_cost]"
+                        min="0.01"
+                        step="0.01"
+                        inputmode="decimal"
+                        required
+                        class="cost-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        placeholder="0.00"
+                        oninput="updateItemTotal(this)"
+                    >
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Line Total') }}</label>
@@ -156,16 +170,28 @@
                 row.remove();
                 updateGrandTotal();
             } else {
-                alert('{{ __('At least one item is required') }}');
+                alert(@json(__('At least one item is required')));
             }
+        }
+
+        // Auto-fill unit cost when a product is selected (user can still edit it)
+        function fillUnitCost(select) {
+            const row = select.closest('.item-row');
+            const costInput = row.querySelector('.cost-input');
+            const option = select.options[select.selectedIndex];
+            const cost = parseFloat(option ? option.dataset.cost : '');
+
+            // Fill only when the product has a valid cost; otherwise leave empty for manual entry
+            costInput.value = (!isNaN(cost) && cost > 0) ? cost.toFixed(2) : '';
+
+            updateItemTotal(select);
         }
 
         function updateItemTotal(element) {
             const row = element.closest('.item-row');
             const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
             const cost = parseFloat(row.querySelector('.cost-input').value) || 0;
-            const total = quantity * cost;
-            row.querySelector('.line-total').textContent = formatAmount(total);
+            row.querySelector('.line-total').textContent = formatAmount(quantity * cost);
             updateGrandTotal();
         }
 
@@ -179,20 +205,7 @@
             document.getElementById('grandTotal').textContent = formatAmount(total);
         }
 
-        // Auto-fill cost when product is selected
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('product-select')) {
-                const option = e.target.options[e.target.selectedIndex];
-                const cost = option.dataset.cost || 0;
-                const row = e.target.closest('.item-row');
-                row.querySelector('.cost-input').value = parseFloat(cost).toFixed(2);
-                updateItemTotal(e.target);
-            }
-        });
-
         // Add first item on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            addItem();
-        });
+        document.addEventListener('DOMContentLoaded', addItem);
     </script>
 </x-app-layout>
