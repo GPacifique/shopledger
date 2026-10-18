@@ -190,9 +190,163 @@
         animation-duration: 2s;
     }
 }
+    html {
+        color-scheme: light;
+    }
+
+    html.dark {
+        color-scheme: dark;
+    }
+
+    html.dark body {
+        background-color: #0b1120 !important;
+        color: #e5e7eb !important;
+    }
+
+    /* Main surfaces, cards, tables, dropdowns and forms */
+    html.dark .bg-white {
+        background-color: #111827 !important;
+    }
+
+    html.dark .bg-gray-50 {
+        background-color: #0f172a !important;
+    }
+
+    html.dark .bg-gray-100 {
+        background-color: #1f2937 !important;
+    }
+
+    html.dark .bg-gray-200 {
+        background-color: #374151 !important;
+    }
+
+    html.dark .bg-gray-300 {
+        background-color: #4b5563 !important;
+    }
+
+    /* Text */
+    html.dark .text-gray-900,
+    html.dark .text-gray-800 {
+        color: #f9fafb !important;
+    }
+
+    html.dark .text-gray-700 {
+        color: #e5e7eb !important;
+    }
+
+    html.dark .text-gray-600 {
+        color: #d1d5db !important;
+    }
+
+    html.dark .text-gray-500 {
+        color: #9ca3af !important;
+    }
+
+    html.dark .text-gray-400 {
+        color: #9ca3af !important;
+    }
+
+    /* Borders and dividers */
+    html.dark .border-gray-100,
+    html.dark .border-gray-200,
+    html.dark .border-gray-300,
+    html.dark .divide-gray-100 > :not(:first-child),
+    html.dark .divide-gray-200 > :not(:first-child) {
+        border-color: #374151 !important;
+    }
+
+    html.dark hr {
+        border-color: #374151;
+    }
+
+    /* Inputs and form controls */
+    html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    html.dark select,
+    html.dark textarea {
+        background-color: #111827 !important;
+        color: #f3f4f6 !important;
+        border-color: #4b5563 !important;
+    }
+
+    html.dark input::placeholder,
+    html.dark textarea::placeholder {
+        color: #9ca3af !important;
+    }
+
+    html.dark option {
+        background-color: #111827;
+        color: #f3f4f6;
+    }
+
+    /* Tables */
+    html.dark table thead {
+        background-color: #1f2937 !important;
+        color: #d1d5db !important;
+    }
+
+    html.dark table tbody tr {
+        border-color: #374151 !important;
+    }
+
+    html.dark table tbody tr:hover {
+        background-color: #1f2937;
+    }
+
+    /* Common navigation and hover surfaces */
+    html.dark .hover\:bg-gray-50:hover {
+        background-color: #1f2937 !important;
+    }
+
+    html.dark .hover\:bg-gray-100:hover {
+        background-color: #374151 !important;
+    }
+
+    html.dark .hover\:bg-gray-200:hover {
+        background-color: #4b5563 !important;
+    }
+
+    html.dark .shadow,
+    html.dark .shadow-sm,
+    html.dark .shadow-md,
+    html.dark .shadow-lg,
+    html.dark .shadow-xl {
+        --tw-shadow-color: rgb(0 0 0 / 25%);
+    }
+
+    /* Native browser controls */
+    html.dark input[type="date"],
+    html.dark input[type="time"],
+    html.dark input[type="datetime-local"] {
+        color-scheme: dark;
+    }
+
+    /* Smooth changes without interfering with layout */
+    body,
+    body * {
+        transition-property: background-color, border-color, color;
+        transition-duration: 150ms;
+        transition-timing-function: ease-in-out;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        body,
+        body * {
+            transition-duration: 0ms !important;
+        }
+    }
+
     </style>
 
     @stack('styles')
+    <script>
+    (function () {
+        const savedTheme = localStorage.getItem('mahwi-theme');
+        const theme = savedTheme === 'dark' ? 'dark' : 'light';
+
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        document.documentElement.dataset.theme = theme;
+    })();
+</script>
 </head>
 
 
@@ -275,7 +429,38 @@
                         <div class="truncate">@yield('header')</div>
                     @endif
                 </div>
+<button
+    type="button"
+    id="mahwi-theme-toggle"
+    aria-label="Switch to dark mode"
+    title="Switch theme"
+    class="inline-flex items-center justify-center gap-2 rounded-lg
+           border border-gray-200 bg-white px-3 py-2
+           text-sm font-medium text-gray-700 shadow-sm
+           transition hover:bg-gray-100
+           focus:outline-none focus:ring-2 focus:ring-indigo-500
+           dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100
+           dark:hover:bg-gray-700"
+>
+    <svg id="mahwi-sun-icon" class="hidden h-5 w-5" fill="none"
+         stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" stroke-width="2"/>
+        <path stroke-linecap="round" stroke-width="2"
+              d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3
+                 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42
+                 m11.3-11.3 1.42-1.42"/>
+    </svg>
 
+    <svg id="mahwi-moon-icon" class="h-5 w-5" fill="none"
+         stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              stroke-width="2"
+              d="M20.9 13A9 9 0 0 1 11 3.1
+                 9 9 0 1 0 20.9 13Z"/>
+    </svg>
+
+    <span id="mahwi-theme-label">Dark mode</span>
+</button>
                 {{-- Header actions --}}
                 <div class="ml-auto flex min-w-0 items-center gap-1.5 sm:gap-2">
 
@@ -566,6 +751,50 @@
         // Optional helper for forms or custom navigation.
         window.mahwiShowLoader = showMainLoader;
         window.mahwiHideLoader = hideMainLoader;
+    })();
+    
+    (function () {
+        const button = document.getElementById('mahwi-theme-toggle');
+        const label = document.getElementById('mahwi-theme-label');
+        const sun = document.getElementById('mahwi-sun-icon');
+        const moon = document.getElementById('mahwi-moon-icon');
+
+        if (!button || button.dataset.initialized === 'true') return;
+
+        button.dataset.initialized = 'true';
+
+        function updateThemeUI() {
+            const isDark = document.documentElement.classList.contains('dark');
+
+            button.setAttribute(
+                'aria-label',
+                isDark ? 'Switch to light mode' : 'Switch to dark mode'
+            );
+
+            if (label) {
+                label.textContent = isDark ? 'Light mode' : 'Dark mode';
+            }
+
+            if (sun) sun.classList.toggle('hidden', !isDark);
+            if (moon) moon.classList.toggle('hidden', isDark);
+        }
+
+        button.addEventListener('click', function () {
+            const isDark = !document.documentElement.classList.contains('dark');
+
+            document.documentElement.classList.toggle('dark', isDark);
+            document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+
+            try {
+                localStorage.setItem('mahwi-theme', isDark ? 'dark' : 'light');
+            } catch (error) {
+                // Theme still works for this page if storage is unavailable.
+            }
+
+            updateThemeUI();
+        });
+
+        updateThemeUI();
     })();
 </script>
 
