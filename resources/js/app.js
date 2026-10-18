@@ -3,6 +3,7 @@ import collapse from '@alpinejs/collapse';
 window.Alpine = Alpine;
 
 Alpine.data('saleForm', () => ({
+    paymentStatus: document.getElementById('payment_status')?.value || 'paid',
     items: [],
     toast: { visible: false, message: '', timer: null },
 
