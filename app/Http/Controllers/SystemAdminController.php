@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\Shop;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\RedirectResponse;
  use App\Models\SubscriptionPlan; 
  use Illuminate\Support\Facades\DB;
@@ -123,6 +125,65 @@ public function approveShop(Shop $shop): RedirectResponse
     return redirect()
         ->back()
         ->with('success', 'Shop approved successfully. Its users can now access shop data.');
+}
+
+
+
+public function editUser(User $user)
+{
+    $shops = Shop::orderBy('business_name')->get();
+
+    return view('admin.users.edit', compact('user', 'shops'));
+}
+
+public function updateUser(Request $request, User $user)
+{
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => [
+            'required',
+            'email',
+            'max:255',
+            Rule::unique('users', 'email')->ignore($user->id),
+        ],
+        'password' => ['nullable', 'string', 'min:8'],
+        'role' => [
+            'required',
+            Rule::in([
+                'system_admin',
+                'business_admin',
+                'shop_admin',
+                'seller',
+                'waiter',
+                'user',
+            ]),
+        ],
+        'shop_id' => ['nullable', 'integer', 'exists:shops,id'],
+        'account_status' => [
+            'required',
+            Rule::in(['active', 'suspended']),
+        ],
+        'locale' => ['required', Rule::in(['en', 'fr', 'rw', 'sw'])],
+    ]);
+
+    // Update the user's basic information.
+    $user->name = $validated['name'];
+    $user->email = $validated['email'];
+    $user->role = $validated['role'];
+    $user->shop_id = $validated['shop_id'] ?? null;
+    $user->account_status = $validated['account_status'];
+    $user->locale = $validated['locale'];
+
+    // Only change the password when one was entered.
+    if (!empty($validated['password'])) {
+        $user->password = Hash::make($validated['password']);
+    }
+
+    $user->save();
+
+    return redirect()
+        ->route('admin.users.index')
+        ->with('success', 'User updated successfully.');
 }
 
 }

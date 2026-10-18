@@ -349,20 +349,20 @@
         </div>
         <div>
           <div class="brand-name">{{ config('app.name', 'MahWi') }}</div>
-          <div class="brand-tag">Business&#8209;Manager</div>
+          <div class="brand-tag">Shop&#8209;Manager</div>
         </div>
       </div>
 
       <details class="lang-switch">
         <summary>
           @php
-            $flags = ['en' => '🇬🇧', 'fr' => '🇫🇷', 'rw' => '🇷🇼', 'sw' => '🇹🇿'];
+            $flags = ['en' => 'ðŸ‡¬ðŸ‡§', 'fr' => 'ðŸ‡«ðŸ‡·', 'rw' => 'ðŸ‡·ðŸ‡¼', 'sw' => 'ðŸ‡¹ðŸ‡¿'];
           @endphp
-          <span>{{ $flags[app()->getLocale()] ?? '🇬🇧' }}</span>
+          <span>{{ $flags[app()->getLocale()] ?? 'ðŸ‡¬ðŸ‡§' }}</span>
           <span>{{ strtoupper(app()->getLocale()) }}</span>
         </summary>
         <div class="lang-menu">
-          @foreach(['en' => ['English', '🇬🇧'], 'fr' => ['Français', '🇫🇷'], 'rw' => ['Kinyarwanda', '🇷🇼'], 'sw' => ['Kiswahili', '🇹🇿']] as $code => $lang)
+          @foreach(['en' => ['English', 'ðŸ‡¬ðŸ‡§'], 'fr' => ['FranÃ§ais', 'ðŸ‡«ðŸ‡·'], 'rw' => ['Kinyarwanda', 'ðŸ‡·ðŸ‡¼'], 'sw' => ['Kiswahili', 'ðŸ‡¹ðŸ‡¿']] as $code => $lang)
             <a href="{{ route('language.switch', $code) }}" class="{{ app()->getLocale() === $code ? 'is-active' : '' }}">
               <span>{{ $lang[1] }}</span>{{ $lang[0] }}
             </a>
@@ -375,7 +375,7 @@
       <div class="showcase-copy">
         <p class="showcase-eyebrow">{{ __("What you'll see inside") }}</p>
         <h1>{{ __('Every Business, on one screen.') }}</h1>
-        <p>{{ __("A quick look at the dashboard your team opens every morning — stock, sales, and profit, always current.") }}</p>
+        <p>{{ __("A quick look at the dashboard your team opens every morning â€” stock, sales, and profit, always current.") }}</p>
       </div>
 
       <div class="frame">
@@ -443,20 +443,21 @@
         <form method="POST" action="{{ route('login') }}" novalidate>
           @csrf
 
-<div>
-   <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-   
-
+          <div class="field">
+            <label for="email">{{ __('Email or phone') }}</label>
+            <input id="email" name="email" type="text" class="{{ $errors->has('email') ? 'has-error' : '' }}"
+                   placeholder="you@example.com" value="{{ old('email') }}"
+                   autocomplete="username" required autofocus>
+            @error('email')
+              <p class="field-error">{{ $message }}</p>
+            @enderror
+          </div>
 
           <div class="field">
             <label for="password">{{ __('Password') }}</label>
             <div class="field-pass-wrap">
               <input id="password" name="password" type="password" class="{{ $errors->has('password') ? 'has-error' : '' }}"
-                     placeholder="••••••••" autocomplete="current-password" required>
+                     placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="current-password" required>
               <button type="button" class="toggle-pass" id="toggle-pass" aria-pressed="false">{{ __('Show') }}</button>
             </div>
             @error('password')
