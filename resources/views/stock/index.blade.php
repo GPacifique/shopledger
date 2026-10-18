@@ -300,7 +300,7 @@
     </div>
 
     @push('scripts')
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">nonce="{{ Vite::cspNonce() }}">
         let refreshInterval;
 
         function refreshStockData() {

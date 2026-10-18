@@ -73,7 +73,7 @@
     </div>
 
     @if(request()->query('print') == 1)
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         window.addEventListener('load', function() {
             window.print();
             setTimeout(function(){ window.close(); }, 500);

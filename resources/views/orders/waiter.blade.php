@@ -635,7 +635,7 @@
     ================================================================= --}}
     @push('scripts')
 
-        <script>
+        <script nonce="{{ Vite::cspNonce() }}">
             function orderForm(products) {
                 return {
                     products: products,

@@ -50,7 +50,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">nonce="{{ Vite::cspNonce() }}">
         const palette = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#84cc16'];
 
         // Server-supplied data

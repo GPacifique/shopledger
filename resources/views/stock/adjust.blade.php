@@ -178,7 +178,7 @@
     </div>
 
     @push('scripts')
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         function setReason(reason) {
             document.getElementById('reason').value = reason;
         }

@@ -758,7 +758,7 @@
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         // Sales Category Pie Chart
 const salesCategoryCtx = document.getElementById('salesCategoryChart');
 

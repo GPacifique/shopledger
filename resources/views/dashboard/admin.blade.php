@@ -430,7 +430,7 @@
         .stat-card { animation: fade-in 0.5s ease-out forwards; opacity: 0; }
     </style>
 
-    <script>
+   <script nonce="{{ Vite::cspNonce() }}">
         // Update date and time
         function updateDateTime() {
             const now = new Date();

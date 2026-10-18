@@ -252,7 +252,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         // Radio button styling
         document.querySelectorAll('input[name="status"]').forEach(radio => {
             radio.addEventListener('change', function() {

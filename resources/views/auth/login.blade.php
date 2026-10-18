@@ -491,7 +491,7 @@
 
 </div>
 
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
   // ---- Auto-sliding screenshot carousel ----
   (function(){
     var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));

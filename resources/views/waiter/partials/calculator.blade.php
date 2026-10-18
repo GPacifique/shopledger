@@ -67,7 +67,7 @@
     .calc-btn--equals:hover { background: #f0ba6c !important; }
 </style>
 
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
     function calculator() {
         return {
             display: '0',

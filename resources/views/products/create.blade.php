@@ -883,7 +883,7 @@
          JAVASCRIPT
     ================================================================= --}}
 
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
 
         function generateSKU() {
 

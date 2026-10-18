@@ -431,7 +431,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         (() => {
             const dateElement = document.getElementById('current-date');
             const timeElement = document.getElementById('current-time');

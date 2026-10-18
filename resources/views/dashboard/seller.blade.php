@@ -1013,7 +1013,7 @@
     </style>
 
 
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
 
         // Keyboard shortcut for quick sale
         document.addEventListener('keydown', function(e) {

@@ -422,7 +422,7 @@
 
 </div>
 
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
   (function(){
     var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
     var dots = Array.prototype.slice.call(document.querySelectorAll('.dot'));
