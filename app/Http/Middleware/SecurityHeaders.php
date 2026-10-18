@@ -66,7 +66,7 @@ class SecurityHeaders
     {
         // Alpine.js (standard build) evaluates the expressions in x-data / @click with
         // new Function(), which needs 'unsafe-eval'. Inline <script> blocks need the nonce.
-        $script  = ["'self'", "'nonce-{$nonce}'", "'unsafe-eval'"];
+        $script  = ["'self'", "'nonce-{$nonce}'", "'unsafe-eval'", 'https://cdn.jsdelivr.net'];
 
         // The layout and sidebar use inline <style> blocks and style="" attributes.
         $style   = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'];
