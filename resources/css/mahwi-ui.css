@@ -1,0 +1,154 @@
+
+/* MAHWI UI FOUNDATION */
+:root {
+    --mahwi-primary: #16865b;
+    --mahwi-primary-dark: #106644;
+    --mahwi-sidebar: #12372a;
+    --mahwi-bg: #f5f7f5;
+    --mahwi-surface: #ffffff;
+    --mahwi-text: #202923;
+    --mahwi-muted: #748078;
+    --mahwi-border: #e4eae5;
+    --mahwi-radius: 14px;
+    --mahwi-shadow: 0 5px 20px rgba(20, 50, 35, .055);
+}
+
+body {
+    background: var(--mahwi-bg);
+    color: var(--mahwi-text);
+    font-family: Inter, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.mahwi-card {
+    background: var(--mahwi-surface);
+    border: 1px solid var(--mahwi-border);
+    border-radius: var(--mahwi-radius);
+    padding: 22px;
+    box-shadow: var(--mahwi-shadow);
+    transition: box-shadow .2s ease,
+                transform .2s ease;
+}
+
+.mahwi-card:hover {
+    box-shadow: 0 9px 28px rgba(20, 50, 35, .09);
+}
+
+.mahwi-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s ease,
+                transform .15s ease;
+}
+
+.mahwi-btn:active {
+    transform: scale(.98);
+}
+
+.mahwi-btn-primary {
+    background: var(--mahwi-primary);
+    color: white;
+}
+
+.mahwi-btn-primary:hover {
+    background: var(--mahwi-primary-dark);
+}
+
+.mahwi-input {
+    width: 100%;
+    min-height: 43px;
+    padding: 10px 12px;
+    border: 1px solid #d8e1da;
+    border-radius: 9px;
+    background: white;
+    color: var(--mahwi-text);
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.mahwi-input:focus {
+    outline: none;
+    border-color: var(--mahwi-primary);
+    box-shadow: 0 0 0 3px rgba(22, 134, 91, .13);
+}
+
+.mahwi-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    background: white;
+    border: 1px solid var(--mahwi-border);
+    border-radius: var(--mahwi-radius);
+}
+
+.mahwi-table {
+    width: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;
+}
+
+.mahwi-table th {
+    padding: 14px 16px;
+    background: #f8faf8;
+    color: var(--mahwi-muted);
+    font-size: 12px;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.mahwi-table td {
+    padding: 14px 16px;
+    border-top: 1px solid var(--mahwi-border);
+}
+
+.mahwi-table tbody tr:hover {
+    background: #f7faf7;
+}
+
+.mahwi-status {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.mahwi-status-success {
+    background: #e7f7ed;
+    color: #167447;
+}
+
+.mahwi-status-warning {
+    background: #fff3d8;
+    color: #895a08;
+}
+
+.mahwi-status-danger {
+    background: #fde9e8;
+    color: #b42318;
+}
+
+@media (max-width: 768px) {
+    .mahwi-card {
+        padding: 15px;
+        border-radius: 11px;
+    }
+
+    .mahwi-btn {
+        min-height: 42px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}

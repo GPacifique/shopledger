@@ -345,6 +345,7 @@
 
 
 <style>
+    
     [x-cloak] { display: none !important; }
 
     /* --sidebar-w is defined in layouts/app.blade.php */
@@ -401,7 +402,7 @@
         align-items: center;
         width: 100%;
         border-radius: .7rem;
-        font-size: .875rem;
+        font-size: .885rem;
         font-weight: 500;
         color: #475569;
         transition: background-color .15s ease, color .15s ease;
@@ -450,7 +451,7 @@
 
     .sidebar-section-title {
         padding: .9rem .8rem .35rem;
-        font-size: .75rem;
+        font-size: 24px;
         font-weight: 600;
         color: #94a3b8;
     }

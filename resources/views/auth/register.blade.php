@@ -202,6 +202,53 @@
       .showcase-foot span{ display:flex; align-items:center; gap:6px; }
       .showcase-foot .sw{ width:6px;height:6px;border-radius:50%; background:#7fd6ab; }
 
+      /* Sign-up guide (left side) */
+      .guide{
+        max-width: 460px;
+        margin-bottom: 36px;
+        color: var(--paper);
+      }
+      .guide-title{
+        font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px;
+        margin:0 0 14px;
+      }
+      .guide-steps{
+        list-style:none; margin:0 0 26px; padding:0;
+        display:grid; gap:14px;
+      }
+      .guide-steps li{
+        display:grid; grid-template-columns: 28px 1fr; gap:12px; align-items:start;
+      }
+      .guide-num{
+        width:28px; height:28px; border-radius:50%;
+        border:1.5px solid rgba(127,214,171,0.55); color:#7fd6ab;
+        display:flex; align-items:center; justify-content:center;
+        font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600;
+        line-height:1; padding:0;
+      }
+      .guide-steps strong{
+        display:block; font-size:14.5px; font-weight:600; margin-bottom:2px;
+      }
+      .guide-steps div > span{
+        display:block; font-size:13.5px; line-height:1.5; color: rgba(245,240,228,0.66);
+      }
+      .guide-ready{
+        list-style:none; margin:0; padding:0;
+        display:grid; gap:9px;
+      }
+      .guide-ready li{
+        display:grid; grid-template-columns: 16px 1fr; gap:10px; align-items:start;
+        font-size:13.5px; line-height:1.5; color: rgba(245,240,228,0.78);
+      }
+      .guide-ready li::before{
+        content:""; width:7px; height:7px; border-radius:50%; margin-top:7px; margin-left:4px;
+        background:#7fd6ab;
+      }
+      .guide-ready em{ font-style:normal; color: rgba(245,240,228,0.5); }
+      @media (max-width: 920px){
+        .guide{ display:none; }
+      }
+
       /* ===================== RIGHT: REGISTER TICKET ===================== */
       .login-pane{
         background: var(--paper);
@@ -255,6 +302,7 @@
         font-size:13px; margin-bottom:18px;
       }
 
+
       .field{ margin-bottom:16px; }
       .field-row{
         display:grid; grid-template-columns: 1fr 1fr; gap:12px;
@@ -266,15 +314,32 @@
         display:block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em;
         color: var(--ink-soft); margin-bottom:6px;
       }
-      .field input{
+      .field label .opt{ text-transform:none; letter-spacing:0; color:#9b937d; }
+      .field input[type="text"],
+      .field input[type="email"],
+      .field input[type="tel"],
+      .field input[type="password"],
+      .field textarea{
         width:100%; padding:11px 13px; font-size:14.5px; font-family:'IBM Plex Sans',sans-serif;
         border:1.5px solid var(--rule); border-radius:7px; background: var(--paper);
         color:var(--ink); transition: border-color .15s ease, background .15s ease;
       }
-      .field input.has-error{ border-color: var(--stamp); }
-      .field input::placeholder{ color:#9b937d; }
-      .field input:focus{
+      .field textarea{ resize: vertical; min-height: 76px; line-height:1.45; }
+      .field input.has-error,
+      .field textarea.has-error{ border-color: var(--stamp); }
+      .field input::placeholder,
+      .field textarea::placeholder{ color:#9b937d; }
+      .field input:focus,
+      .field textarea:focus{
         outline:none; border-color: var(--green); background:#fff;
+      }
+      .field input[type="file"]{
+        width:100%; font-size:13px; font-family:'IBM Plex Sans',sans-serif; color: var(--ink-soft);
+        padding:8px; border:1.5px dashed var(--rule); border-radius:7px; background: var(--paper);
+      }
+      .field input[type="file"]::file-selector-button{
+        margin-right:10px; padding:6px 12px; border:none; border-radius:5px; cursor:pointer;
+        background: var(--ink); color: var(--paper); font-family:'IBM Plex Mono',monospace; font-size:11px;
       }
       .field-error{ color: var(--stamp); font-size:12px; margin-top:5px; }
       .field-hint{ color: var(--ink-soft); font-size:11.5px; margin-top:5px; }
@@ -355,7 +420,7 @@
         </div>
         <div>
           <div class="brand-name">{{ config('app.name', 'MahWi') }}</div>
-          <div class="brand-tag">Shop&#8209;Manager</div>
+          <div class="brand-tag">Business&#8209;Manager</div>
         </div>
       </div>
 
@@ -382,6 +447,49 @@
         <p class="showcase-eyebrow">{{ __('Get set up in minutes') }}</p>
         <h1>{{ __('Bring every Business online.') }}</h1>
         <p>{{ __('Create your account and start tracking stock, sales, and profit across all your shops from day one.') }}</p>
+      </div>
+
+      <div class="guide">
+        <h2 class="guide-title">{{ __('How sign-up works') }}</h2>
+        <ol class="guide-steps">
+          <li>
+            <span class="guide-num">1</span>
+            <div>
+              <strong>{{ __('Fill in the form') }}</strong>
+              <span>{{ __('Add your details and your business information. It takes about two minutes.') }}</span>
+            </div>
+          </li>
+          <li>
+            <span class="guide-num">2</span>
+            <div>
+              <strong>{{ __('Verify your email') }}</strong>
+              <span>{{ __('We send a link to the email you enter. Open it to confirm your account before you can sign in to the dashboard.') }}</span>
+            </div>
+          </li>
+          <li>
+            <span class="guide-num">3</span>
+            <div>
+              <strong>{{ __('We review your shop') }}</strong>
+              <span>{{ __('Your shop is checked and approved before it goes live. You will see its status once you are signed in.') }}</span>
+            </div>
+          </li>
+          <li>
+            <span class="guide-num">4</span>
+            <div>
+              <strong>{{ __('Start managing your business') }}</strong>
+              <span>{{ __('Add products, record sales and watch stock and profit from one place.') }}</span>
+            </div>
+          </li>
+        </ol>
+
+        <h2 class="guide-title">{{ __('Have these ready') }}</h2>
+        <ul class="guide-ready">
+          <li><span>{{ __('A working email address you can open now, for the verification link.') }}</span></li>
+          <li><span>{{ __('A phone number with exactly 10 digits, for example 07XXXXXXXX.') }}</span></li>
+          <li><span>{{ __('Your business name, type and address.') }}</span></li>
+          <li><span>{{ __('Your registration and TIN numbers') }} <em>({{ __('optional, we can generate a registration number for you') }})</em></span></li>
+          <li><span>{{ __('Your shop logo') }} <em>({{ __('optional, PNG or JPG up to 2 MB') }})</em></span></li>
+        </ul>
       </div>
 
       <div class="frame">
@@ -446,8 +554,9 @@
           </div>
         @endif
 
-        <form method="POST" action="{{ route('register') }}" novalidate>
+        <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data" novalidate>
           @csrf
+
 
           <div class="field">
             <label for="name">{{ __('Full name') }}</label>
@@ -460,21 +569,23 @@
           </div>
 
           <div class="field">
-            <label for="shop_name">{{ __('Shop / business name') }}</label>
-            <input id="shop_name" name="shop_name" type="text" class="{{ $errors->has('shop_name') ? 'has-error' : '' }}"
-                   placeholder="{{ __('Kigali General Store') }}" value="{{ old('shop_name') }}"
-                   autocomplete="organization" required>
-            @error('shop_name')
+            <label for="email">{{ __('Email') }}</label>
+            <input id="email" name="email" type="email" class="{{ $errors->has('email') ? 'has-error' : '' }}"
+                   placeholder="you@example.com" value="{{ old('email') }}"
+                   autocomplete="email" required>
+            @error('email')
               <p class="field-error">{{ $message }}</p>
             @enderror
           </div>
 
           <div class="field">
-            <label for="email">{{ __('Email or phone') }}</label>
-            <input id="email" name="email" type="text" class="{{ $errors->has('email') ? 'has-error' : '' }}"
-                   placeholder="you@example.com" value="{{ old('email') }}"
-                   autocomplete="username" required>
-            @error('email')
+            <label for="phone">{{ __('Phone number') }}</label>
+            <input id="phone" name="phone" type="tel" class="{{ $errors->has('phone') ? 'has-error' : '' }}"
+                   placeholder="07XXXXXXXX" value="{{ old('phone') }}"
+                   inputmode="numeric" maxlength="10" minlength="10" pattern="[0-9]{10}"
+                   autocomplete="tel-national" required>
+            <p class="field-hint">{{ __('10 digits, numbers only.') }}</p>
+            @error('phone')
               <p class="field-error">{{ $message }}</p>
             @enderror
           </div>
@@ -501,10 +612,91 @@
               </div>
             </div>
           </div>
-          <p class="field-hint">{{ __('At least 8 characters.') }}</p>
+          <p class="field-hint" style="margin-bottom:16px;">{{ __('At least 8 characters.') }}</p>
+
+
+          <div class="field">
+            <label for="business_name">{{ __('Business name') }}</label>
+            <input id="business_name" name="business_name" type="text" class="{{ $errors->has('business_name') ? 'has-error' : '' }}"
+                   placeholder="{{ __('Kigali General Store') }}" value="{{ old('business_name') }}"
+                   autocomplete="organization" required>
+            @error('business_name')
+              <p class="field-error">{{ $message }}</p>
+            @enderror
+          </div>
+
+          <div class="field">
+            <label for="business_type">{{ __('Business type') }}</label>
+            <input id="business_type" name="business_type" type="text" class="{{ $errors->has('business_type') ? 'has-error' : '' }}"
+                   placeholder="{{ __('e.g. Retail, Restaurant, Pharmacy') }}" value="{{ old('business_type') }}" required>
+            @error('business_type')
+              <p class="field-error">{{ $message }}</p>
+            @enderror
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="registration_number">{{ __('Registration no.') }} <span class="opt">({{ __('optional') }})</span></label>
+              <input id="registration_number" name="registration_number" type="text" class="{{ $errors->has('registration_number') ? 'has-error' : '' }}"
+                     placeholder="{{ __('Auto-generated if blank') }}" value="{{ old('registration_number') }}">
+              @error('registration_number')
+                <p class="field-error">{{ $message }}</p>
+              @enderror
+            </div>
+
+            <div class="field">
+              <label for="tin_number">{{ __('TIN number') }} <span class="opt">({{ __('optional') }})</span></label>
+              <input id="tin_number" name="tin_number" type="text" class="{{ $errors->has('tin_number') ? 'has-error' : '' }}"
+                     placeholder="{{ __('Tax ID') }}" value="{{ old('tin_number') }}">
+              @error('tin_number')
+                <p class="field-error">{{ $message }}</p>
+              @enderror
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="country">{{ __('Country') }}</label>
+              <input id="country" name="country" type="text" class="{{ $errors->has('country') ? 'has-error' : '' }}"
+                     placeholder="{{ __('Country') }}" value="{{ old('country', 'Rwanda') }}"
+                     autocomplete="country-name" required>
+              @error('country')
+                <p class="field-error">{{ $message }}</p>
+              @enderror
+            </div>
+
+            <div class="field">
+              <label for="city">{{ __('City') }}</label>
+              <input id="city" name="city" type="text" class="{{ $errors->has('city') ? 'has-error' : '' }}"
+                     placeholder="{{ __('Kigali') }}" value="{{ old('city') }}"
+                     autocomplete="address-level2" required>
+              @error('city')
+                <p class="field-error">{{ $message }}</p>
+              @enderror
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="address">{{ __('Address') }}</label>
+            <textarea id="address" name="address" rows="3" class="{{ $errors->has('address') ? 'has-error' : '' }}"
+                      placeholder="{{ __('Street, sector, landmark') }}"
+                      autocomplete="street-address" required>{{ old('address') }}</textarea>
+            @error('address')
+              <p class="field-error">{{ $message }}</p>
+            @enderror
+          </div>
+
+          <div class="field">
+            <label for="logo">{{ __('Shop logo') }} <span class="opt">({{ __('optional') }})</span></label>
+            <input id="logo" name="logo" type="file" accept="image/*">
+            <p class="field-hint">{{ __('PNG or JPG, up to 2 MB.') }}</p>
+            @error('logo')
+              <p class="field-error">{{ $message }}</p>
+            @enderror
+          </div>
 
           <div class="terms" style="margin-top:16px;">
-            <input type="checkbox" id="terms" name="terms" required>
+            <input type="checkbox" id="terms" name="terms" value="1" {{ old('terms') ? 'checked' : '' }} required>
             <label for="terms">
               {{ __('I agree to the') }}
               <a href="{{ Route::has('terms') ? route('terms') : '#' }}">{{ __('Terms of Service') }}</a>
@@ -512,6 +704,9 @@
               <a href="{{ Route::has('privacy') ? route('privacy') : '#' }}">{{ __('Privacy Policy') }}</a>.
             </label>
           </div>
+          @error('terms')
+            <p class="field-error" style="margin-top:-16px; margin-bottom:16px;">{{ $message }}</p>
+          @enderror
 
           <button type="submit" class="btn-submit">{{ __('Create account') }}</button>
         </form>
@@ -597,6 +792,27 @@
     }
     wireToggle('toggle-pass', 'password');
     wireToggle('toggle-pass-confirm', 'password_confirmation');
+  })();
+
+  // ---- Phone: digits only, max 10 ----
+  (function(){
+    var phone = document.getElementById('phone');
+    if (!phone) return;
+    phone.addEventListener('input', function(){
+      phone.value = phone.value.replace(/\D/g, '').slice(0, 10);
+    });
+  })();
+
+  // ---- Logo: warn early if the file is over 2 MB ----
+  (function(){
+    var logo = document.getElementById('logo');
+    if (!logo) return;
+    logo.addEventListener('change', function(){
+      if (logo.files[0] && logo.files[0].size > 2 * 1024 * 1024) {
+        alert('{{ __('The logo must be 2 MB or smaller.') }}');
+        logo.value = '';
+      }
+    });
   })();
 
   // ---- Close language dropdown on outside click ----

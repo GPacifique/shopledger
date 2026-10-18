@@ -30,12 +30,14 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PosController;
 
+Route::view('/terms', 'legal.terms')->name('terms');
+Route::view('/privacy', 'legal.privacy')->name('privacy');
 Route::middleware('auth')->group(function () {
     Route::get('/pos', [PosController::class, 'index'])
         ->name('pos.index');
 });
 
-Route::middleware(['auth'])
+Route::middleware(['auth', 'verified', 'shop.approved'])
     ->prefix('reports')
     ->name('reports.')
     ->group(function () {
@@ -155,7 +157,7 @@ Route::get('orders/take', [OrderController::class, 'create'])
     });
 
 });
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'shop.approved'])->group(function () {
     Route::prefix('shops/{shop}')->name('shops.')->group(function () {
 
         Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
@@ -172,7 +174,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'shop.approved'])->group(function () {
     Route::prefix('shops/{shop}')->name('shops.')->group(function () {
 
         Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
@@ -189,7 +191,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
 
-Route::middleware(['auth', 'verified', 'role:system_admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified','role:system_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/settings', [SystemAdminController::class, 'settings'])->name('settings');
     Route::get('/shops', [SystemAdminController::class, 'shopsIndex'])->name('shops.index');
 Route::get('/shops/create', [SystemAdminController::class, 'createShop'])->name('shops.create');
@@ -236,15 +238,15 @@ if ($user->role==='waiter'){
     // User with pending shop or no shop - show under review
     $shop = $user->shop;
     return view('dashboard.user', compact('shop'));
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', 'shop.approved'])->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'shop.approved'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Shop Admin Routes - Only accessible by shop_admin
-    Route::middleware(RoleMiddleware::class.':shop_admin')->group(function () {
+    Route::middleware(RoleMiddleware::class.':shop_admin','shop.approved')->group(function () {
         Route::get('/shop/dashboard', [ShopAdminController::class, 'dashboard'])->name('shop.dashboard');
         Route::resource('categories', CategoryController::class)->except(['show']);
         Route::resource('suppliers', SupplierController::class);
@@ -255,20 +257,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/stats', [StatsController::class, 'summary'])->name('stats.summary');
     });
 
-    Route::middleware(RoleMiddleware::class.':shop_admin,seller')->group(function () {
+    Route::middleware(RoleMiddleware::class.':shop_admin,seller','shop.approved')->group(function () {
         Route::resource('products', ProductController::class)->only(['index', 'show']);
         Route::get('products/{product}/qr-code', [ProductController::class, 'qrCode'])->name('products.qr-code');
         Route::resource('expenses', ExpenseController::class)->only(['index']);
     });
 
-    Route::middleware(RoleMiddleware::class.':shop_admin')->group(function () {
+    Route::middleware(RoleMiddleware::class.':shop_admin','shop.approved')->group(function () {
         Route::resource('expenses', ExpenseController::class)->except(['index', 'show']);
         Route::resource('products', ProductController::class)->except(['index', 'edit','create','show']);
     
     });
 
     // Bulk import/export templates
-    Route::middleware(RoleMiddleware::class . ':shop_admin,seller')->group(function () {
+    Route::middleware(RoleMiddleware::class . ':shop_admin,seller','shop.approved')->group(function () {
         Route::get('/imports', [ImportController::class, 'index'])->name('imports.index');
         Route::get('/imports/template/{type}', [ImportController::class, 'template'])->name('imports.template');
         Route::post('/imports/upload', [ImportController::class, 'upload'])->name('imports.upload');
@@ -278,7 +280,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Sales and purchases are accessible to both shop_admin and seller
-    Route::middleware(RoleMiddleware::class.':shop_admin,seller')->group(function () {
+    Route::middleware(RoleMiddleware::class.':shop_admin,seller','shop.approved')->group(function () {
         Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
         Route::get('purchases/{purchase}/download', [PurchaseController::class, 'downloadPdf'])->name('purchases.download');
         Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
@@ -287,7 +289,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // System Admin Routes - Only accessible by system_admin
-    Route::middleware(RoleMiddleware::class.':system_admin')->group(function () {
+    Route::middleware(RoleMiddleware::class.':system_admin','shop.approved')->group(function () {
         Route::get('/admin/dashboard', [SystemAdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::post('/admin/shops/{shop}/approve', [SystemAdminController::class, 'approveShop'])->name('admin.shops.approve');
         Route::post('/admin/shops/{shop}/reject', [SystemAdminController::class, 'rejectShop'])->name('admin.shops.reject');
@@ -298,12 +300,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/admin/users/{user}', [SystemAdminController::class, 'updateUser'])->name('admin.users.update');
     });
 
-    Route::middleware(RoleMiddleware::class.':seller')->group(function () {
+    Route::middleware(RoleMiddleware::class.':seller','shop.approved')->group(function () {
         Route::get('/seller/dashboard', [SellerController::class, 'dashboard'])->name('seller.dashboard');
     });
 
     // Accountant Routes - Only accessible by accountant
-    Route::middleware(RoleMiddleware::class.':accountant')->group(function () {
+    Route::middleware(RoleMiddleware::class.':accountant','shop.approved')->group(function () {
         Route::get('/accountant/dashboard', [AccountantController::class, 'dashboard'])->name('accountant.dashboard');
     });
 });

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Order;
+
 class Shop extends Model
 {
     use HasFactory;
@@ -24,6 +25,7 @@ class Shop extends Model
         'subscriptionplan_id',
         'slug',
         'status',
+        'rejection_reason',
         'created_by',
         'approved_by',
         'approved_at',
@@ -32,6 +34,27 @@ class Shop extends Model
     protected $casts = [
         'approved_at' => 'datetime',
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Shop Approval
+    |--------------------------------------------------------------------------
+    */
+
+    public function isApproved(): bool
+    {
+        return strtolower((string) $this->status) === 'approved';
+    }
+
+    public function isPending(): bool
+    {
+        return strtolower((string) $this->status) === 'pending';
+    }
+
+    public function isRejected(): bool
+    {
+        return strtolower((string) $this->status) === 'rejected';
+    }
 
     public function creator()
     {
@@ -45,7 +68,10 @@ class Shop extends Model
 
     public function subscriptionPlan()
     {
-        return $this->belongsTo(SubscriptionPlan::class, 'subscriptionplan_id');
+        return $this->belongsTo(
+            SubscriptionPlan::class,
+            'subscriptionplan_id'
+        );
     }
 
     public function subscriptions()
@@ -62,18 +88,19 @@ class Shop extends Model
     {
         return $this->hasMany(User::class, 'shop_id');
     }
-public function orders(): HasMany
-{
-    return $this->hasMany(Order::class);
-}
-public function reportSchedules(): HasMany
-{
-    return $this->hasMany(ReportSchedule::class);
-}
 
-public function reportDeliveries(): HasMany
-{
-    return $this->hasMany(ReportDelivery::class);
-}
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
 
+    public function reportSchedules(): HasMany
+    {
+        return $this->hasMany(ReportSchedule::class);
+    }
+
+    public function reportDeliveries(): HasMany
+    {
+        return $this->hasMany(ReportDelivery::class);
+    }
 }

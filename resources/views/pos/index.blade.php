@@ -54,8 +54,8 @@
                 </svg>
             </a>
             <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('Record New Sale') }}</h2>
-                <p class="text-xs text-gray-400 mt-0.5 hidden sm:block">{{ __('Scan a barcode or type a product name to add items') }}</p>
+                <h2 class="font-semibold text-4xl text-blue-800 leading-tight">{{ __('Record New Sale') }}</h2>
+                <p class="text-xs text-green-400 mt-0.5 hidden sm:block">{{ __('Scan a barcode or type a product name to add items') }}</p>
             </div>
         </div>
     </x-slot>
@@ -97,7 +97,7 @@
                         {{-- Scan / search --}}
                         <div class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-2xl p-4 sm:p-5">
                             <div class="relative" @click.outside="open = false">
-                                <label for="pos-search" class="sr-only">{{ __('Scan barcode or search product') }}</label>
+                                <label for="pos-search" class="sr-only ">{{ __('Scan barcode or search product') }}</label>
 
                                 <div class="relative">
                                     <svg class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

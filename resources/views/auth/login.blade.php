@@ -349,7 +349,7 @@
         </div>
         <div>
           <div class="brand-name">{{ config('app.name', 'MahWi') }}</div>
-          <div class="brand-tag">Shop&#8209;Manager</div>
+          <div class="brand-tag">Business&#8209;Manager</div>
         </div>
       </div>
 
@@ -443,15 +443,14 @@
         <form method="POST" action="{{ route('login') }}" novalidate>
           @csrf
 
-          <div class="field">
-            <label for="email">{{ __('Email or phone') }}</label>
-            <input id="email" name="email" type="text" class="{{ $errors->has('email') ? 'has-error' : '' }}"
-                   placeholder="you@example.com" value="{{ old('email') }}"
-                   autocomplete="username" required autofocus>
-            @error('email')
-              <p class="field-error">{{ $message }}</p>
-            @enderror
-          </div>
+<div>
+   <div>
+            <x-input-label for="email" :value="__('Email')" />
+            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
+            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        </div>
+   
+
 
           <div class="field">
             <label for="password">{{ __('Password') }}</label>

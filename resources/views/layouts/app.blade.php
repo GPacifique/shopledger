@@ -25,7 +25,7 @@
         @hasSection('title')
             @yield('title') — MahWi
         @else
-            MahWi POS
+            MahWi
         @endif
     </title>
 
@@ -55,7 +55,6 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
     <style>
         [x-cloak] { display: none !important; }
 
@@ -105,13 +104,72 @@
         @media (prefers-reduced-motion: reduce) {
             .app-shell { transition: none; }
         }
+        /* Main content loading overlay */
+.main-loading-overlay {
+    position: fixed;
+    inset: 4rem 0 0 var(--sidebar-w);
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(248, 250, 252, 0.82);
+    backdrop-filter: blur(3px);
+    transition: opacity 0.2s ease;
+}
+
+.main-loading-overlay[hidden] {
+    display: none !important;
+}
+
+.main-loading-spinner {
+    width: 58px;
+    height: 58px;
+    border: 5px solid #dcfce7;
+    border-top-color: #16a34a;
+    border-right-color: #16a34a;
+    border-radius: 50%;
+    animation: mahwi-spin 0.75s linear infinite;
+}
+
+.main-loading-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 24px;
+}
+
+.main-loading-text {
+    color: #166534;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+@keyframes mahwi-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 1023px) {
+    .main-loading-overlay {
+        left: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .main-loading-spinner {
+        animation-duration: 2s;
+    }
+}
     </style>
 
     @stack('styles')
 </head>
 
 
-<body class="min-h-screen bg-slate-100 text-slate-900">
+<body class="min-h-screen bg-white-100 text-blue-900">
 
     {{-- Sidebar (fixed on desktop, slide-in drawer on mobile) --}}
     @include('layouts.navigation')
@@ -327,7 +385,7 @@
 
 
         {{-- Main content --}}
-        <main class="min-w-0 min-h-[calc(100vh-4rem)] bg-slate-100 p-4 text-slate-900 transition-colors duration-300 sm:p-6 lg:p-8">
+        <main class="min-w-0 min-h-[calc(100vh-4rem)] bg-white p-4 text-slate-900 transition-colors duration-300 sm:p-6 lg:p-8">
 
             @if(session('success'))
                 <div
@@ -371,7 +429,20 @@
             @isset($slot)
                 {{ $slot }}
             @endisset
-
+{{-- Main content loading indicator --}}
+<div
+    id="main-loading-overlay"
+    class="main-loading-overlay"
+    hidden
+    role="status"
+    aria-live="polite"
+    aria-label="Loading page"
+>
+    <div class="main-loading-inner">
+        <div class="main-loading-spinner"></div>
+        <span class="main-loading-text">Loading, please wait...</span>
+    </div>
+</div>
         </main>
     </div>
 
@@ -390,6 +461,86 @@
             }
         }
     </script>
+    <script nonce="{{ Vite::cspNonce() }}">
+    (() => {
+        const overlay = document.getElementById('main-loading-overlay');
+
+        if (!overlay) return;
+
+        let loadingTimer = null;
+
+        function showMainLoader() {
+            overlay.hidden = false;
+        }
+
+        function hideMainLoader() {
+            overlay.hidden = true;
+
+            if (loadingTimer) {
+                clearTimeout(loadingTimer);
+                loadingTimer = null;
+            }
+        }
+
+        // Show the loader after the browser begins navigating away.
+        document.addEventListener('click', function (event) {
+            const link = event.target.closest('a[href]');
+
+            if (!link) return;
+
+            if (
+                event.defaultPrevented ||
+                event.button !== 0 ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey ||
+                link.target === '_blank' ||
+                link.hasAttribute('download')
+            ) return;
+
+            const url = new URL(link.href, window.location.href);
+
+            // Skip same-page anchors, external links and JavaScript links.
+            if (
+                url.origin !== window.location.origin ||
+                url.pathname === window.location.pathname &&
+                url.search === window.location.search &&
+                url.hash
+            ) return;
+
+            if (
+                link.hasAttribute('data-no-loader') ||
+                link.closest('[data-no-loader]')
+            ) return;
+
+            showMainLoader();
+        });
+
+        // Show for normal form submissions, including POST forms.
+        document.addEventListener('submit', function (event) {
+            const form = event.target;
+
+            if (
+                form.matches('[data-no-loader]') ||
+                form.querySelector('[data-no-loader]') ||
+                form.target === '_blank'
+            ) return;
+
+            showMainLoader();
+        });
+
+        // Restore the page if the browser returns through its back-forward cache.
+        window.addEventListener('pageshow', hideMainLoader);
+
+        // Handle browser navigation away from the page.
+        window.addEventListener('beforeunload', showMainLoader);
+
+        // Optional helper for forms or custom navigation.
+        window.mahwiShowLoader = showMainLoader;
+        window.mahwiHideLoader = hideMainLoader;
+    })();
+</script>
 
     @stack('scripts')
 </body>

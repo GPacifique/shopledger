@@ -309,7 +309,7 @@
         </div>
         <div>
           <div class="brand-name">{{ config('app.name', 'MahWi') }}</div>
-          <div class="brand-tag">Shop&#8209;Manager</div>
+          <div class="brand-tag">Business&#8209;Manager</div>
         </div>
       </div>
 

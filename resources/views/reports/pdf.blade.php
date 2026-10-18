@@ -87,7 +87,7 @@
 
 <div class="header">
 
-    <h1> MAHWI-BMS BUSINESS REPORT</h1>
+    <h1> MAHWI-REPORT</h1>
     <div>
         Period:
         {{ $startDate->format('d M Y') }}

@@ -27,13 +27,46 @@
                         </div>
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900">Shop Details</h3>
-                            <p class="text-xs text-gray-500">Fill in the Business information</p>
+                            <p class="text-xs text-gray-500">Select a user first to autofill contact details</p>
                         </div>
                     </div>
                 </div>
 
                 <form action="{{ route('admin.shops.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
                     @csrf
+
+                    <!-- Assign to User (first, so it can autofill the fields below) -->
+                    <div>
+                        <label for="user_id" class="block text-sm font-medium text-gray-700 mb-2">Assign to User (Shop Admin) *</label>
+                        <select name="user_id" id="user_id" required
+                            class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition">
+                            <option value="">Select a user...</option>
+                            @forelse($unassignedUsers as $user)
+                                <option value="{{ $user->id }}"
+                                    data-email="{{ $user->email }}"
+                                    data-phone="{{ $user->phone ?? '' }}"
+                                    data-country="{{ $user->country ?? '' }}"
+                                    data-city="{{ $user->city ?? '' }}"
+                                    data-address="{{ $user->address ?? '' }}"
+                                    {{ old('user_id') == $user->id ? 'selected' : '' }}>
+                                    {{ $user->name }} ({{ $user->email }})
+                                </option>
+                            @empty
+                                <option value="" disabled>No unassigned users available</option>
+                            @endforelse
+                        </select>
+                        @error('user_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        @if($unassignedUsers->isEmpty())
+                            <p class="mt-2 text-sm text-yellow-600 flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                All registered users already have shops assigned.
+                            </p>
+                        @endif
+                    </div>
 
                     <!-- Business Name -->
                     <div>
@@ -57,12 +90,12 @@
                         @enderror
                     </div>
 
-                    <!-- Registration Number -->
+                    <!-- Registration Number (auto-generated when blank) -->
                     <div>
-                        <label for="registration_number" class="block text-sm font-medium text-gray-700 mb-2">Registration Number *</label>
-                        <input type="text" name="registration_number" id="registration_number" value="{{ old('registration_number') }}" required
+                        <label for="registration_number" class="block text-sm font-medium text-gray-700 mb-2">Registration Number</label>
+                        <input type="text" name="registration_number" id="registration_number" value="{{ old('registration_number') }}"
                             class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition"
-                            placeholder="Business registration number">
+                            placeholder="Leave blank to auto-generate">
                         @error('registration_number')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -161,33 +194,6 @@
                         @enderror
                     </div>
 
-                    <!-- Assign to User -->
-                    <div>
-                        <label for="user_id" class="block text-sm font-medium text-gray-700 mb-2">Assign to User (Shop Admin) *</label>
-                        <select name="user_id" id="user_id" required
-                            class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition">
-                            <option value="">Select a user...</option>
-                            @forelse($unassignedUsers as $user)
-                                <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
-                                    {{ $user->name }} ({{ $user->email }})
-                                </option>
-                            @empty
-                                <option value="" disabled>No unassigned users available</option>
-                            @endforelse
-                        </select>
-                        @error('user_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        @if($unassignedUsers->isEmpty())
-                            <p class="mt-2 text-sm text-yellow-600 flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                All registered users already have shops assigned.
-                            </p>
-                        @endif
-                    </div>
-
                     <!-- Status -->
                     <div>
                         <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
@@ -226,11 +232,11 @@
 
                     <!-- Submit Buttons -->
                     <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-100">
-                        <a href="{{ route('admin.dashboard') }}" 
+                        <a href="{{ route('admin.dashboard') }}"
                             class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition">
                             Cancel
                         </a>
-                        <button type="submit" 
+                        <button type="submit"
                             class="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-purple-700 transition transform hover:scale-105 shadow-lg"
                             {{ $unassignedUsers->isEmpty() ? 'disabled' : '' }}>
                             <span class="flex items-center">
@@ -261,5 +267,40 @@
                 }
             });
         });
+
+        // Autofill shop fields from the selected user.
+        // Keys are the data-* attribute names on each <option>; values are the input ids.
+        const userSelect = document.getElementById('user_id');
+        const autoFields = {
+            email: 'email',
+            phone: 'phone',
+            country: 'country',
+            city: 'city',
+            address: 'address',
+        };
+
+        // Once the admin types in a field, never overwrite it
+        Object.values(autoFields).forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', () => { el.dataset.manual = '1'; });
+        });
+
+        function fillFromUser() {
+            const opt = userSelect.options[userSelect.selectedIndex];
+            if (!opt || !opt.value) return;
+
+            Object.entries(autoFields).forEach(([dataKey, id]) => {
+                const el = document.getElementById(id);
+                if (el.dataset.manual === '1') return;
+                el.value = opt.dataset[dataKey] || '';
+            });
+        }
+
+        userSelect.addEventListener('change', fillFromUser);
+
+        // Page reload after a validation error: only fill if the email is still empty
+        if (userSelect.value && !document.getElementById('email').value) {
+            fillFromUser();
+        }
     </script>
 </x-app-layout>

@@ -11,7 +11,7 @@
                     {{ $shop->business_name }}
                 </h2>
 
-                <p class="text-sm text-green-500 flex items-center">
+                <p class="text-2xl font-family-aerial text-red-700 flex items-center">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -346,7 +346,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
 
             {{-- Today's Sales --}}
-            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="mahwi-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -391,7 +391,7 @@
 
 
             {{-- Today's Other Income --}}
-            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="mahwi-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -436,7 +436,7 @@
 
 
             {{-- Today's Purchases --}}
-            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="mahwi-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -481,7 +481,7 @@
 
 
             {{-- Stock In --}}
-            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="mahwi-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -526,7 +526,7 @@
 
 
             {{-- Stock Out --}}
-            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="mahwi-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -575,7 +575,7 @@
 
 
             {{-- Products --}}
-            <div class="stat-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div class="mahwi-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
 
                 <div class="p-6">
 
@@ -1994,10 +1994,11 @@
         animation: fade-in 0.6s ease-out forwards;
     }
 
-    .stat-card {
+    .mahwi-card {
         animation: fade-in 0.5s ease-out forwards;
         opacity: 0;
     }
+    
 
 </style>
 

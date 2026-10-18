@@ -1,6 +1,360 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* =====================================================
+   MAHWI POS — PROFESSIONAL UI DESIGN SYSTEM
+   ===================================================== */
+
+:root {
+    --mahwi-green: #16865b;
+    --mahwi-green-dark: #106644;
+    --mahwi-sidebar: #12372a;
+    --mahwi-bg: #f5f7f5;
+    --mahwi-white: #ffffff;
+    --mahwi-ink: #202923;
+    --mahwi-muted: #748078;
+    --mahwi-border: #e4eae5;
+    --mahwi-amber: #e6a23c;
+
+    --mahwi-radius: 14px;
+    --mahwi-shadow: 0 5px 20px rgba(20, 50, 35, 0.055);
+    --mahwi-transition: 180ms ease;
+}
+
+/* =====================================================
+   GLOBAL STYLES
+   ===================================================== */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--mahwi-bg);
+    color: var(--mahwi-ink);
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+    transition:
+        color var(--mahwi-transition),
+        background-color var(--mahwi-transition),
+        border-color var(--mahwi-transition),
+        box-shadow var(--mahwi-transition);
+}
+
+:focus-visible {
+    outline: 3px solid rgba(22, 134, 91, 0.4);
+    outline-offset: 2px;
+}
+
+::selection {
+    background: rgba(22, 134, 91, 0.18);
+    color: var(--mahwi-ink);
+}
+
+/* =====================================================
+   PAGE LAYOUT
+   ===================================================== */
+
+.mahwi-page {
+    min-width: 0;
+    padding: 24px;
+}
+
+.mahwi-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.mahwi-page-title {
+    margin: 0;
+    font-size: clamp(1.4rem, 2vw, 1.9rem);
+    font-weight: 750;
+    letter-spacing: -0.035em;
+}
+
+.mahwi-page-subtitle {
+    margin-top: 6px;
+    color: var(--mahwi-muted);
+    font-size: 0.92rem;
+}
+
+/* =====================================================
+   CARDS
+   ===================================================== */
+
+.mahwi-card {
+    min-width: 0;
+    padding: 22px;
+    background: var(--mahwi-white);
+    border: 1px solid var(--mahwi-border);
+    border-radius: var(--mahwi-radius);
+    box-shadow: var(--mahwi-shadow);
+    transition:
+        box-shadow var(--mahwi-transition),
+        transform var(--mahwi-transition);
+}
+
+.mahwi-card:hover {
+    box-shadow: 0 9px 28px rgba(20, 50, 35, 0.085);
+}
+
+.mahwi-card-title {
+    margin: 0 0 16px;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+/* Dashboard KPI cards */
+
+.mahwi-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.mahwi-stat-label {
+    color: var(--mahwi-muted);
+    font-size: 0.86rem;
+    font-weight: 500;
+}
+
+.mahwi-stat-value {
+    display: block;
+    margin-top: 10px;
+    font-size: clamp(1.35rem, 2vw, 1.9rem);
+    font-weight: 750;
+    letter-spacing: -0.035em;
+    overflow-wrap: anywhere;
+}
+
+/* =====================================================
+   BUTTONS
+   ===================================================== */
+
+.mahwi-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: 0.9rem;
+    font-weight: 650;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.mahwi-btn-primary {
+    color: white;
+    background: var(--mahwi-green);
+}
+
+.mahwi-btn-primary:hover {
+    color: white;
+    background: var(--mahwi-green-dark);
+}
+
+.mahwi-btn-secondary {
+    color: var(--mahwi-ink);
+    background: white;
+    border-color: var(--mahwi-border);
+}
+
+.mahwi-btn-secondary:hover {
+    background: #f3f7f3;
+}
+
+.mahwi-btn-danger {
+    color: #b42318;
+    background: #fff1f0;
+}
+
+.mahwi-btn:active {
+    transform: scale(0.98);
+}
+
+.mahwi-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* =====================================================
+   FORMS
+   ===================================================== */
+
+.mahwi-form-group {
+    display: grid;
+    gap: 7px;
+    margin-bottom: 18px;
+}
+
+.mahwi-label {
+    color: #34443a;
+    font-size: 0.88rem;
+    font-weight: 650;
+}
+
+.mahwi-input {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    color: var(--mahwi-ink);
+    background: white;
+    border: 1px solid #d8e1da;
+    border-radius: 9px;
+}
+
+.mahwi-input:focus {
+    outline: none;
+    border-color: var(--mahwi-green);
+    box-shadow: 0 0 0 3px rgba(22, 134, 91, 0.13);
+}
+
+.mahwi-input.is-invalid {
+    border-color: #dc2626;
+}
+
+.mahwi-error {
+    color: #b42318;
+    font-size: 0.82rem;
+}
+
+.mahwi-help {
+    color: var(--mahwi-muted);
+    font-size: 0.82rem;
+}
+
+/* =====================================================
+   TABLES
+   ===================================================== */
+
+.mahwi-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    background: white;
+    border: 1px solid var(--mahwi-border);
+    border-radius: var(--mahwi-radius);
+}
+
+.mahwi-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.mahwi-table th {
+    padding: 14px 16px;
+    color: var(--mahwi-muted);
+    background: #f8faf8;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.045em;
+}
+
+.mahwi-table td {
+    padding: 14px 16px;
+    border-top: 1px solid var(--mahwi-border);
+    font-size: 0.9rem;
+}
+
+.mahwi-table tbody tr:hover {
+    background: #f7faf7;
+}
+
+/* =====================================================
+   STATUS BADGES
+   ===================================================== */
+
+.mahwi-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.mahwi-status-success {
+    color: #167447;
+    background: #e7f7ed;
+}
+
+.mahwi-status-warning {
+    color: #895a08;
+    background: #fff3d8;
+}
+
+.mahwi-status-danger {
+    color: #b42318;
+    background: #fde9e8;
+}
+
+.mahwi-status-neutral {
+    color: #475569;
+    background: #edf1f5;
+}
+
+/* =====================================================
+   SIDEBAR & NAVIGATION
+   ===================================================== */
+
+.mahwi-sidebar {
+    background: var(--mahwi-sidebar);
+    color: white;
+}
+
+.mahwi-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 11px 13px;
+    color: #d9e9df;
+    text-decoration: none;
+    border-radius: 9px;
+}
+
+.mahwi-nav-item i,
+.mahwi-nav-item svg {
+    width: 22px;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+.mahwi-nav-item:hover,
+.mahwi-nav-item.active {
+    color: white;
+    background: #225b43;
+}
+
+/* =====================================================
+   WHATSAPP FLOATING BUTTON
+   Preserved from your original stylesheet
+   ===================================================== */
+
 .whatsapp-float {
     position: fixed;
     width: 60px;
@@ -12,7 +366,7 @@
     border-radius: 50%;
     text-align: center;
     font-size: 30px;
-    box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
     z-index: 1000;
     display: flex;
     align-items: center;
@@ -24,4 +378,96 @@
 .whatsapp-float:hover {
     transform: scale(1.1);
     background-color: #1ebe5d;
+    color: white;
+}
+
+.whatsapp-float:focus-visible {
+    outline: 3px solid #128c4a;
+    outline-offset: 4px;
+}
+
+/* =====================================================
+   TOAST NOTIFICATIONS
+   ===================================================== */
+
+.mahwi-toast {
+    position: fixed;
+    z-index: 9999;
+    top: 20px;
+    right: 20px;
+    max-width: min(380px, calc(100vw - 40px));
+    padding: 14px 18px;
+    color: white;
+    background: var(--mahwi-sidebar);
+    border-radius: 11px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.16);
+}
+
+.mahwi-toast.is-error {
+    background: #a52323;
+}
+
+/* =====================================================
+   RESPONSIVE DESIGN
+   ===================================================== */
+
+@media (max-width: 1100px) {
+    .mahwi-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .mahwi-page {
+        padding: 16px;
+    }
+
+    .mahwi-card {
+        padding: 16px;
+        border-radius: 11px;
+    }
+
+    .mahwi-page-header {
+        align-items: flex-start;
+    }
+
+    .mahwi-stats {
+        gap: 12px;
+    }
+
+    .mahwi-table th,
+    .mahwi-table td {
+        padding: 11px 12px;
+    }
+
+    .whatsapp-float {
+        width: 54px;
+        height: 54px;
+        right: 16px;
+        bottom: 16px;
+        font-size: 27px;
+    }
+}
+
+@media (max-width: 420px) {
+    .mahwi-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =====================================================
+   ACCESSIBILITY
+   ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
 }

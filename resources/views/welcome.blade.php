@@ -1,569 +1,934 @@
+{{--
+    resources/views/welcome.blade.php
+    Public landing page. Uses only guest-safe routes: login, register, contact, language.switch, dashboard (when signed in).
+    Self-contained CSS, no Vite or Tailwind build needed.
+--}}
+@php
+    $appName = config('app.name', 'Shop Manager');
+    $locales = config('app.available_locales', [
+        'en' => 'English',
+        'fr' => 'Français',
+        'rw' => 'Kinyarwanda',
+    ]);
+    $current = app()->getLocale();
+    $hasLogin = Route::has('login');
+    $hasRegister = Route::has('register');
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', $current) }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/svg" href="{{ asset('images/MAHWILOGO.png') }}">
-    <title>{{ config('app.name', 'Mahwi') }} - All in one solution for  Shops|supermarkets|Pharmacy|Bars|Restaurant||| management system </title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ $appName }}: sales, stock and money for every shop you run</title>
+    <meta name="description" content="Point of sale, purchases, expenses, products and reports for one shop or many. Sellers, waiters, managers and accountants each get the screens they need.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Mahwi - Rwanda's leading Business management system for inventory, sales, purchases, and staff management. Sign in to your dashboard.">
-    <meta name="robots" content="index, follow">
-    <meta name="theme-color" content="#16233A">
+    <style nonce="{{ $cspNonce ?? '' }}">
+        :root {
+            --counter: #E8EDF0;
+            --slip: #FFFFFF;
+            --ink: #0F2A3D;
+            --ink-soft: #3E566A;
+            --cobalt: #1F4FFF;
+            --cobalt-dark: #1739C2;
+            --mango: #FFB627;
+            --basil: #1E7D52;
+            --line: #C9D3DA;
+            --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+            --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+            --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+            --wrap: 1120px;
+            color-scheme: light;
+        }
 
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=space-grotesk:500,600,700|ibm-plex-sans:400,500,600|ibm-plex-mono:400,500,600&display=swap" rel="stylesheet" />
+        *, *::before, *::after { box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+        body {
+            margin: 0;
+            font-family: var(--body);
+            font-size: 1.0625rem;
+            line-height: 1.6;
+            color: var(--ink);
+            background: var(--counter);
+            -webkit-font-smoothing: antialiased;
+        }
+        h1, h2, h3 { font-family: var(--display); line-height: 1.08; margin: 0; letter-spacing: -0.02em; }
+        p { margin: 0; }
+        a { color: inherit; }
+        ul { margin: 0; padding: 0; list-style: none; }
+        :focus-visible { outline: 3px solid var(--cobalt); outline-offset: 3px; border-radius: 4px; }
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+        .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 24px; }
+        .skip {
+            position: absolute; left: 16px; top: -60px; z-index: 100;
+            background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 6px; text-decoration: none;
+        }
+        .skip:focus { top: 12px; }
 
-    <style>
-      :root{
-        --paper:#F5F0E4;
-        --paper-dim:#EAE2D0;
-        --ink:#16233A;
-        --ink-soft:#3C4A63;
-        --rule:#C9BEA3;
-        --green:#1F7A4D;
-        --amber:#C6862B;
-        --stamp:#A23A2E;
-      }
-      *{ box-sizing:border-box; }
-      html,body{ height:100%; }
-      body{
-        margin:0;
-        font-family:'IBM Plex Sans', ui-sans-serif, sans-serif;
-        background:var(--ink);
-        color:var(--ink);
-      }
-      .font-display{ font-family:'Space Grotesk', ui-sans-serif, sans-serif; }
-      .font-mono{ font-family:'IBM Plex Mono', ui-monospace, monospace; }
+        /* ---------- Buttons ---------- */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            font: 600 1rem/1 var(--body);
+            padding: 15px 24px; border-radius: 10px; text-decoration: none;
+            border: 2px solid transparent; cursor: pointer;
+            transition: background-color .15s, color .15s, border-color .15s;
+        }
+        .btn-primary { background: var(--cobalt); color: #fff; }
+        .btn-primary:hover { background: var(--cobalt-dark); }
+        .btn-ghost { border-color: var(--ink); color: var(--ink); background: transparent; }
+        .btn-ghost:hover { background: var(--ink); color: #fff; }
+        .btn-small { padding: 10px 16px; font-size: .95rem; border-radius: 8px; }
 
-      a{ color:inherit; }
+        /* ---------- Header ---------- */
+        .site-header {
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(232, 237, 240, .94);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--line);
+        }
+        .nav { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 24px; }
+        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 800 1.25rem var(--display); letter-spacing: -0.02em; }
+        .brand-mark {
+            width: 30px; height: 30px; border-radius: 8px; background: var(--ink); position: relative; flex: none;
+        }
+        .brand-mark::before, .brand-mark::after { content: ""; position: absolute; left: 7px; right: 7px; height: 3px; background: var(--mango); border-radius: 2px; }
+        .brand-mark::before { top: 9px; }
+        .brand-mark::after { top: 16px; right: 12px; background: #fff; }
+        .nav-links { display: flex; align-items: center; gap: 4px; }
+        .nav-links a.link { text-decoration: none; padding: 8px 12px; border-radius: 8px; font-weight: 500; color: var(--ink-soft); }
+        .nav-links a.link:hover { color: var(--ink); background: rgba(15, 42, 61, .07); }
+        .nav-actions { display: flex; align-items: center; gap: 10px; }
 
-      .wrap{
-        min-height:100vh;
-        display:grid;
-        grid-template-columns: 1.35fr 1fr;
-      }
-      @media (max-width: 920px){
-        .wrap{ grid-template-columns: 1fr; }
-      }
+        .lang { position: relative; }
+        .lang summary {
+            list-style: none; cursor: pointer; padding: 8px 12px; border-radius: 8px; font-weight: 500;
+            color: var(--ink-soft); display: flex; align-items: center; gap: 6px;
+        }
+        .lang summary::-webkit-details-marker { display: none; }
+        .lang summary:hover { background: rgba(15, 42, 61, .07); color: var(--ink); }
+        .lang summary::after { content: ""; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); }
+        .lang ul {
+            position: absolute; right: 0; top: calc(100% + 6px); min-width: 170px;
+            background: var(--slip); border: 1px solid var(--line); border-radius: 10px; padding: 6px;
+            box-shadow: 0 12px 30px rgba(15, 42, 61, .14);
+        }
+        .lang li a { display: block; padding: 9px 12px; border-radius: 6px; text-decoration: none; }
+        .lang li a:hover { background: var(--counter); }
+        .lang li a[aria-current="true"] { font-weight: 600; color: var(--cobalt); }
 
-      /* ===================== LEFT: SCREEN SHOWCASE ===================== */
-      .showcase{
-        position:relative;
-        background:
-          radial-gradient(1200px 600px at 20% -10%, rgba(31,122,77,0.16), transparent 60%),
-          radial-gradient(900px 500px at 100% 110%, rgba(198,134,43,0.14), transparent 55%),
-          var(--ink);
-        overflow:hidden;
-        display:flex;
-        flex-direction:column;
-        padding: 36px 64px 64px;
-        min-height: 480px;
-      }
-      @media (max-width: 920px){
-        .showcase{ padding: 24px 28px 32px; min-height: auto; }
-      }
+        .menu-toggle { display: none; background: none; border: 2px solid var(--ink); border-radius: 8px; width: 44px; height: 44px; cursor: pointer; color: var(--ink); }
+        .menu-toggle span, .menu-toggle span::before, .menu-toggle span::after {
+            display: block; width: 18px; height: 2px; background: currentColor; margin: 0 auto; position: relative;
+        }
+        .menu-toggle span::before, .menu-toggle span::after { content: ""; position: absolute; left: 0; }
+        .menu-toggle span::before { top: -6px; }
+        .menu-toggle span::after { top: 6px; }
 
-      /* Top bar sits in normal flow so it can never overlap the content below it */
-      .showcase-topbar{
-        display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
-        margin-bottom: 28px;
-      }
-      @media (max-width: 920px){ .showcase-topbar{ margin-bottom:20px; } }
+        /* ---------- Hero ---------- */
+        .hero { padding: 72px 0 96px; overflow: hidden; }
+        .hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 56px; align-items: center; }
+        .hero h1 { font-size: clamp(2.6rem, 6vw, 4.6rem); font-weight: 800; max-width: 12ch; }
+        .hero .lede { margin-top: 24px; max-width: 46ch; font-size: 1.2rem; color: var(--ink-soft); }
+        .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 36px; }
+        .hero-note { margin-top: 20px; font-size: .95rem; color: var(--ink-soft); }
 
-      /* Remaining content centers itself in whatever space is left */
-      .showcase-body{
-        flex:1;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        min-height:0;
-      }
+        /* The till slip: the one memorable element */
+        .printer { max-width: 380px; margin-left: auto; width: 100%; }
+        .printer-slot {
+            height: 16px; background: var(--ink); border-radius: 10px 10px 0 0; position: relative; z-index: 2;
+        }
+        .printer-slot::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 4px; height: 3px; background: #000; border-radius: 2px; opacity: .55; }
+        .printer-clip { overflow: hidden; padding: 0 14px 28px; margin: 0 -14px; }
+        .slip-wrap { filter: drop-shadow(0 10px 14px rgba(15, 42, 61, .18)); animation: print 1.8s cubic-bezier(.3, .7, .2, 1) .25s both; }
+        .slip {
+            background: var(--slip);
+            padding: 26px 24px 34px;
+            font-family: var(--mono); font-size: .86rem; line-height: 1.55; color: var(--ink);
+            -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 16px 100%;
+                    mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 16px 100%;
+        }
+        .slip-title { font: 700 1.1rem var(--display); letter-spacing: -0.01em; text-align: center; }
+        .slip-sub { text-align: center; color: var(--ink-soft); font-size: .78rem; margin-bottom: 14px; }
+        .slip hr { border: 0; border-top: 2px dashed var(--line); margin: 12px 0; }
+        .slip .row { display: flex; justify-content: space-between; gap: 12px; }
+        .slip .total { font-weight: 500; font-size: 1.02rem; }
+        .slip .tag { display: inline-block; background: var(--mango); color: var(--ink); padding: 1px 8px; border-radius: 4px; font-weight: 500; }
+        .slip .ok { color: var(--basil); font-weight: 500; }
+        @keyframes print { from { transform: translateY(-100%); } to { transform: translateY(0); } }
 
-      .brand-row{
-        display:flex; align-items:center; gap:12px;
-        color:var(--paper);
-      }
-      .brand-mark{
-        width:44px; height:44px; border-radius:9px;
-        background:var(--paper);
-        display:flex; align-items:center; justify-content:center;
-        flex-shrink:0;
-        padding:5px;
-      }
-      .brand-mark img{
-        width:100%; height:100%;
-        object-fit:contain;
-        display:block;
-      }
-      .brand-name{ font-weight:700; font-size:18px; letter-spacing:-0.01em; }
-      .brand-tag{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:rgba(245,240,228,0.55); }
+        /* ---------- Sections ---------- */
+        section { padding: 88px 0; }
+        .section-head { max-width: 60ch; margin-bottom: 48px; }
+        .section-head h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; }
+        .section-head p { margin-top: 16px; color: var(--ink-soft); }
 
-      .lang-switch{
-        position:relative; z-index:5; flex-shrink:0;
-      }
-      .lang-switch summary{
-        list-style:none; cursor:pointer;
-        display:inline-flex; align-items:center; gap:6px;
-        padding:8px 12px; border-radius:7px;
-        border:1px solid rgba(245,240,228,0.18);
-        color: var(--paper);
-        font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em;
-      }
-      .lang-switch summary::-webkit-details-marker{ display:none; }
-      .lang-switch[open] summary{ background: rgba(245,240,228,0.08); }
-      .lang-menu{
-        position:absolute; right:0; margin-top:6px; width:170px;
-        background:#fff; border-radius:8px; overflow:hidden;
-        box-shadow: 0 18px 40px -18px rgba(0,0,0,0.5);
-      }
-      .lang-menu a{
-        display:flex; align-items:center; gap:8px;
-        padding:10px 14px; font-size:13.5px; color:var(--ink);
-        font-family:'IBM Plex Mono',monospace;
-      }
-      .lang-menu a:hover{ background: var(--paper-dim); }
-      .lang-menu a.is-active{ background: var(--paper-dim); font-weight:600; }
+        .band { background: var(--ink); color: #fff; }
+        .band .section-head p { color: #B9C8D4; }
+        .paper { background: var(--slip); }
 
-      .showcase-copy{
-        max-width: 460px;
-        margin-bottom: 40px;
-        color: var(--paper);
-      }
-      .showcase-eyebrow{
-        font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase;
-        color: #7fd6ab; margin: 0 0 14px;
-      }
-      .showcase-copy h1{
-        font-family:'Space Grotesk',sans-serif;
-        font-weight:700; font-size: clamp(26px, 3vw, 34px);
-        line-height:1.15; letter-spacing:-0.01em; margin:0 0 12px;
-      }
-      .showcase-copy p{
-        color: rgba(245,240,228,0.68); font-size:15px; line-height:1.55; margin:0;
-      }
+        /* Features: rows, not a card grid */
+        .feature {
+            display: grid; grid-template-columns: 5fr 7fr; gap: 40px;
+            padding: 36px 0; border-top: 2px solid var(--ink);
+        }
+        .feature:last-child { border-bottom: 2px solid var(--ink); }
+        .feature h3 { font-size: 1.7rem; font-weight: 700; }
+        .feature .why { margin-top: 12px; color: var(--ink-soft); max-width: 36ch; }
+        .caps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 32px; }
+        .caps li { padding-left: 22px; position: relative; }
+        .caps li::before { content: ""; position: absolute; left: 0; top: .62em; width: 10px; height: 10px; border-radius: 3px; background: var(--cobalt); }
+        .caps strong { font-weight: 600; }
+        .caps span { display: block; color: var(--ink-soft); font-size: .97rem; }
 
-      /* Frame that holds the auto-sliding screenshots */
-      .frame{
-        position:relative;
-        border-radius: 12px;
-        background:#0F1826;
-        border: 1px solid rgba(245,240,228,0.10);
-        box-shadow: 0 30px 70px -20px rgba(0,0,0,0.6);
-        overflow:hidden;
-        max-width: 640px;
-      }
-      .frame-bar{
-        display:flex; align-items:center; gap:8px;
-        padding: 11px 14px;
-        background: rgba(245,240,228,0.04);
-        border-bottom: 1px solid rgba(245,240,228,0.08);
-      }
-      .frame-dot{ width:8px; height:8px; border-radius:50%; }
-      .frame-url{
-        margin-left:8px;
-        font-family:'IBM Plex Mono',monospace; font-size:10.5px;
-        color: rgba(245,240,228,0.45);
-      }
+        /* Roles table */
+        .roles { width: 100%; border-collapse: collapse; }
+        .roles th, .roles td { text-align: left; padding: 20px 16px 20px 0; vertical-align: top; border-top: 1px solid rgba(255, 255, 255, .22); }
+        .roles tr:last-child td, .roles tr:last-child th { border-bottom: 1px solid rgba(255, 255, 255, .22); }
+        .roles th { font: 700 1.25rem var(--display); width: 220px; color: var(--mango); }
+        .roles td { color: #E6EEF4; }
+        .roles td small { display: block; margin-top: 4px; color: #9FB3C3; font-size: .92rem; }
 
-      .slides{
-        position:relative;
-        aspect-ratio: 16 / 10;
-        background:#0F1826;
-      }
-      .slide{
-        position:absolute; inset:0;
-        opacity:0; transform: translateX(14px);
-        transition: opacity .55s ease, transform .55s ease;
-      }
-      .slide.is-active{ opacity:1; transform:translateX(0); z-index:2; }
-      .slide img{
-        width:100%; height:100%; object-fit:cover; object-position: top;
-        display:block;
-      }
+        /* Steps: a real sequence, so numbered */
+        .steps { counter-reset: step; display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+        .steps li { counter-increment: step; border-top: 4px solid var(--ink); padding-top: 18px; }
+        .steps li::before { content: counter(step); display: block; font: 800 2.2rem var(--display); color: var(--cobalt); margin-bottom: 6px; }
+        .steps h3 { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; }
+        .steps p { margin-top: 8px; font-size: .97rem; color: var(--ink-soft); }
 
-      /* dots */
-      .dots{
-        position:absolute; bottom:14px; left:0; right:0;
-        display:flex; justify-content:center; gap:7px; z-index:3;
-      }
-      .dot{
-        width:20px; height:4px; border-radius:2px; border:none; cursor:pointer;
-        background: rgba(245,240,228,0.35);
-        transition: background .25s ease, width .25s ease;
-        padding:0;
-      }
-      .dot.is-active{ background: var(--paper); width:28px; }
-      .dot:focus-visible{ outline:2px solid #7fd6ab; outline-offset:2px; }
+        /* About */
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
+        .about-grid h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; }
+        .about-copy p + p { margin-top: 16px; }
+        .about-copy { color: var(--ink-soft); }
+        .about-copy strong { color: var(--ink); }
+        .stat-line { margin-top: 28px; padding: 20px 22px; background: var(--counter); border-left: 6px solid var(--mango); border-radius: 0 10px 10px 0; color: var(--ink); }
 
-      .showcase-foot{
-        margin-top:20px; display:flex; gap:22px; flex-wrap:wrap;
-        font-family:'IBM Plex Mono',monospace; font-size:11px; color: rgba(245,240,228,0.45);
-      }
-      .showcase-foot span{ display:flex; align-items:center; gap:6px; }
-      .showcase-foot .sw{ width:6px;height:6px;border-radius:50%; background:#7fd6ab; }
+        /* Policy */
+        .policy-grid { display: grid; grid-template-columns: 4fr 8fr; gap: 56px; align-items: start; }
+        .policy-side { position: sticky; top: 100px; }
+        .policy-side h2 { font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 700; }
+        .policy-side p { margin-top: 14px; color: var(--ink-soft); }
+        .policy-side .updated { margin-top: 18px; font-size: .92rem; }
+        .policy details { border-top: 1px solid var(--line); padding: 4px 0; }
+        .policy details:last-child { border-bottom: 1px solid var(--line); }
+        .policy summary {
+            cursor: pointer; list-style: none; padding: 18px 40px 18px 0; position: relative;
+            font: 700 1.2rem var(--display); letter-spacing: -0.01em;
+        }
+        .policy summary::-webkit-details-marker { display: none; }
+        .policy summary::after { content: "+"; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font: 500 1.6rem var(--body); color: var(--cobalt); }
+        .policy details[open] summary::after { content: "–"; }
+        .policy .body { padding: 0 0 20px; color: var(--ink-soft); }
+        .policy .body p + p, .policy .body ul { margin-top: 12px; }
+        .policy .body li { padding-left: 18px; position: relative; margin-top: 6px; }
+        .policy .body li::before { content: ""; position: absolute; left: 0; top: .7em; width: 6px; height: 6px; background: var(--ink); border-radius: 50%; }
 
-      /* ===================== RIGHT: LOGIN TICKET ===================== */
-      .login-pane{
-        background: var(--paper);
-        background-image: radial-gradient(rgba(22,35,58,0.035) 1px, transparent 1px);
-        background-size: 3px 3px;
-        display:flex; align-items:center; justify-content:center;
-        padding: 56px 40px;
-        position:relative;
-      }
+        /* Final CTA */
+        .cta { background: var(--cobalt); color: #fff; text-align: left; }
+        .cta-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 32px; }
+        .cta h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; max-width: 18ch; }
+        .cta .btn-primary { background: var(--mango); color: var(--ink); }
+        .cta .btn-primary:hover { background: #FFC85A; }
+        .cta .btn-ghost { border-color: #fff; color: #fff; }
+        .cta .btn-ghost:hover { background: #fff; color: var(--cobalt); }
+        .cta :focus-visible { outline-color: #fff; }
+        .cta-actions { margin: 0; }
+        .slip .row.stamp { margin-top: 10px; }
+        footer h3.foot-lang { margin-top: 20px; }
 
-      .ticket{
-        width:100%; max-width: 380px;
-        position:relative;
-      }
+        /* Footer */
+        footer { background: var(--ink); color: #B9C8D4; padding: 56px 0 32px; font-size: .97rem; }
+        .foot-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 40px; }
+        footer .brand { color: #fff; margin-bottom: 12px; }
+        footer h3 { font: 700 1rem var(--display); color: #fff; margin-bottom: 12px; letter-spacing: 0; }
+        footer li + li { margin-top: 8px; }
+        footer a { text-decoration: none; }
+        footer a:hover { color: #fff; text-decoration: underline; }
+        .foot-bottom { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, .16); font-size: .9rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
 
-      .ticket-stub{
-        background:#fff;
-        border-radius: 10px;
-        padding: 34px 32px 30px;
-        box-shadow: 0 18px 50px -22px rgba(22,35,58,0.35);
-        position:relative;
-      }
-      .ticket-stub::before,
-      .ticket-stub::after{
-        content:"";
-        position:absolute; top:50%; transform:translateY(-50%);
-        width:22px; height:22px; border-radius:50%;
-        background: var(--paper);
-      }
-      .ticket-stub::before{ left:-11px; }
-      .ticket-stub::after{ right:-11px; }
+        /* ---------- Responsive ---------- */
+        @media (max-width: 960px) {
+            .hero-grid, .about-grid, .policy-grid, .feature { grid-template-columns: 1fr; }
+            .hero { padding-top: 48px; }
+            .printer { margin: 0 auto; }
+            .policy-side { position: static; }
+            .steps { grid-template-columns: 1fr 1fr; }
+            .foot-grid { grid-template-columns: 1fr 1fr; }
+            .menu-toggle { display: block; }
+            .nav-links {
+                display: none; position: absolute; left: 0; right: 0; top: 68px;
+                flex-direction: column; align-items: stretch; gap: 0;
+                background: var(--counter); border-bottom: 1px solid var(--line); padding: 8px 24px 16px;
+            }
+            .nav-links.open { display: flex; }
+            .nav-links a.link { padding: 14px 4px; border-radius: 0; border-bottom: 1px solid var(--line); }
+            .nav-actions .btn-ghost { display: none; }
+        }
+        @media (max-width: 640px) {
+            section { padding: 64px 0; }
+            .caps { grid-template-columns: 1fr; }
+            .steps { grid-template-columns: 1fr; }
+            .roles th, .roles td { display: block; width: auto; padding: 0; border: 0; }
+            .roles tr { display: block; padding: 18px 0; border-top: 1px solid rgba(255, 255, 255, .22); }
+            .roles tr:last-child { border-bottom: 1px solid rgba(255, 255, 255, .22); }
+            .roles tr:last-child td, .roles tr:last-child th { border-bottom: 0; }
+            .roles th { margin-bottom: 4px; }
+            .foot-grid { grid-template-columns: 1fr; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .slip-wrap { animation: none; }
+            * { transition: none !important; }
+        }
+        .brand-logo {
+    display: block;
+    width: auto;
+    height: 42px;
+    max-width: 160px;
+    object-fit: contain;
+}
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
 
-      .ticket-eyebrow{
-        font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
-        color: var(--green); margin:0 0 8px;
-      }
-      .ticket h2{
-        font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:25px; margin:0 0 6px; letter-spacing:-0.01em;
-      }
-      .ticket-sub{ color:var(--ink-soft); font-size:14px; margin:0 0 22px; line-height:1.5; }
+/* ---------- Page Loading Overlay ---------- */
+.page-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(232, 237, 240, 0.94);
+    backdrop-filter: blur(5px);
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
 
-      .alert-error{
-        background: rgba(162,58,46,0.08); border:1px solid rgba(162,58,46,0.3);
-        color: var(--stamp); border-radius:7px; padding:11px 13px;
-        font-size:13px; margin-bottom:18px; line-height:1.5;
-      }
-      .alert-error ul{ margin:0; padding-left:18px; }
-      .status-msg{
-        background: rgba(31,122,77,0.08); border:1px solid rgba(31,122,77,0.3);
-        color: var(--green); border-radius:7px; padding:11px 13px;
-        font-size:13px; margin-bottom:18px;
-      }
+.page-loader[hidden] {
+    display: none !important;
+}
 
-      .field{ margin-bottom:16px; }
-      .field label{
-        display:block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em;
-        color: var(--ink-soft); margin-bottom:6px;
-      }
-      .field input{
-        width:100%; padding:11px 13px; font-size:14.5px; font-family:'IBM Plex Sans',sans-serif;
-        border:1.5px solid var(--rule); border-radius:7px; background: var(--paper);
-        color:var(--ink); transition: border-color .15s ease, background .15s ease;
-      }
-      .field input.has-error{ border-color: var(--stamp); }
-      .field input::placeholder{ color:#9b937d; }
-      .field input:focus{
-        outline:none; border-color: var(--green); background:#fff;
-      }
-      .field-error{ color: var(--stamp); font-size:12px; margin-top:5px; }
+.page-loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
 
-      .field-pass-wrap{ position:relative; }
-      .toggle-pass{
-        position:absolute; right:10px; top:50%; transform:translateY(-50%);
-        background:none; border:none; cursor:pointer;
-        font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em;
-        color: var(--ink-soft); padding:4px 6px;
-      }
-      .toggle-pass:hover{ color:var(--ink); }
-      .toggle-pass:focus-visible{ outline:2px solid var(--green); outline-offset:2px; border-radius:4px; }
+.page-loader-spinner {
+    width: 66px;
+    height: 66px;
+    border: 5px solid #cbd5e1;
+    border-top-color: var(--cobalt);
+    border-right-color: var(--cobalt);
+    border-radius: 50%;
+    animation: mahwi-page-spin 0.75s linear infinite;
+}
 
-      .row-between{ display:flex; align-items:center; justify-content:space-between; margin: 4px 0 22px; }
-      .remember{ display:flex; align-items:center; gap:7px; font-size:13px; color:var(--ink-soft); }
-      .remember input{ width:14px; height:14px; accent-color: var(--green); }
-      .forgot{ font-size:13px; color:var(--green); text-decoration:none; font-weight:500; }
-      .forgot:hover{ text-decoration:underline; }
+.page-loader-brand {
+    font-family: var(--display);
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+}
 
-      .btn-submit{
-        width:100%; padding:13px; border:none; border-radius:7px; cursor:pointer;
-        background: var(--ink); color: var(--paper);
-        font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px;
-        transition: background .15s ease, transform .1s ease;
-      }
-      .btn-submit:hover{ background: var(--ink-soft); }
-      .btn-submit:active{ transform: translateY(1px); }
-      .btn-submit:focus-visible{ outline:2px solid var(--green); outline-offset:3px; }
+.page-loader-message {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+}
 
-      .stamp{
-        position:absolute; top:-14px; right:14px;
-        transform: rotate(-8deg);
-        border:2px solid var(--stamp); color:var(--stamp);
-        border-radius:50%; width:58px; height:58px;
-        display:flex; align-items:center; justify-content:center;
-        font-family:'IBM Plex Mono',monospace; font-size:8.5px; font-weight:600; text-transform:uppercase;
-        text-align:center; line-height:1.15; background: var(--paper);
-      }
+@keyframes mahwi-page-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
-      .ticket-tear{
-        height:14px;
-        background-image: radial-gradient(circle, var(--paper) 5.5px, transparent 5.6px);
-        background-size: 15px 15px;
-        background-position: -4px -8px;
-        background-repeat: repeat-x;
-      }
-      .ticket-foot{
-        background:#fff;
-        border-radius: 0 0 10px 10px;
-        padding: 14px 32px 18px;
-        text-align:center;
-        font-size:13.5px; color:var(--ink-soft);
-        box-shadow: 0 18px 50px -22px rgba(22,35,58,0.35);
-      }
-      .ticket-foot a{ color:var(--green); font-weight:600; text-decoration:none; }
-      .ticket-foot a:hover{ text-decoration:underline; }
+@media (prefers-reduced-motion: reduce) {
+    .page-loader-spinner {
+        animation-duration: 2s;
+    }
 
-      @media (prefers-reduced-motion: reduce){
-        .slide{ transition:none; }
-      }
+    .page-loader {
+        transition: none;
+    }
+}
+
     </style>
 </head>
 <body>
+    
+{{-- Full-page loading indicator --}}
+<div
+    id="page-loader"
+    class="page-loader"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading page"
+    hidden
+>
+    <div class="page-loader-content">
+        <div class="page-loader-spinner" aria-hidden="true"></div>
 
-<div class="wrap">
-
-  <!-- ===================== LEFT: SHOWCASE ===================== -->
-  <div class="showcase">
-
-    <div class="showcase-topbar">
-      <div class="brand-row">
-        <div class="brand-mark">
-          <img src="{{ asset('images/MAHWILOGO.png') }}" alt="{{ config('app.name', 'MahWi') }} logo">
+        <div class="page-loader-brand">
+            {{ $appName }}
         </div>
-        <div>
-          <div class="brand-name">{{ config('app.name', 'MahWi') }}</div>
-          <div class="brand-tag">Shop&#8209;Manager</div>
-        </div>
-      </div>
 
-      <details class="lang-switch">
-        <summary>
-          @php
-            $flags = ['en' => '🇬🇧', 'fr' => '🇫🇷', 'rw' => '🇷🇼', 'sw' => '🇹🇿'];
-          @endphp
-          <span>{{ $flags[app()->getLocale()] ?? '🇬🇧' }}</span>
-          <span>{{ strtoupper(app()->getLocale()) }}</span>
-        </summary>
-        <div class="lang-menu">
-          @foreach(['en' => ['English', '🇬🇧'], 'fr' => ['Français', '🇫🇷'], 'rw' => ['Kinyarwanda', '🇷🇼'], 'sw' => ['Kiswahili', '🇹🇿']] as $code => $lang)
-            <a href="{{ route('language.switch', $code) }}" class="{{ app()->getLocale() === $code ? 'is-active' : '' }}">
-              <span>{{ $lang[1] }}</span>{{ $lang[0] }}
-            </a>
-          @endforeach
-        </div>
-      </details>
+        <p class="page-loader-message">
+            Loading, please wait...
+        </p>
     </div>
-
-    <div class="showcase-body">
-      <div class="showcase-copy">
-        <p class="showcase-eyebrow">{{ __("What you'll see inside") }}</p>
-        <h1>{{ __('Every Business, on one screen.') }}</h1>
-        <p>{{ __("A quick look at the dashboard your team opens every morning — stock, sales, and profit, always current.") }}</p>
-      </div>
-
-      <div class="frame">
-        <div class="frame-bar">
-          <span class="frame-dot" style="background:#A23A2E99;"></span>
-          <span class="frame-dot" style="background:#C6862B99;"></span>
-          <span class="frame-dot" style="background:#1F7A4D99;"></span>
-          <span class="frame-url" id="frame-url">mahwi.com/dashboard</span>
-        </div>
-
-        <div class="slides" id="slides" role="region" aria-roledescription="carousel" aria-label="{{ __('Product screenshots') }}">
-
-          <div class="slide is-active" data-url="mahwi.com/dashboard" aria-hidden="false">
-            <img src="{{ asset('images/MAHWI OVERVIEW.png') }}" alt="{{ __('MahWi dashboard overview showing sales, profit and stock at a glance') }}">
-          </div>
-
-          <div class="slide" data-url="mahwi.com/inventory" aria-hidden="true">
-            <img src="{{ asset('images/mahwi-inventory.png') }}" alt="{{ __('MahWi inventory screen showing stock levels and low-stock alerts') }}">
-          </div>
-
-          <div class="slide" data-url="mahwi.com/sales" aria-hidden="true">
-            <img src="{{ asset('images/mahwi-sales.png') }}" alt="{{ __('MahWi sales screen showing a new sale being recorded with profit calculated') }}">
-          </div>
-
-        </div>
-
-        <div class="dots" id="dots">
-          <button class="dot is-active" data-index="0" aria-label="{{ __('Show overview slide') }}" aria-current="true"></button>
-          <button class="dot" data-index="1" aria-label="{{ __('Show inventory slide') }}" aria-current="false"></button>
-          <button class="dot" data-index="2" aria-label="{{ __('Show sales slide') }}" aria-current="false"></button>
-        </div>
-      </div>
-
-      <div class="showcase-foot">
-        <span><i class="sw"></i>{{ __('100+ shops live') }}</span>
-        <span><i class="sw"></i>{{ __('50K+ sales logged') }}</span>
-        <span><i class="sw"></i>{{ __('24/7 support') }}</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===================== RIGHT: LOGIN ===================== -->
-  <div class="login-pane">
-    <div class="ticket">
-      <div class="ticket-stub">
-        <div class="stamp">{{ __('Access') }}<br>{{ __('pass') }}</div>
-        <p class="ticket-eyebrow">{{ __('Account access') }}</p>
-        <h2>{{ __('Welcome back') }}</h2>
-        <p class="ticket-sub">{{ __("Sign in to open today's numbers.") }}</p>
-
-        @if (session('status'))
-          <div class="status-msg">{{ session('status') }}</div>
-        @endif
-
-        @if ($errors->any())
-          <div class="alert-error">
-            <ul>
-              @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-              @endforeach
-            </ul>
-          </div>
-        @endif
-
-        <form method="POST" action="{{ route('login') }}" novalidate>
-          @csrf
-
-          <div class="field">
-            <label for="email">{{ __('Email or phone') }}</label>
-            <input id="email" name="email" type="text" class="{{ $errors->has('email') ? 'has-error' : '' }}"
-                   placeholder="you@example.com" value="{{ old('email') }}"
-                   autocomplete="username" required autofocus>
-            @error('email')
-              <p class="field-error">{{ $message }}</p>
-            @enderror
-          </div>
-
-          <div class="field">
-            <label for="password">{{ __('Password') }}</label>
-            <div class="field-pass-wrap">
-              <input id="password" name="password" type="password" class="{{ $errors->has('password') ? 'has-error' : '' }}"
-                     placeholder="••••••••" autocomplete="current-password" required>
-              <button type="button" class="toggle-pass" id="toggle-pass" aria-pressed="false">{{ __('Show') }}</button>
-            </div>
-            @error('password')
-              <p class="field-error">{{ $message }}</p>
-            @enderror
-          </div>
-
-          <div class="row-between">
-            <label class="remember">
-              <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
-              {{ __('Keep me signed in') }}
-            </label>
-            @if (Route::has('password.request'))
-              <a href="{{ route('password.request') }}" class="forgot">{{ __('Forgot password?') }}</a>
-            @endif
-          </div>
-
-          <button type="submit" class="btn-submit">{{ __('Sign in') }}</button>
-        </form>
-      </div>
-
-      <div class="ticket-tear" aria-hidden="true"></div>
-      <div class="ticket-foot">
-        {{ __('New to MahWi?') }}
-        @if (Route::has('register'))
-          <a href="{{ route('register') }}">{{ __('Sign up') }}</a>
-        @endif
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<script>
-  // ---- Auto-sliding screenshot carousel ----
-  (function(){
-    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
-    var dots = Array.prototype.slice.call(document.querySelectorAll('.dot'));
-    var urlEl = document.getElementById('frame-url');
-    var frame = document.querySelector('.frame');
-    var current = 0;
-    var timer = null;
-    var INTERVAL = 4200;
-    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+<a class="skip" href="#main">{{ __('Skip to content') }}</a>
 
-    function goTo(index){
-      slides[current].classList.remove('is-active');
-      slides[current].setAttribute('aria-hidden','true');
-      dots[current].classList.remove('is-active');
-      dots[current].setAttribute('aria-current','false');
+{{-- ================= HEADER / PUBLIC NAV ================= --}}
+<header class="site-header">
+    <div class="wrap nav">
+        <a href="{{ url('/') }}" class="brand" aria-label="{{ $appName }} home">
+    <img
+        src="{{ asset('images/MAHWILOGO.png') }}"
+        alt="{{ $appName }} logo"
+        class="brand-logo"
+    >
+    <span>{{ $appName }}</span>
+</a>
 
-      current = (index + slides.length) % slides.length;
+        <nav class="nav-links" id="site-nav" aria-label="{{ __('Main') }}">
+            <a class="link" href="#features">{{ __('Features') }}</a>
+            <a class="link" href="#roles">{{ __('Who uses it') }}</a>
+            <a class="link" href="#how">{{ __('How it works') }}</a>
+            <a class="link" href="#about">{{ __('About') }}</a>
+            <a class="link" href="#policy">{{ __('Policy') }}</a>
+            @if (Route::has('contact'))
+                <a class="link" href="{{ route('contact') }}">{{ __('Contact') }}</a>
+            @endif
+        </nav>
 
-      slides[current].classList.add('is-active');
-      slides[current].setAttribute('aria-hidden','false');
-      dots[current].classList.add('is-active');
-      dots[current].setAttribute('aria-current','true');
-      urlEl.textContent = slides[current].getAttribute('data-url');
-    }
+        <div class="nav-actions">
+            @if (Route::has('language.switch'))
+                <details class="lang">
+                    <summary aria-label="{{ __('Change language') }}">{{ strtoupper($current) }}</summary>
+                    <ul>
+                        @foreach ($locales as $code => $label)
+                            <li>
+                                <a href="{{ route('language.switch', $code) }}"
+                                   @if ($code === $current) aria-current="true" @endif>{{ $label }}</a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </details>
+            @endif
 
-    function next(){ goTo(current + 1); }
+            @auth
+                <a href="{{ route('dashboard') }}" class="btn btn-primary btn-small">{{ __('Open dashboard') }}</a>
+            @else
+                @if ($hasLogin)
+                    <a href="{{ route('login') }}" class="btn btn-ghost btn-small">{{ __('Log in') }}</a>
+                @endif
+                @if ($hasRegister)
+                    <a href="{{ route('register') }}" class="btn btn-primary btn-small">{{ __('Register your shop') }}</a>
+                @endif
+            @endauth
 
-    function start(){
-      if (reduceMotion) return;
-      stop();
-      timer = setInterval(next, INTERVAL);
-    }
-    function stop(){
-      if (timer) { clearInterval(timer); timer = null; }
-    }
+            <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="{{ __('Menu') }}">
+                <span></span>
+            </button>
+        </div>
+    </div>
+</header>
 
-    dots.forEach(function(dot){
-      dot.addEventListener('click', function(){
-        goTo(parseInt(dot.getAttribute('data-index'), 10));
-        start();
-      });
-    });
+<main id="main">
 
-    frame.addEventListener('mouseenter', stop);
-    frame.addEventListener('mouseleave', start);
-    frame.addEventListener('focusin', stop);
-    frame.addEventListener('focusout', start);
+    {{-- ================= HERO ================= --}}
+    <div class="hero">
+        <div class="wrap hero-grid">
+            <div>
+                <h1>Sales, stock and money for every shop you run.</h1>
+                <p class="lede">
+                    Sell at the till, record what you buy and spend, and see profit and loss by day, week, month or year.
+                    Your sellers, waiters, managers and accountants each get the screens they need and nothing more.
+                </p>
+                <div class="hero-cta">
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="btn btn-primary">{{ __('Open dashboard') }}</a>
+                    @else
+                        @if ($hasRegister)
+                            <a href="{{ route('register') }}" class="btn btn-primary">{{ __('Register your shop') }}</a>
+                        @endif
+                        @if ($hasLogin)
+                            <a href="{{ route('login') }}" class="btn btn-ghost">{{ __('Log in') }}</a>
+                        @endif
+                    @endauth
+                </div>
+                <p class="hero-note">New shops are reviewed by a system admin before they go live.</p>
+            </div>
 
-    start();
-  })();
+            <div class="printer" aria-hidden="true">
+                <div class="printer-slot"></div>
+                <div class="printer-clip">
+                    <div class="slip-wrap">
+                        <div class="slip">
+                            <div class="slip-title">{{ $appName }}</div>
+                            <div class="slip-sub">Order 0142 · Table 6</div>
+                            <hr>
+                            <div class="row"><span>3 × Maize flour 2kg</span><span>7,500</span></div>
+                            <div class="row"><span>2 × Cooking oil 1L</span><span>6,400</span></div>
+                            <div class="row"><span>1 × Sugar 5kg</span><span>8,200</span></div>
+                            <div class="row"><span>4 × Soda 300ml</span><span>2,200</span></div>
+                            <hr>
+                            <div class="row total"><span>Total</span><span>24,300</span></div>
+                            <div class="row"><span>Paid</span><span>Cash</span></div>
+                            <hr>
+                            <div class="row"><span>Taken by</span><span>Waiter</span></div>
+                            <div class="row"><span>Approved by</span><span>Seller</span></div>
+                            <div class="row stamp"><span class="tag">Stock updated</span><span class="ok">Done</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  // ---- Show/hide password ----
-  (function(){
-    var btn = document.getElementById('toggle-pass');
-    var input = document.getElementById('password');
-    btn.addEventListener('click', function(){
-      var isPassword = input.type === 'password';
-      input.type = isPassword ? 'text' : 'password';
-      btn.textContent = isPassword ? '{{ __('Hide') }}' : '{{ __('Show') }}';
-      btn.setAttribute('aria-pressed', String(isPassword));
-    });
-  })();
+    {{-- ================= FEATURES ================= --}}
+    <section id="features" class="paper">
+        <div class="wrap">
+            <div class="section-head">
+                <h2>Everything a shop does in a day, in one place.</h2>
+                <p>From the first sale in the morning to the profit and loss report at night.</p>
+            </div>
 
-  // ---- Close language dropdown on outside click ----
-  document.addEventListener('click', function(e){
-    var details = document.querySelector('.lang-switch');
-    if (details && details.open && !details.contains(e.target)) {
-      details.open = false;
-    }
-  });
+            <div class="feature">
+                <div>
+                    <h3>Sell</h3>
+                    <p class="why">A fast till for the counter, and an order flow for shops that serve tables.</p>
+                </div>
+                <ul class="caps">
+                    <li><strong>Point of sale</strong><span>Ring up items and take payment at the counter.</span></li>
+                    <li><strong>Sales records</strong><span>Edit, print or export any sale.</span></li>
+                    <li><strong>Waiter orders</strong><span>Waiters take orders; sellers approve or reject them.</span></li>
+                    <li><strong>Bills and printouts</strong><span>Download a bill or print an order for the kitchen.</span></li>
+                </ul>
+            </div>
+
+            <div class="feature">
+                <div>
+                    <h3>Stock</h3>
+                    <p class="why">Know what you have, who you bought it from, and what it cost.</p>
+                </div>
+                <ul class="caps">
+                    <li><strong>Products and categories</strong><span>Organise your catalogue the way you shelve it.</span></li>
+                    <li><strong>QR codes</strong><span>Generate a QR code for any product.</span></li>
+                    <li><strong>Purchases</strong><span>Record stock coming in and download a PDF.</span></li>
+                    <li><strong>Suppliers</strong><span>Keep supplier details next to what you buy from them.</span></li>
+                    <li><strong>Bulk import and export</strong><span>Upload a spreadsheet, preview the rows, then confirm.</span></li>
+                    <li><strong>Product templates</strong><span>Start from a ready-made import file.</span></li>
+                </ul>
+            </div>
+
+            <div class="feature">
+                <div>
+                    <h3>Money</h3>
+                    <p class="why">Every shilling in and out, with reports your accountant can use.</p>
+                </div>
+                <ul class="caps">
+                    <li><strong>Expenses</strong><span>Sort by category, attach receipts, switch status on or off.</span></li>
+                    <li><strong>Other income</strong><span>Track income that does not come from sales.</span></li>
+                    <li><strong>Daily to yearly reports</strong><span>Sales, purchases, expenses and other income by period.</span></li>
+                    <li><strong>Profit and loss</strong><span>One report that shows where you stand.</span></li>
+                    <li><strong>Export anywhere</strong><span>Download any report as PDF, Excel or CSV.</span></li>
+                    <li><strong>Shop statistics</strong><span>A summary view for the shop owner.</span></li>
+                </ul>
+            </div>
+
+            <div class="feature">
+                <div>
+                    <h3>People and shops</h3>
+                    <p class="why">Add your team, serve your customers and run more than one shop.</p>
+                </div>
+                <ul class="caps">
+                    <li><strong>Staff accounts</strong><span>Give each person a role and the right access.</span></li>
+                    <li><strong>Customers</strong><span>Keep a customer list for repeat sales.</span></li>
+                    <li><strong>Multiple shops</strong><span>Each shop keeps its own sales, stock and staff.</span></li>
+                    <li><strong>Your language</strong><span>Switch the interface language at any time.</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    {{-- ================= ROLES ================= --}}
+    <section id="roles" class="band">
+        <div class="wrap">
+            <div class="section-head">
+                <h2>Everyone sees the screens they need.</h2>
+                <p>Access is set by role, so a waiter never ends up in the books and an accountant never ends up at the till.</p>
+            </div>
+
+            <table class="roles">
+                <tbody>
+                <tr>
+                    <th scope="row">Shop admin</th>
+                    <td>Runs the shop: products, categories, suppliers, customers, staff, expenses and statistics.
+                        <small>Can edit and delete records others can only view.</small></td>
+                </tr>
+                <tr>
+                    <th scope="row">Seller</th>
+                    <td>Works the counter: sales, purchases, bulk imports and approving waiter orders.
+                        <small>Can view products and expenses.</small></td>
+                </tr>
+                <tr>
+                    <th scope="row">Waiter</th>
+                    <td>Takes orders at the table from a dashboard built for that one job.</td>
+                </tr>
+                <tr>
+                    <th scope="row">Manager</th>
+                    <td>Oversees day-to-day work from a manager dashboard.</td>
+                </tr>
+                <tr>
+                    <th scope="row">Accountant</th>
+                    <td>Follows the money from a finance dashboard and the full set of reports.</td>
+                </tr>
+                <tr>
+                    <th scope="row">System admin</th>
+                    <td>Approves or rejects new shops, manages users and sets platform settings.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {{-- ================= HOW IT WORKS ================= --}}
+    <section id="how" class="paper">
+        <div class="wrap">
+            <div class="section-head">
+                <h2>From sign-up to first report.</h2>
+            </div>
+            <ol class="steps">
+                <li>
+                    <h3>Register your shop</h3>
+                    <p>Create an account and tell us about your shop.</p>
+                </li>
+                <li>
+                    <h3>Wait for approval</h3>
+                    <p>A system admin reviews your shop. You see its status while you wait.</p>
+                </li>
+                <li>
+                    <h3>Set up</h3>
+                    <p>Add products, suppliers, customers and your staff.</p>
+                </li>
+                <li>
+                    <h3>Trade</h3>
+                    <p>Sell, buy and record expenses as the day goes.</p>
+                </li>
+                <li>
+                    <h3>Read the reports</h3>
+                    <p>Check profit and loss, then export it as PDF, Excel or CSV.</p>
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    {{-- ================= ABOUT ================= --}}
+    <section id="about">
+        <div class="wrap about-grid">
+            <h2>Built for the people who actually run shops.</h2>
+            <div class="about-copy">
+                <p>
+                    <strong>{{ $appName }}</strong> started with a simple question: why does a small shop need three notebooks,
+                    a calculator and a spreadsheet to know whether it made money today?
+                </p>
+                <p>
+                    So we put selling, buying, spending and reporting in one app. Owners get a clear picture of every shop.
+                    Staff get a short list of screens that match their job. Nobody has to learn accounting to use it.
+                </p>
+                <p>
+                    It works for a single counter, a restaurant with waiters, or an owner with several locations,
+                    because each shop keeps its own records under one login.
+                </p>
+                <div class="stat-line">
+                    Questions before you sign up?
+                    @if (Route::has('contact'))
+                        <a href="{{ route('contact') }}"><strong>Contact us</strong></a>
+                    @else
+                        Get in touch with our team.
+                    @endif
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- ================= POLICY ================= --}}
+    <section id="policy" class="paper">
+        <div class="wrap policy-grid">
+            <div class="policy-side">
+                <h2>Policy</h2>
+                <p>Plain-language summaries of how we handle your data and what we expect from users.</p>
+                <p class="updated">Last updated {{ now()->format('j F Y') }}</p>
+            </div>
+
+            <div class="policy">
+                <details open>
+                    <summary>Privacy</summary>
+                    <div class="body">
+                        <p>We collect only what the app needs to work: your account details, your shop details, and the records you enter, such as sales, purchases, expenses, products, customers and staff.</p>
+                        <ul>
+                            <li>We do not sell your data.</li>
+                            <li>Your shop's records are visible only to people you give access to, and to system admins who support the platform.</li>
+                            <li>You can ask us to correct or delete your account data at any time.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Your data and security</summary>
+                    <div class="body">
+                        <p>Each shop's records are kept separate from other shops. Access is controlled by role, and every person signs in with their own account.</p>
+                        <ul>
+                            <li>Use a strong password and do not share it.</li>
+                            <li>Remove staff accounts when someone leaves.</li>
+                            <li>Exports (PDF, Excel, CSV) are copies of your data. Keep them safe.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Roles and access</summary>
+                    <div class="body">
+                        <p>Shop admins decide who works in their shop and what role each person has. A role limits what someone can see and change. Only shop admins can edit or delete most records.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Shop approval</summary>
+                    <div class="body">
+                        <p>New shops are reviewed by a system admin before they can trade on the platform. We may reject or suspend a shop that gives false information or breaks these terms.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Terms of use</summary>
+                    <div class="body">
+                        <ul>
+                            <li>Use the app only for lawful business.</li>
+                            <li>You are responsible for the accuracy of the records you enter.</li>
+                            <li>Do not try to access another shop's data or break the app's security.</li>
+                            <li>We may update the app and these terms. We will publish changes on this page.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Questions about policy</summary>
+                    <div class="body">
+                        <p>
+                            @if (Route::has('contact'))
+                                Send us a message on the <a href="{{ route('contact') }}">contact page</a>
+                            @else
+                                Contact us
+                            @endif
+                            and we will reply as soon as we can.
+                        </p>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    {{-- ================= FINAL CTA ================= --}}
+    <section class="cta">
+        <div class="wrap cta-inner">
+            <h2>Close the notebooks. Open your shop.</h2>
+            <div class="hero-cta cta-actions">
+                @auth
+                    <a href="{{ route('dashboard') }}" class="btn btn-primary">{{ __('Open dashboard') }}</a>
+                @else
+                    @if ($hasRegister)
+                        <a href="{{ route('register') }}" class="btn btn-primary">{{ __('Register your shop') }}</a>
+                    @endif
+                    @if ($hasLogin)
+                        <a href="{{ route('login') }}" class="btn btn-ghost">{{ __('Log in') }}</a>
+                    @endif
+                @endauth
+            </div>
+        </div>
+    </section>
+</main>
+
+{{-- ================= FOOTER ================= --}}
+<footer>
+    <div class="wrap">
+        <div class="foot-grid">
+            <div>
+                <a href="{{ url('/') }}" class="brand" aria-label="{{ $appName }} home">
+    <img
+        src="{{ asset('images/MAHWILOGO.png') }}"
+        alt="{{ $appName }} logo"
+        class="brand-logo"
+    >
+    <span>{{ $appName }}</span>
+</a>
+                <p>Sales, stock and money for every shop you run.</p>
+            </div>
+            <div>
+                <h3>Product</h3>
+                <ul>
+                    <li><a href="#features">{{ __('Features') }}</a></li>
+                    <li><a href="#roles">{{ __('Who uses it') }}</a></li>
+                    <li><a href="#how">{{ __('How it works') }}</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3>Company</h3>
+                <ul>
+                    <li><a href="#about">{{ __('About') }}</a></li>
+                    <li><a href="/privacy">{{ __('Privacy Policy') }}</a></li>
+                    @if (Route::has('contact'))
+                        <li><a href="{{ route('contact') }}">{{ __('Contact') }}</a></li>
+                    @endif
+                </ul>
+            </div>
+            <div>
+                <h3>Account</h3>
+                <ul>
+                    @auth
+                        <li><a href="{{ route('dashboard') }}">{{ __('Open dashboard') }}</a></li>
+                    @else
+                        @if ($hasLogin)<li><a href="{{ route('login') }}">{{ __('Log in') }}</a></li>@endif
+                        @if ($hasRegister)<li><a href="{{ route('register') }}">{{ __('Register your shop') }}</a></li>@endif
+                    @endauth
+                </ul>
+                @if (Route::has('language.switch'))
+                    <h3 class="foot-lang">Language</h3>
+                    <ul>
+                        @foreach ($locales as $code => $label)
+                            <li><a href="{{ route('language.switch', $code) }}">{{ $label }}</a></li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+        <div class="foot-bottom">
+            <span>© {{ date('Y') }} {{ $appName }}. All rights reserved.</span>
+            <a href="/privacy">{{ __('Privacy Policy') }}</a>
+        </div>
+    </div>
+</footer>
+
+
+<script nonce="{{ $cspNonce ?? '' }}">
+    (function () {
+        const loader = document.getElementById('page-loader');
+
+        function showLoader() {
+            if (loader) {
+                loader.hidden = false;
+            }
+        }
+
+        function hideLoader() {
+            if (loader) {
+                loader.hidden = true;
+            }
+        }
+
+        // Mobile navigation menu
+        const btn = document.querySelector('.menu-toggle');
+        const nav = document.getElementById('site-nav');
+
+        if (btn && nav) {
+            btn.addEventListener('click', function () {
+                const open = nav.classList.toggle('open');
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+
+            nav.addEventListener('click', function (event) {
+                const link = event.target.closest('a');
+
+                if (link) {
+                    nav.classList.remove('open');
+                    btn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
+
+        // Show loader for normal same-origin page navigation.
+        document.addEventListener('click', function (event) {
+            const link = event.target.closest('a[href]');
+
+            if (!link || event.defaultPrevented) return;
+
+            // Ignore modified clicks, middle clicks and downloads.
+            if (
+                event.button !== 0 ||
+                event.ctrlKey ||
+                event.metaKey ||
+                event.shiftKey ||
+                event.altKey ||
+                link.hasAttribute('download') ||
+                link.target === '_blank'
+            ) {
+                return;
+            }
+
+            if (link.hasAttribute('data-no-loader')) return;
+
+            const url = new URL(link.href, window.location.href);
+
+            // Ignore external URLs and JavaScript links.
+            if (
+                url.origin !== window.location.origin ||
+                url.protocol === 'javascript:'
+            ) {
+                return;
+            }
+
+            // In-page anchors should scroll without a loading overlay.
+            if (
+                url.pathname === window.location.pathname &&
+                url.search === window.location.search &&
+                url.hash
+            ) {
+                return;
+            }
+
+            // Avoid showing the loader for the current URL.
+            if (url.href === window.location.href) return;
+
+            showLoader();
+        });
+
+        // Show loader for normal form submissions.
+        document.addEventListener('submit', function (event) {
+            const form = event.target;
+
+            if (
+                form.hasAttribute('data-no-loader') ||
+                form.target === '_blank'
+            ) {
+                return;
+            }
+
+            showLoader();
+        });
+
+        // Hide it when this page is loaded or restored from browser history.
+        window.addEventListener('pageshow', hideLoader);
+
+        // Allow other scripts to control the loader when needed.
+        window.mahwiShowLoader = showLoader;
+        window.mahwiHideLoader = hideLoader;
+    })();
 </script>
+</body>
+</html>
 
 </body>
 </html>
