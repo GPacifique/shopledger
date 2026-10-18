@@ -43,6 +43,7 @@ class SecurityHeaders
             'Permissions-Policy',
             'camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), serial=()'
         );
+// HSTS only makes sense over HTTPS in production.
 
         // HSTS only makes sense over HTTPS in production.
         if ($request->isSecure() && app()->environment('production')) {
@@ -103,9 +104,12 @@ class SecurityHeaders
             "frame-ancestors 'self'",
         ];
 
-        if (app()->environment('production')) {
-            $directives[] = 'upgrade-insecure-requests';
-        }
+      if (
+    app()->environment('production')
+    && config('security.csp_mode', 'report') === 'enforce'
+) {
+    $directives[] = 'upgrade-insecure-requests';
+}
 
         return implode('; ', $directives);
     }
