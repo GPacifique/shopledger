@@ -102,6 +102,7 @@
         collapsed: document.documentElement.classList.contains('sidebar-collapsed'),
         desktop: window.matchMedia('(min-width: 1024px)').matches,
         canHover: window.matchMedia('(hover: hover)').matches,
+        sidebarOpen: window.matchMedia('(min-width: 1024px)').matches,
         open: @js($openGroups),
         flyout: null, flyoutTop: 0,
         tip: '', tipTop: 0,
