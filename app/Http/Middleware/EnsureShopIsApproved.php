@@ -27,8 +27,8 @@ class EnsureShopIsApproved
         $shop = $user->shop;
 
         if (!$shop) {
-            abort(403, 'Your account is not assigned to a shop.');
-        }
+    return redirect()->route('shop.assignment.required');
+}
 
         // Only explicitly approved shops may access operational data.
         if (strtolower(trim((string) $shop->status)) !== 'approved') {

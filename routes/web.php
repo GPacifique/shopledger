@@ -29,6 +29,12 @@ use App\Http\Controllers\IncomeCategoryController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PosController;
+Route::middleware('auth')->get(
+    '/shop-assignment-required',
+    function () {
+        return view('shop.assignment-required');
+    }
+)->name('shop.assignment.required');
 
 Route::view('/terms', 'legal.terms')->name('terms');
 Route::view('/privacy', 'legal.privacy')->name('privacy');
