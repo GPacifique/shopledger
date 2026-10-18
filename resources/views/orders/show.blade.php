@@ -489,7 +489,7 @@
                             Recorded as sale
 
                             <a
-                                href="{{ route('shops.sales.show', [$shop, $order->sale]) }}"
+                                href="{{ route('sales.show', [$shop, $order->sale]) }}"
                                 class="
                                     text-blue-600
                                     hover:text-blue-800
