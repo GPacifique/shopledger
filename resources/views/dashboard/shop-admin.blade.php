@@ -2009,7 +2009,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
 
     document.addEventListener('DOMContentLoaded', function () {
 
