@@ -4,18 +4,14 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Content-Security-Policy mode
-    |--------------------------------------------------------------------------
-    |
-    | off     - do not send a CSP header
-    | report  - send Content-Security-Policy-Report-Only (nothing is blocked;
-    |           violations show in the browser console). Use while testing.
-    | enforce - send Content-Security-Policy (violations are blocked)
-    |
-    */
-
+    // off | report | enforce
     'csp_mode' => env('CSP_MODE', 'report'),
+
+    // Adds "preload" to the HSTS header. The header alone does nothing until
+    // you submit the domain at hstspreload.org.
+    'hsts_preload' => env('HSTS_PRELOAD', true),
+
+    // Optional URL that receives CSP violation reports.
+    'csp_report_uri' => env('CSP_REPORT_URI'),
 
 ];
