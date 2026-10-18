@@ -73,7 +73,7 @@
         <div>
             <h1>{{ $shop->business_name ?? 'MahWi POS' }}</h1>
 
-            <div>Customer Bill / Receipt</div>
+            <div>Receipt</div>
 
             @if(!empty($shop->address))
                 <div class="muted">{{ $shop->address }}</div>

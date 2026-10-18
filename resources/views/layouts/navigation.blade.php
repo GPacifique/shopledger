@@ -104,50 +104,122 @@
         canHover: window.matchMedia('(hover: hover)').matches,
         sidebarOpen: window.matchMedia('(min-width: 1024px)').matches,
         open: @js($openGroups),
-        flyout: null, flyoutTop: 0,
-        tip: '', tipTop: 0,
+        flyout: null,
+        flyoutTop: 0,
+        tip: '',
+        tipTop: 0,
         timer: null,
 
-        get rail() { return this.collapsed && this.desktop; },
-        init() {
-            window.matchMedia('(min-width: 1024px)').addEventListener('change', e => { this.desktop = e.matches; this.flyout = null; this.tip = ''; });
+        get rail() {
+            return this.collapsed && this.desktop;
         },
+
+        init() {
+            const media = window.matchMedia('(min-width: 1024px)');
+
+            media.addEventListener('change', e => {
+                this.desktop = e.matches;
+                this.sidebarOpen = e.matches;
+                this.flyout = null;
+                this.tip = '';
+            });
+        },
+
         toggle() {
             this.collapsed = !this.collapsed;
-            document.documentElement.classList.toggle('sidebar-collapsed', this.collapsed);
-            try { localStorage.setItem('sidebar-collapsed', this.collapsed ? '1' : '0'); } catch (e) {}
+
+            document.documentElement.classList.toggle(
+                'sidebar-collapsed',
+                this.collapsed
+            );
+
+            try {
+                localStorage.setItem(
+                    'sidebar-collapsed',
+                    this.collapsed ? '1' : '0'
+                );
+            } catch (e) {}
+
             this.flyout = null;
             this.tip = '';
         },
-        hold() { clearTimeout(this.timer); },
-        release() { this.timer = setTimeout(() => { this.flyout = null; this.tip = ''; }, 120); },
-        hoverFlyout(key, el, height) { if (this.canHover) this.showFlyout(key, el, height); },
-        hoverTip(label, el) { if (this.canHover) this.showTip(label, el); },
+
+        hold() {
+            clearTimeout(this.timer);
+        },
+
+        release() {
+            this.timer = setTimeout(() => {
+                this.flyout = null;
+                this.tip = '';
+            }, 120);
+        },
+
+        hoverFlyout(key, el, height) {
+            if (this.canHover) {
+                this.showFlyout(key, el, height);
+            }
+        },
+
+        hoverTip(label, el) {
+            if (this.canHover) {
+                this.showTip(label, el);
+            }
+        },
+
         showFlyout(key, el, height) {
             if (!this.rail) return;
+
             this.hold();
             this.tip = '';
-            this.flyoutTop = Math.max(8, Math.min(el.getBoundingClientRect().top, window.innerHeight - height - 8));
+
+            this.flyoutTop = Math.max(
+                8,
+                Math.min(
+                    el.getBoundingClientRect().top,
+                    window.innerHeight - height - 8
+                )
+            );
+
             this.flyout = key;
         },
+
         showTip(label, el) {
             if (!this.rail) return;
+
             this.hold();
             this.flyout = null;
+
             const r = el.getBoundingClientRect();
             this.tipTop = r.top + r.height / 2;
             this.tip = label;
         },
+
         groupClick(key, el, height) {
-            if (!this.rail) { this.open[key] = !this.open[key]; return; }
-            this.flyout === key ? this.flyout = null : this.showFlyout(key, el, height);
+            if (!this.rail) {
+                this.open[key] = !this.open[key];
+                return;
+            }
+
+            this.flyout === key
+                ? this.flyout = null
+                : this.showFlyout(key, el, height);
         }
     }"
-    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-    :inert="!sidebarOpen && !desktop"
+    :class="{
+        'translate-x-0': desktop || sidebarOpen,
+        '-translate-x-full': !desktop && !sidebarOpen
+    }"
+    :inert="!desktop && !sidebarOpen"
     @click.outside="flyout = null; tip = ''"
-    @keydown.escape.window="flyout = null; tip = ''"
-    class="fixed inset-y-0 left-0 z-50 flex max-w-[85vw] flex-col bg-white border-r border-slate-200 shadow-xl lg:shadow-sm lg:translate-x-0"
+    @keydown.escape.window="
+        flyout = null;
+        tip = '';
+        if (!desktop) sidebarOpen = false;
+    "
+    class="fixed inset-y-0 left-0 z-50 flex max-w-[85vw] flex-col
+           bg-white border-r border-slate-200 shadow-xl
+           transition-transform duration-200 lg:shadow-sm"
 >
 
     {{-- Collapse toggle --}}

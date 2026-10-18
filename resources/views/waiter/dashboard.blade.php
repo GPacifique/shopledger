@@ -54,38 +54,7 @@
                 @endforeach
             </div>
 
-            {{-- Take Order — full-width banner --}}
-            <a href="{{ route('shops.orders.waiter', $shop) }}"
-               class="block rounded-3xl p-8 mb-6 relative overflow-hidden transition-transform hover:-translate-y-1"
-               style="background: linear-gradient(135deg, #2A2013 0%, #1C1712 100%); border:1px solid rgba(227,168,87,0.4);">
-
-                <div class="absolute -bottom-16 -right-16 w-56 h-56 rounded-full"
-                     style="background: radial-gradient(circle, rgba(227,168,87,0.15) 0%, transparent 70%);"></div>
-
-                <div class="flex items-center gap-5 relative">
-                    <div class="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(227,168,87,0.22);">
-                        <svg class="w-7 h-7" style="color:#E3A857" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                    </div>
-
-                    <div class="flex-1">
-                        <h3 class="text-2xl font-semibold mb-1" style="font-family:'Fraunces',serif; color:#F7F3EC;">
-                            Take Order
-                        </h3>
-                        <p class="text-sm" style="color:#C9BFAE;">
-                            Start a new order for a customer at the counter — sent straight to the seller for approval.
-                        </p>
-                    </div>
-
-                    <a href="{{ route('shops.orders.index', $shop) }}"
-                       class="hidden sm:inline-flex items-center gap-2 text-sm font-medium hover:underline flex-shrink-0"
-                       style="color:#F7F3EC;" onclick="event.stopPropagation()">
-                        View all orders &rarr;
-                    </a>
-                </div>
-            </a>
-
+            
             {{-- Products (left) + Calculator (right) --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
 
@@ -187,11 +156,11 @@
                                         <div class="flex items-center justify-end gap-4">
                                             <a href="{{ route('shops.orders.bill.download', [$shop, $order]) }}"
                                                class="text-sm font-medium hover:underline" style="color:#4FBE8E;">
-                                                Bill
+                                                download receipt
                                             </a>
                                             <a href="{{ route('shops.orders.print', [$shop, $order]) }}" target="_blank"
                                                class="text-sm font-medium hover:underline" style="color:#6FB4C9;">
-                                                Print
+                                                Print order
                                             </a>
                                         </div>
                                     </td>
@@ -227,11 +196,11 @@
                             <div class="flex items-center gap-4">
                                 <a href="{{ route('shops.orders.bill.download', [$shop, $order]) }}"
                                    class="text-sm font-medium hover:underline" style="color:#4FBE8E;">
-                                    Download Bill
+                                    Download order
                                 </a>
                                 <a href="{{ route('shops.orders.print', [$shop, $order]) }}" target="_blank"
                                    class="text-sm font-medium hover:underline" style="color:#6FB4C9;">
-                                    Print
+                                    Print receipt
                                 </a>
                             </div>
                         </div>
@@ -245,4 +214,4 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
     </style>
-</x-app-layout>
+    </x-app-layout>

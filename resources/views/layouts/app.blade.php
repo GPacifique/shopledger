@@ -105,21 +105,48 @@
             .app-shell { transition: none; }
         }
         /* Main content loading overlay */
+
+/* Main content loading overlay */
 .main-loading-overlay {
     position: fixed;
-    inset: 4rem 0 0 var(--sidebar-w);
+    top: 4rem;
+    right: 0;
+    bottom: 0;
+    left: var(--sidebar-w, 18rem);
     z-index: 40;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     background: rgba(248, 250, 252, 0.82);
     backdrop-filter: blur(3px);
-    transition: opacity 0.2s ease;
+    transition: left 0.2s ease, opacity 0.2s ease;
 }
 
 .main-loading-overlay[hidden] {
     display: none !important;
 }
+
+/* Mobile: cover the full page below the top bar */
+@media (max-width: 1023px) {
+    .main-loading-overlay {
+        left: 0;
+    }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .main-loading-overlay,
+    .app-shell {
+        transition: none;
+    }
+
+    .main-loading-spinner {
+        animation-duration: 2s;
+    }
+}
+
 
 .main-loading-spinner {
     width: 58px;

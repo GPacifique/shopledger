@@ -1,1282 +1,630 @@
-{{-- resources/views/orders/waiter.blade.php --}}
-
-<x-application-layout>
-
-    <x-slot name="header">
-        <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h2 class="text-lg sm:text-xl font-semibold text-gray-800">
+<x-slot name="header">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="min-w-0">
+                <h2 class="text-xl font-semibold leading-tight text-gray-800">
                     Take Order
                 </h2>
-
-                <p class="text-xs sm:text-sm text-gray-500">
-                    {{ $shop->business_name }}
+                <p class="mt-1 text-sm text-gray-500">
+                    {{ $shop->business_name }} · {{ auth()->user()->name }}
                 </p>
             </div>
 
-            <span class="text-xs sm:text-sm text-gray-500">
-                Order Management
+            <span class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 ring-1 ring-amber-200">
+                <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Seller approval required
             </span>
         </div>
     </x-slot>
 
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
 
-    <div
-        class="w-full max-w-5xl mx-auto"
-        x-data="orderForm({{ Js::from($products) }})"
-    >
+    {{-- Flexible page wrapper: adapts to the available sidebar content width --}}
+    <div class="w-full min-w-0 py-4 sm:py-6 lg:py-8">
+        <div class="mx-auto w-full min-w-0 max-w-[1600px] space-y-6 px-3 sm:px-5 xl:px-6">
 
-        {{-- ============================================================
-             SUCCESS MESSAGE
-        ============================================================= --}}
-        @if (session('success'))
-            <div
-                class="mb-4 rounded-lg bg-green-50 border border-green-200
-                       text-green-800 px-3 sm:px-4 py-3 text-sm"
-                role="alert"
-            >
-                <div class="flex items-start gap-2">
-                    <i class="fa-solid fa-circle-check mt-0.5 shrink-0"></i>
-
-                    <span>
-                        {{ session('success') }}
-                    </span>
+            @if (session('success'))
+                <div class="rounded-xl bg-green-50 p-4 text-sm text-green-800 ring-1 ring-green-200"
+                     role="status">
+                    {{ session('success') }}
                 </div>
-            </div>
-        @endif
+            @endif
 
+            @if (session('error'))
+                <div class="rounded-xl bg-red-50 p-4 text-sm text-red-800 ring-1 ring-red-200"
+                     role="alert">
+                    {{ session('error') }}
+                </div>
+            @endif
 
-        {{-- ============================================================
-             VALIDATION ERRORS
-        ============================================================= --}}
-        @if ($errors->any())
-            <div
-                class="mb-4 rounded-lg bg-red-50 border border-red-200
-                       text-red-800 px-3 sm:px-4 py-3 text-sm"
-                role="alert"
-            >
-                <div class="flex items-start gap-2">
-
-                    <i class="fa-solid fa-circle-exclamation mt-0.5 shrink-0"></i>
-
-                    <ul class="list-disc list-inside space-y-1">
+            @if ($errors->any())
+                <div class="rounded-xl bg-red-50 p-4 text-sm text-red-800 ring-1 ring-red-200"
+                     role="alert">
+                    <ul class="list-disc space-y-1 pl-5">
                         @foreach ($errors->all() as $error)
-                            <li>
-                                {{ $error }}
-                            </li>
+                            <li>{{ $error }}</li>
                         @endforeach
                     </ul>
-
                 </div>
-            </div>
-        @endif
-
-
-        {{-- ============================================================
-             NEW ORDER FORM
-        ============================================================= --}}
-        <form
-            method="POST"
-            action="{{ route('shops.orders.store', $shop) }}"
-            @submit="beforeSubmit($event)"
-            class="
-                bg-white
-                rounded-xl
-                border
-                border-gray-200
-                shadow-sm
-                p-4
-                sm:p-6
-                mb-8
-            "
-        >
-
-            @csrf
-
-
-            {{-- ========================================================
-                 ORDER INFORMATION
-            ========================================================= --}}
-            <div class="mb-6">
-
-                <div class="flex items-center gap-2 mb-4">
-
-                    <div
-                        class="
-                            h-8
-                            w-8
-                            rounded-lg
-                            bg-blue-50
-                            text-blue-600
-                            flex
-                            items-center
-                            justify-center
-                            shrink-0
-                        "
-                    >
-                        <i class="fa-solid fa-receipt text-sm"></i>
-                    </div>
-
-                    <div>
-                        <h3 class="font-semibold text-gray-800">
-                            New Order
-                        </h3>
-
-                        <p class="text-xs text-gray-500">
-                            Add products and submit the order for approval.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                    {{-- Customer --}}
-                    <div>
-
-                        <label
-                            for="customer_id"
-                            class="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                            Customer
-                            <span class="text-gray-400 font-normal">
-                                (optional)
-                            </span>
-                        </label>
-
-                        <select
-                            id="customer_id"
-                            name="customer_id"
-                            class="
-                                w-full
-                                rounded-lg
-                                border-gray-300
-                                shadow-sm
-                                text-sm
-                                focus:border-blue-500
-                                focus:ring-blue-500
-                            "
-                        >
-
-                            <option value="">
-                                Walk-in customer
-                            </option>
-
-                            @foreach ($customers ?? [] as $customer)
-
-                                <option value="{{ $customer->id }}">
-                                    {{ $customer->name }}
-                                </option>
-
-                            @endforeach
-
-                        </select>
-
-                    </div>
-
-
-                    {{-- Payment --}}
-                    <div>
-
-                        <label
-                            for="payment_method"
-                            class="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                            Payment Method
-                            <span class="text-gray-400 font-normal">
-                                (optional)
-                            </span>
-                        </label>
-
-                        <select
-                            id="payment_method"
-                            name="payment_method"
-                            class="
-                                w-full
-                                rounded-lg
-                                border-gray-300
-                                shadow-sm
-                                text-sm
-                                focus:border-blue-500
-                                focus:ring-blue-500
-                            "
-                        >
-
-                            <option value="">
-                                Seller decides on approval
-                            </option>
-
-                            @foreach (\App\Models\Order::PAYMENT_METHODS as $value => $label)
-
-                                <option value="{{ $value }}">
-                                    {{ $label }}
-                                </option>
-
-                            @endforeach
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            {{-- ========================================================
-                 ORDER ITEMS
-            ========================================================= --}}
-            <div class="mb-6">
-
-                <div
-                    class="
-                        flex
-                        flex-col
-                        gap-2
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
-                        mb-3
-                    "
-                >
-
-                    <div>
-
-                        <label class="block text-sm font-semibold text-gray-700">
-                            Order Items
-                        </label>
-
-                        <p class="text-xs text-gray-400 mt-0.5">
-                            Select products and enter quantities.
-                        </p>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        @click="addItem"
-                        class="
-                            inline-flex
-                            items-center
-                            justify-center
-                            gap-2
-                            text-sm
-                            text-blue-600
-                            hover:text-blue-800
-                            font-medium
-                            border
-                            border-blue-200
-                            hover:border-blue-300
-                            rounded-lg
-                            px-3
-                            py-2
-                            bg-blue-50
-                            hover:bg-blue-100
-                            transition
-                        "
-                    >
-
-                        <i class="fa-solid fa-plus"></i>
-
-                        Add Item
-
-                    </button>
-
-                </div>
-
-
-                {{-- Stock warning --}}
-                <div
-                    x-show="stockWarning"
-                    x-cloak
-                    class="
-                        mb-3
-                        rounded-lg
-                        bg-amber-50
-                        border
-                        border-amber-200
-                        text-amber-800
-                        px-3
-                        py-2.5
-                        text-sm
-                    "
-                >
-
-                    <div class="flex items-start gap-2">
-
-                        <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
-
-                        <span x-text="stockWarning"></span>
-
-                    </div>
-
-                </div>
-
-
-                {{-- Items --}}
-                <div class="space-y-3">
-
-                    <template
-                        x-for="(item, index) in items"
-                        :key="index"
-                    >
-
-                        <div
-                            class="
-                                bg-gray-50
-                                border
-                                border-gray-200
-                                rounded-xl
-                                p-3
-                                sm:p-4
-                            "
-                        >
-
-                            {{-- Product --}}
-                            <div class="mb-3">
-
-                                <label
-                                    class="
-                                        block
-                                        text-xs
-                                        font-medium
-                                        text-gray-600
-                                        mb-1
-                                    "
-                                >
-                                    Product
-                                </label>
-
-                                <select
-                                    :name="`items[${index}][product_id]`"
-                                    x-model="item.product_id"
-                                    @change="onProductChange(index)"
-                                    class="
-                                        w-full
-                                        rounded-lg
-                                        border-gray-300
-                                        shadow-sm
-                                        text-sm
-                                        focus:border-blue-500
-                                        focus:ring-blue-500
-                                    "
-                                >
-
-                                    <option value="">
-                                        Custom item
-                                    </option>
-
-                                    <template
-                                        x-for="product in products"
-                                        :key="product.id"
-                                    >
-
-                                        <option
-                                            :value="product.id"
-                                            x-text="product.name"
-                                            :disabled="product.stock <= 0"
-                                        ></option>
-
-                                    </template>
-
-                                </select>
-
-
-                                {{-- Custom description --}}
-                                <input
-                                    type="text"
-                                    x-show="!item.product_id"
-                                    x-cloak
-                                    :name="`items[${index}][description]`"
-                                    x-model="item.description"
-                                    placeholder="Custom item description"
-                                    class="
-                                        mt-2
-                                        w-full
-                                        rounded-lg
-                                        border-gray-300
-                                        shadow-sm
-                                        text-sm
-                                        focus:border-blue-500
-                                        focus:ring-blue-500
-                                    "
-                                />
-
-                            </div>
-
-
-                            {{-- Quantity / Price / Total --}}
-                            <div
-                                class="
-                                    grid
-                                    grid-cols-1
-                                    sm:grid-cols-3
-                                    gap-3
-                                "
+            @endif
+
+            <form
+                method="POST"
+                action="{{ route('shops.orders.store', $shop) }}"
+                x-data="posOrder(@js($catalogue))"
+                @submit="onSubmit($event)"
+                class="min-w-0 pb-24 xl:pb-0"
+            >
+                @csrf
+                <input type="hidden" name="submission_token" :value="token">
+
+                {{-- Stack on smaller screens; use columns only when enough room exists --}}
+                <div class="grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-3 xl:gap-6">
+
+                    {{-- PRODUCT CATALOGUE --}}
+                    <section class="min-w-0 xl:col-span-2">
+                        <div class="rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-200 sm:p-5">
+                            <label for="product-search" class="sr-only">Search products</label>
+                            <input
+                                id="product-search"
+                                type="search"
+                                x-model.debounce.150ms="search"
+                                placeholder="Search by name, barcode or SKU..."
+                                class="w-full min-w-0 rounded-lg border-gray-300 px-4 py-3 text-base focus:border-indigo-500 focus:ring-indigo-500"
                             >
 
-                                {{-- Quantity --}}
-                                <div>
-
-                                    <label
-                                        class="
-                                            block
-                                            text-xs
-                                            font-medium
-                                            text-gray-600
-                                            mb-1
-                                        "
+                            @if ($categories->isNotEmpty())
+                                <div class="mt-4 flex min-w-0 gap-2 overflow-x-auto pb-2">
+                                    <button
+                                        type="button"
+                                        @click="category = ''"
+                                        :class="category === ''
+                                            ? 'bg-indigo-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                        class="shrink-0 rounded-full px-4 py-2 text-sm font-medium"
                                     >
-                                        Quantity
-                                    </label>
+                                        All Products
+                                    </button>
 
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0.01"
-                                        :name="`items[${index}][quantity]`"
-                                        x-model.number="item.quantity"
-                                        @input="checkStock(index)"
-                                        class="
-                                            w-full
-                                            rounded-lg
-                                            border-gray-300
-                                            shadow-sm
-                                            text-sm
-                                            focus:border-blue-500
-                                            focus:ring-blue-500
-                                        "
-                                    />
-
+                                    @foreach ($categories as $cat)
+                                        <button
+                                            type="button"
+                                            @click="category = @js($cat)"
+                                            :class="category === @js($cat)
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                            class="shrink-0 rounded-full px-4 py-2 text-sm font-medium"
+                                        >
+                                            {{ $cat }}
+                                        </button>
+                                    @endforeach
                                 </div>
+                            @endif
 
+                            <div class="mt-3 flex items-center justify-between text-xs text-gray-500">
+                                <span x-text="filtered.length + ' products'"></span>
+                                <button
+                                    type="button"
+                                    x-show="search || category"
+                                    @click="search = ''; category = ''"
+                                    class="text-indigo-600 hover:underline"
+                                >
+                                    Clear filters
+                                </button>
+                            </div>
+                        </div>
 
-                                {{-- Unit price --}}
-                                <div>
+                        {{-- Responsive product cards --}}
+                        <div class="mt-4 grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 2xl:grid-cols-4">
+                            <template x-for="p in filtered" :key="p.id">
+                                <button
+                                    type="button"
+                                    @click="add(p)"
+                                    :disabled="p.stock <= 0"
+                                    :aria-label="'Add ' + p.name"
+                                    class="group flex min-w-0 flex-col overflow-hidden rounded-xl bg-white text-left shadow-sm ring-1 ring-gray-200 transition hover:shadow-md active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+                                    :class="justAdded === p.id ? 'ring-2 ring-green-500' : ''"
+                                >
+                                    <div class="relative aspect-square w-full overflow-hidden bg-gray-100">
+                                        <template x-if="p.image && !broken[p.id]">
+                                            <img
+                                                :src="p.image"
+                                                :alt="p.name"
+                                                loading="lazy"
+                                                @error="broken[p.id] = true"
+                                                class="h-full w-full object-cover transition duration-200 group-hover:scale-105"
+                                            >
+                                        </template>
 
-                                    <label
-                                        class="
-                                            block
-                                            text-xs
-                                            font-medium
-                                            text-gray-600
-                                            mb-1
-                                        "
-                                    >
-                                        Unit Price
-                                    </label>
+                                        <template x-if="!p.image || broken[p.id]">
+                                            <div class="flex h-full w-full items-center justify-center text-gray-300">
+                                                <svg class="h-10 w-10 sm:h-12 sm:w-12" fill="none"
+                                                     stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          stroke-width="1.5"
+                                                          d="M4 16l4-4a3 3 0 014 0l4 4m-2-2l1-1a3 3 0 014 0l2 2M4 6h16v12H4z"/>
+                                                </svg>
+                                            </div>
+                                        </template>
 
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        :name="`items[${index}][unit_price]`"
-                                        x-model.number="item.unit_price"
-                                        class="
-                                            w-full
-                                            rounded-lg
-                                            border-gray-300
-                                            shadow-sm
-                                            text-sm
-                                            focus:border-blue-500
-                                            focus:ring-blue-500
-                                        "
-                                    />
-
-                                </div>
-
-
-                                {{-- Line total --}}
-                                <div>
-
-                                    <label
-                                        class="
-                                            block
-                                            text-xs
-                                            font-medium
-                                            text-gray-600
-                                            mb-1
-                                        "
-                                    >
-                                        Total
-                                    </label>
-
-                                    <div
-                                        class="
-                                            w-full
-                                            min-h-[42px]
-                                            flex
-                                            items-center
-                                            justify-between
-                                            rounded-lg
-                                            bg-white
-                                            border
-                                            border-gray-200
-                                            px-3
-                                            text-sm
-                                            font-semibold
-                                            text-gray-900
-                                        "
-                                    >
-
-                                        <span>
-                                            RWF
+                                        <span
+                                            x-show="p.stock <= 0"
+                                            class="absolute inset-0 flex items-center justify-center bg-black/50 px-2 text-center text-xs font-semibold text-white sm:text-sm"
+                                        >
+                                            Out of stock
                                         </span>
 
                                         <span
-                                            x-text="lineTotal(item)"
+                                            x-show="qtyOf(p.id) > 0"
+                                            x-text="qtyOf(p.id)"
+                                            class="absolute right-2 top-2 flex h-7 min-w-7 items-center justify-center rounded-full bg-indigo-600 px-2 text-xs font-bold text-white shadow"
                                         ></span>
-
                                     </div>
 
-                                </div>
+                                    <div class="flex min-w-0 flex-1 flex-col p-2.5 sm:p-3">
+                                        <p
+                                            class="line-clamp-2 break-words text-sm font-semibold text-gray-900"
+                                            x-text="p.name"
+                                        ></p>
 
-                            </div>
+                                        <p
+                                            x-show="p.category"
+                                            x-text="p.category"
+                                            class="mt-1 truncate text-xs text-gray-500"
+                                        ></p>
 
-
-                            {{-- Remove item --}}
-                            <div class="mt-3 flex justify-end">
-
-                                <button
-                                    type="button"
-                                    @click="removeItem(index)"
-                                    x-show="items.length > 1"
-                                    class="
-                                        inline-flex
-                                        items-center
-                                        gap-1.5
-                                        text-xs
-                                        text-red-500
-                                        hover:text-red-700
-                                        font-medium
-                                    "
-                                >
-
-                                    <i class="fa-solid fa-trash-can"></i>
-
-                                    Remove item
-
+                                        <div class="mt-auto pt-3">
+                                            <p
+                                                class="break-words text-sm font-bold text-indigo-700 sm:text-base"
+                                                x-text="money(p.price)"
+                                            ></p>
+                                            <p
+                                                class="mt-1 text-xs"
+                                                :class="p.tracked && p.stock <= 5
+                                                    ? 'text-red-600'
+                                                    : 'text-gray-500'"
+                                                x-text="!p.tracked
+                                                    ? 'Available'
+                                                    : (p.stock > 0 ? p.stock + ' in stock' : 'Unavailable')"
+                                            ></p>
+                                        </div>
+                                    </div>
                                 </button>
-
-                            </div>
-
+                            </template>
                         </div>
 
-                    </template>
-
-                </div>
-
-            </div>
-
-
-            {{-- ========================================================
-                 NOTES
-            ========================================================= --}}
-            <div class="mb-6">
-
-                <label
-                    for="notes"
-                    class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                    Notes
-                    <span class="text-gray-400 font-normal">
-                        (optional)
-                    </span>
-                </label>
-
-                <textarea
-                    id="notes"
-                    name="notes"
-                    rows="3"
-                    class="
-                        w-full
-                        rounded-lg
-                        border-gray-300
-                        shadow-sm
-                        text-sm
-                        focus:border-blue-500
-                        focus:ring-blue-500
-                    "
-                    placeholder="e.g. table number, special request"
-                ></textarea>
-
-            </div>
-
-
-            {{-- ========================================================
-                 ORDER SUMMARY
-            ========================================================= --}}
-            <div
-                class="
-                    border-t
-                    border-gray-100
-                    pt-4
-                "
-            >
-
-                <div
-                    class="
-                        flex
-                        flex-col
-                        gap-4
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
-                    "
-                >
-
-                    <div>
-
-                        <p class="text-xs text-gray-500">
-                            Order Subtotal
-                        </p>
-
-                        <p
-                            class="
-                                text-xl
-                                sm:text-2xl
-                                font-bold
-                                text-gray-900
-                            "
+                        <div
+                            x-show="filtered.length === 0"
+                            x-cloak
+                            class="mt-4 rounded-xl bg-white p-8 text-center text-gray-500 ring-1 ring-gray-200 sm:p-12"
                         >
-
-                            <span
-                                x-text="formatMoney(subtotal())"
-                            ></span>
-
-                            <span class="text-sm font-medium text-gray-400">
-                                RWF
-                            </span>
-
-                        </p>
-
-                    </div>
-
-
-                    <button
-                        type="submit"
-                        class="
-                            w-full
-                            sm:w-auto
-                            inline-flex
-                            items-center
-                            justify-center
-                            gap-2
-                            bg-blue-600
-                            hover:bg-blue-700
-                            active:bg-blue-800
-                            text-white
-                            text-sm
-                            font-semibold
-                            px-5
-                            py-3
-                            rounded-lg
-                            shadow-sm
-                            transition
-                        "
-                    >
-
-                        <i class="fa-solid fa-paper-plane"></i>
-
-                        Submit Order
-
-                    </button>
-
-                </div>
-
-            </div>
-
-        </form>
-
-
-        {{-- ============================================================
-             MY ORDERS
-        ============================================================= --}}
-        <div class="mb-3">
-
-            <div class="flex items-center gap-2">
-
-                <div
-                    class="
-                        h-8
-                        w-8
-                        rounded-lg
-                        bg-gray-100
-                        text-gray-600
-                        flex
-                        items-center
-                        justify-center
-                    "
-                >
-                    <i class="fa-solid fa-list-check text-sm"></i>
-                </div>
-
-                <div>
-
-                    <h2 class="text-lg font-semibold text-gray-800">
-                        My Orders
-                    </h2>
-
-                    <p class="text-xs text-gray-400">
-                        Orders you have submitted
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        {{-- ============================================================
-             ORDERS TABLE
-        ============================================================= --}}
-        <div
-            class="
-                bg-white
-                rounded-xl
-                border
-                border-gray-200
-                shadow-sm
-                overflow-hidden
-            "
-        >
-
-            {{-- Horizontal scroll on small devices --}}
-            <div class="overflow-x-auto">
-
-                <table
-                    class="
-                        min-w-[700px]
-                        w-full
-                        divide-y
-                        divide-gray-200
-                        text-sm
-                    "
-                >
-
-                    <thead class="bg-gray-50">
-
-                        <tr>
-
-                            <th
-                                class="
-                                    px-4
-                                    py-3
-                                    text-left
-                                    font-medium
-                                    text-gray-500
-                                    whitespace-nowrap
-                                "
+                            <p class="font-medium">No products match your search.</p>
+                            <button
+                                type="button"
+                                @click="search = ''; category = ''"
+                                class="mt-2 text-sm text-indigo-600 underline"
                             >
-                                Order #
-                            </th>
+                                Clear filters
+                            </button>
+                        </div>
+                    </section>
 
-                            <th
-                                class="
-                                    px-4
-                                    py-3
-                                    text-left
-                                    font-medium
-                                    text-gray-500
-                                    whitespace-nowrap
-                                "
+                    {{-- ORDER SUMMARY --}}
+                    <aside id="order-summary" class="min-w-0 scroll-mt-4 xl:sticky xl:top-4 xl:self-start">
+                        <div class="min-w-0 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-200 sm:p-5">
+                            <div class="flex items-center justify-between gap-3">
+                                <h3 class="text-lg font-semibold text-gray-900">Current Order</h3>
+                                <span
+                                    class="shrink-0 text-sm text-gray-500"
+                                    x-text="lines.length + (lines.length === 1 ? ' line' : ' lines')"
+                                ></span>
+                            </div>
+
+                            <p
+                                x-show="lines.length === 0"
+                                class="py-7 text-center text-sm text-gray-500"
                             >
-                                Total
-                            </th>
+                                Select a product to add it to the order.
+                            </p>
 
-                            <th
-                                class="
-                                    px-4
-                                    py-3
-                                    text-left
-                                    font-medium
-                                    text-gray-500
-                                    whitespace-nowrap
-                                "
-                            >
-                                Status
-                            </th>
+                            <ul class="mt-3 divide-y divide-gray-100">
+                                <template x-for="(l, i) in lines" :key="l.id">
+                                    <li class="min-w-0 py-3">
+                                        <input type="hidden" :name="`items[${i}][product_id]`" :value="l.id">
+                                        <input type="hidden" :name="`items[${i}][quantity]`" :value="l.qty">
 
-                            <th
-                                class="
-                                    px-4
-                                    py-3
-                                    text-left
-                                    font-medium
-                                    text-gray-500
-                                    whitespace-nowrap
-                                "
-                            >
-                                Submitted
-                            </th>
-
-                            <th class="px-4 py-3"></th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody class="divide-y divide-gray-100">
-
-                        @forelse ($orders as $order)
-
-                            <tr class="hover:bg-gray-50 transition-colors">
-
-                                {{-- Order --}}
-                                <td class="px-4 py-3 whitespace-nowrap">
-
-                                    <a
-                                        href="{{ route('shops.orders.show', [$shop, $order]) }}"
-                                        class="
-                                            text-blue-600
-                                            hover:text-blue-800
-                                            hover:underline
-                                            font-medium
-                                        "
-                                    >
-                                        {{ $order->order_number }}
-                                    </a>
-
-                                </td>
-
-
-                                {{-- Total --}}
-                                <td
-                                    class="
-                                        px-4
-                                        py-3
-                                        font-medium
-                                        text-gray-900
-                                        whitespace-nowrap
-                                    "
-                                >
-
-                                    {{ number_format($order->total_amount, 2) }}
-
-                                    <span class="text-xs text-gray-400">
-                                        RWF
-                                    </span>
-
-                                </td>
-
-
-                                {{-- Status --}}
-                                <td class="px-4 py-3">
-
-                                    @php
-                                        $badgeClasses = [
-                                            'pending' => 'bg-amber-100 text-amber-800',
-                                            'approved' => 'bg-green-100 text-green-800',
-                                            'rejected' => 'bg-red-100 text-red-800',
-                                            'cancelled' => 'bg-gray-100 text-gray-600',
-                                        ];
-                                    @endphp
-
-
-                                    <span
-                                        class="
-                                            inline-flex
-                                            items-center
-                                            px-2.5
-                                            py-1
-                                            rounded-full
-                                            text-xs
-                                            font-medium
-                                            whitespace-nowrap
-                                            {{ $badgeClasses[$order->status] ?? 'bg-gray-100 text-gray-600' }}
-                                        "
-                                    >
-                                        {{ ucfirst($order->status) }}
-                                    </span>
-
-
-                                    @if (
-                                        $order->status === 'rejected'
-                                        && $order->rejection_reason
-                                    )
-
-                                        <div
-                                            class="
-                                                mt-1
-                                                text-xs
-                                                text-red-600
-                                                max-w-[250px]
-                                            "
-                                        >
-                                            {{ $order->rejection_reason }}
-                                        </div>
-
-                                    @endif
-
-                                </td>
-
-
-                                {{-- Date --}}
-                                <td
-                                    class="
-                                        px-4
-                                        py-3
-                                        text-gray-500
-                                        whitespace-nowrap
-                                    "
-                                >
-                                    {{ $order->created_at->diffForHumans() }}
-                                </td>
-
-
-                                {{-- Cancel --}}
-                                <td class="px-4 py-3 text-right">
-
-                                    @if ($order->canBeCancelled())
-
-                                        <form
-                                            method="POST"
-                                            action="{{ route('shops.orders.cancel', [$shop, $order]) }}"
-                                            onsubmit="return confirm('Cancel this order?');"
-                                        >
-
-                                            @csrf
+                                        <div class="flex min-w-0 items-start justify-between gap-2">
+                                            <div class="min-w-0 flex-1">
+                                                <p class="break-words text-sm font-medium text-gray-900" x-text="l.name"></p>
+                                                <p class="mt-1 text-xs text-gray-500" x-text="money(l.price) + ' each'"></p>
+                                            </div>
 
                                             <button
-                                                type="submit"
-                                                class="
-                                                    inline-flex
-                                                    items-center
-                                                    gap-1.5
-                                                    text-xs
-                                                    text-red-500
-                                                    hover:text-red-700
-                                                    font-medium
-                                                "
+                                                type="button"
+                                                @click="remove(l.id)"
+                                                aria-label="Remove item"
+                                                class="shrink-0 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600"
                                             >
-
-                                                <i class="fa-solid fa-ban"></i>
-
-                                                Cancel
-
+                                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
                                             </button>
+                                        </div>
 
-                                        </form>
+                                        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+                                            <div class="flex items-center gap-1.5">
+                                                <button
+                                                    type="button"
+                                                    @click="change(l.id, -1)"
+                                                    :disabled="l.qty <= 0.01"
+                                                    aria-label="Decrease quantity"
+                                                    class="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-lg font-bold hover:bg-gray-200 disabled:opacity-40"
+                                                >−</button>
 
-                                    @endif
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0.01"
+                                                    :max="l.stock"
+                                                    x-model.number="l.qty"
+                                                    @change="clamp(l)"
+                                                    class="h-9 w-20 rounded-lg border-gray-300 p-0 text-center text-sm"
+                                                    aria-label="Quantity"
+                                                >
 
-                                </td>
+                                                <button
+                                                    type="button"
+                                                    @click="change(l.id, 1)"
+                                                    :disabled="l.tracked && l.qty + 1 > l.stock"
+                                                    aria-label="Increase quantity"
+                                                    class="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-lg font-bold hover:bg-gray-200 disabled:opacity-40"
+                                                >+</button>
+                                            </div>
 
-                            </tr>
+                                            <p class="text-sm font-semibold text-gray-900"
+                                               x-text="money(l.qty * l.price)"></p>
+                                        </div>
 
-                        @empty
-
-                            <tr>
-
-                                <td
-                                    colspan="5"
-                                    class="
-                                        px-4
-                                        py-12
-                                        text-center
-                                        text-gray-400
-                                    "
-                                >
-
-                                    <div
-                                        class="
-                                            flex
-                                            flex-col
-                                            items-center
-                                            gap-3
-                                        "
-                                    >
-
-                                        <div
-                                            class="
-                                                h-12
-                                                w-12
-                                                rounded-full
-                                                bg-gray-100
-                                                flex
-                                                items-center
-                                                justify-center
-                                            "
+                                        <p
+                                            x-show="l.tracked && l.qty >= l.stock"
+                                            class="mt-2 text-xs text-amber-600"
                                         >
-                                            <i class="fa-solid fa-receipt"></i>
-                                        </div>
+                                            Maximum available stock reached.
+                                        </p>
+                                    </li>
+                                </template>
+                            </ul>
 
-                                        <div>
+                            <div class="mt-3 flex items-center justify-between gap-3 border-t pt-4">
+                                <span class="text-sm font-medium text-gray-600">Subtotal</span>
+                                <span class="text-xl font-bold text-gray-900" x-text="money(subtotal)"></span>
+                            </div>
 
-                                            <p class="font-medium text-gray-500">
-                                                No orders submitted yet
-                                            </p>
+                            <div class="mt-5 space-y-4">
+                                <div>
+                                    <label for="customer_id" class="block text-sm font-medium text-gray-700">
+                                        Customer
+                                    </label>
+                                    <select
+                                        id="customer_id"
+                                        name="customer_id"
+                                        class="mt-1 w-full min-w-0 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                        <option value="">Walk-in customer</option>
+                                        @foreach ($customers as $c)
+                                            <option value="{{ $c->id }}" @selected(old('customer_id') == $c->id)>
+                                                {{ $c->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
-                                            <p class="text-xs text-gray-400 mt-1">
-                                                Your submitted orders will appear here.
-                                            </p>
+                                <div>
+                                    <label for="payment_method" class="block text-sm font-medium text-gray-700">
+                                        Payment method
+                                    </label>
+                                    <select
+                                        id="payment_method"
+                                        name="payment_method"
+                                        required
+                                        class="mt-1 w-full min-w-0 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                        @foreach ($paymentMethods as $value => $label)
+                                            <option value="{{ $value }}" @selected(old('payment_method') === $value)>
+                                                {{ $label }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
-                                        </div>
+                                <div>
+                                    <label for="notes" class="block text-sm font-medium text-gray-700">
+                                        Notes (table number, instructions)
+                                    </label>
+                                    <textarea
+                                        id="notes"
+                                        name="notes"
+                                        rows="2"
+                                        maxlength="1000"
+                                        class="mt-1 w-full min-w-0 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >{{ old('notes') }}</textarea>
+                                </div>
+                            </div>
 
-                                    </div>
+                            <p x-show="error" x-text="error" class="mt-3 text-sm text-red-600" role="alert"></p>
 
-                                </td>
+                            <button
+                                type="submit"
+                                :disabled="submitting || lines.length === 0"
+                                class="mt-5 w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 sm:text-base"
+                            >
+                                <span x-show="!submitting">Submit Order for Approval</span>
+                                <span x-show="submitting" x-cloak>Submitting...</span>
+                            </button>
 
-                            </tr>
-
-                        @endforelse
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-
-            {{-- Pagination --}}
-            @if (
-                $orders instanceof \Illuminate\Contracts\Pagination\Paginator
-                || method_exists($orders, 'links')
-            )
-
-                <div
-                    class="
-                        px-4
-                        py-3
-                        border-t
-                        border-gray-100
-                        overflow-x-auto
-                    "
-                >
-                    {{ $orders->links() }}
+                            <p class="mt-3 text-center text-xs leading-5 text-gray-500">
+                                A seller must approve this order before it becomes a sale.
+                            </p>
+                        </div>
+                    </aside>
                 </div>
 
-            @endif
+                {{-- Mobile order review bar --}}
+                <div
+                    x-show="lines.length > 0"
+                    x-cloak
+                    class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white p-3 shadow-lg xl:hidden"
+                >
+                    <a
+                        href="#order-summary"
+                        class="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 rounded-lg bg-indigo-600 px-4 py-3 text-white"
+                    >
+                        <span class="text-sm" x-text="lines.length + ' item(s)'"></span>
+                        <span class="text-sm font-semibold" x-text="money(subtotal) + ' · Review order'"></span>
+                    </a>
+                </div>
+            </form>
 
+            {{-- MY ORDERS --}}
+            <section class="min-w-0 pb-4">
+                <div class="min-w-0 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-4 sm:px-5">
+                        <h3 class="text-lg font-semibold text-gray-900">My Orders</h3>
+                        <span class="text-xs text-gray-500">Your recent submissions</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[650px] divide-y divide-gray-100 text-sm">
+                            <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+                                <tr>
+                                    <th class="px-4 py-3">Order</th>
+                                    <th class="px-4 py-3">Total</th>
+                                    <th class="px-4 py-3">Submitted</th>
+                                    <th class="px-4 py-3">Status</th>
+                                    <th class="px-4 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody class="divide-y divide-gray-100">
+                                @forelse ($orders as $order)
+                                    @php
+                                        $badge = match ($order->status) {
+                                            'pending'  => 'bg-amber-100 text-amber-800',
+                                            'approved' => 'bg-green-100 text-green-800',
+                                            'rejected' => 'bg-red-100 text-red-800',
+                                            default    => 'bg-gray-100 text-gray-700',
+                                        };
+                                    @endphp
+
+                                    <tr>
+                                        <td class="whitespace-nowrap px-4 py-3 font-medium text-gray-900">
+                                            {{ $order->order_number }}
+                                        </td>
+                                        <td class="whitespace-nowrap px-4 py-3">
+                                            {{ number_format($order->total_amount) }} RWF
+                                        </td>
+                                        <td class="whitespace-nowrap px-4 py-3 text-gray-500">
+                                            {{ $order->created_at->format('d M Y, H:i') }}
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium {{ $badge }}">
+                                                {{ ucfirst($order->status) }}
+                                            </span>
+
+                                            @if ($order->status === 'rejected' && $order->rejection_reason)
+                                                <p class="mt-1 max-w-xs text-xs text-red-600">
+                                                    {{ $order->rejection_reason }}
+                                                </p>
+                                            @endif
+                                        </td>
+                                        <td class="whitespace-nowrap px-4 py-3 text-right">
+                                            <a
+                                                href="{{ route('shops.orders.show', [$shop, $order]) }}"
+                                                class="font-medium text-indigo-600 hover:underline"
+                                            >View</a>
+
+                                            @if ($order->canBeCancelled())
+                                                <form
+                                                    method="POST"
+                                                    action="{{ route('shops.orders.cancel', [$shop, $order]) }}"
+                                                    class="ml-3 inline"
+                                                    onsubmit="return confirm('Cancel this order?')"
+                                                >
+                                                    @csrf
+                                                    <button type="submit" class="font-medium text-red-600 hover:underline">
+                                                        Cancel
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="px-4 py-10 text-center text-gray-500">
+                                            You haven't submitted any orders yet.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if ($orders->hasPages())
+                        <div class="border-t px-4 py-3">
+                            {{ $orders->links() }}
+                        </div>
+                    @endif
+                </div>
+            </section>
         </div>
-
     </div>
 
+    <script>
+        document.addEventListener('alpine:init', () => {
+            if (window.__posOrderRegistered) return;
+            window.__posOrderRegistered = true;
 
-    {{-- ================================================================
-         ALPINE ORDER FORM
-    ================================================================= --}}
-    <script nonce="{{ Vite::cspNonce() }}">
-        function orderForm(products) {
-            return {
+            Alpine.data('posOrder', (products) => ({
+                products: products || [],
+                search: '',
+                category: '',
+                lines: [],
+                broken: {},
+                justAdded: null,
+                submitting: false,
+                error: '',
 
-                products: products,
+                token: (window.crypto && typeof window.crypto.randomUUID === 'function')
+                    ? window.crypto.randomUUID()
+                    : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                        const r = Math.random() * 16 | 0;
+                        return (c === 'x' ? r : (r & 3 | 8)).toString(16);
+                    }),
 
-                items: [
-                    {
-                        product_id: '',
-                        description: '',
-                        quantity: 1,
-                        unit_price: 0
-                    }
-                ],
+                get filtered() {
+                    const q = this.search.trim().toLowerCase();
 
-                stockWarning: '',
-
-
-                addItem() {
-
-                    this.items.push({
-                        product_id: '',
-                        description: '',
-                        quantity: 1,
-                        unit_price: 0
-                    });
-
-                },
-
-
-                removeItem(index) {
-
-                    if (this.items.length > 1) {
-                        this.items.splice(index, 1);
-                    }
-
-                },
-
-
-                onProductChange(index) {
-
-                    const item = this.items[index];
-
-                    const product = this.products.find(
-                        p => p.id == item.product_id
+                    return this.products.filter(p =>
+                        (!this.category || p.category === this.category) &&
+                        (!q ||
+                            (p.name || '').toLowerCase().includes(q) ||
+                            (p.barcode || '').toLowerCase().includes(q) ||
+                            (p.sku || '').toLowerCase().includes(q)
+                        )
                     );
+                },
 
+                get subtotal() {
+                    return this.lines.reduce((sum, line) => sum + line.qty * line.price, 0);
+                },
 
-                    if (product) {
+                money(amount) {
+                    return new Intl.NumberFormat('en-RW', {
+                        maximumFractionDigits: 0
+                    }).format(Number(amount) || 0) + ' RWF';
+                },
 
-                        item.unit_price =
-                            parseFloat(product.selling_price) || 0;
+                qtyOf(id) {
+                    const line = this.lines.find(item => item.id === id);
+                    return line ? line.qty : 0;
+                },
 
-                        item.description = '';
+                add(product) {
+                    if (product.tracked && product.stock <= 0) return;
 
-                        this.checkStock(index);
+                    const line = this.lines.find(item => item.id === product.id);
 
+                    if (line) {
+                        if (line.tracked && line.qty + 1 > line.stock) {
+                            this.error = `Only ${line.stock} of ${line.name} available.`;
+                            return;
+                        }
+
+                        line.qty = Math.round((line.qty + 1) * 100) / 100;
                     } else {
-
-                        this.stockWarning = '';
-
+                        this.lines.push({
+                            id: product.id,
+                            name: product.name,
+                            price: Number(product.price) || 0,
+                            stock: Number(product.stock) || 0,
+                            tracked: Boolean(product.tracked),
+                            qty: 1
+                        });
                     }
 
+                    this.error = '';
+                    this.justAdded = product.id;
+
+                    setTimeout(() => {
+                        if (this.justAdded === product.id) this.justAdded = null;
+                    }, 400);
                 },
 
+                change(id, delta) {
+                    const line = this.lines.find(item => item.id === id);
+                    if (!line) return;
 
-                checkStock(index) {
+                    const next = Math.round((line.qty + delta) * 100) / 100;
 
-                    const item = this.items[index];
+                    if (next < 0.01 || (line.tracked && next > line.stock)) return;
 
-                    const product = this.products.find(
-                        p => p.id == item.product_id
-                    );
+                    line.qty = next;
+                    this.error = '';
+                },
 
+                clamp(line) {
+                    let quantity = Number(line.qty);
 
-                    if (!product) {
-                        this.stockWarning = '';
+                    if (!Number.isFinite(quantity) || quantity < 0.01) {
+                        quantity = 0.01;
+                    }
+
+                    if (line.tracked && quantity > line.stock) {
+                        quantity = line.stock;
+                    }
+
+                    line.qty = Math.round(quantity * 100) / 100;
+                },
+
+                remove(id) {
+                    this.lines = this.lines.filter(item => item.id !== id);
+                    this.error = '';
+                },
+
+                onSubmit(event) {
+                    if (this.submitting) {
+                        event.preventDefault();
                         return;
                     }
 
-
-                    const quantity =
-                        parseFloat(item.quantity) || 0;
-
-
-                    const stock =
-                        parseFloat(product.stock) || 0;
-
-
-                    if (stock <= 0) {
-
-                        this.stockWarning =
-                            `${product.name} is out of stock.`;
-
-                    } else if (quantity > stock) {
-
-                        this.stockWarning =
-                            `Only ${stock} of ${product.name} available.`;
-
-                    } else {
-
-                        this.stockWarning = '';
-
+                    if (this.lines.length === 0) {
+                        event.preventDefault();
+                        this.error = 'Add at least one product.';
+                        return;
                     }
 
-                },
-
-
-                lineTotal(item) {
-
-                    const quantity =
-                        parseFloat(item.quantity) || 0;
-
-                    const price =
-                        parseFloat(item.unit_price) || 0;
-
-                    return this.formatMoney(
-                        quantity * price
-                    );
-
-                },
-
-
-                subtotal() {
-
-                    return this.items.reduce(
-                        (sum, item) => {
-
-                            const quantity =
-                                parseFloat(item.quantity) || 0;
-
-                            const price =
-                                parseFloat(item.unit_price) || 0;
-
-                            return sum + (quantity * price);
-
-                        },
-                        0
-                    );
-
-                },
-
-
-                formatMoney(value) {
-
-                    return Number(value || 0).toLocaleString(
-                        undefined,
-                        {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }
-                    );
-
-                },
-
-
-                beforeSubmit(event) {
-
-                    for (const item of this.items) {
-
-                        const product =
-                            this.products.find(
-                                p => p.id == item.product_id
-                            );
-
-
-                        if (!product) {
-                            continue;
-                        }
-
-
-                        const quantity =
-                            parseFloat(item.quantity) || 0;
-
-                        const stock =
-                            parseFloat(product.stock) || 0;
-
-
-                        if (quantity <= 0) {
-
+                    for (const line of this.lines) {
+                        if (!Number.isFinite(Number(line.qty)) || line.qty < 0.01) {
                             event.preventDefault();
-
-                            alert(
-                                'Please enter a valid quantity.'
-                            );
-
+                            this.error = 'Enter a valid quantity for every product.';
                             return;
-
                         }
 
-
-                        if (quantity > stock) {
-
+                        if (line.tracked && line.qty > line.stock) {
                             event.preventDefault();
-
-                            alert(
-                                `Only ${stock} of ${product.name} available.`
-                            );
-
+                            this.error = `Insufficient stock for ${line.name}.`;
                             return;
-
                         }
-
                     }
 
+                    this.submitting = true;
                 }
-
-            };
-        }
+            }));
+        });
     </script>
 
-
-    {{-- Prevent Alpine x-cloak elements from flashing --}}
-    <style>
-        [x-cloak] {
-            display: none !important;
-        }
-    </style>
-
-</x-application-layout>

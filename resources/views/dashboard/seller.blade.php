@@ -484,69 +484,50 @@
 
                         @forelse($recentStockMovements as $movement)
 
-                            @php
-                                /*
-                                 * StockMovement schema uses quantity_change.
-                                 *
-                                 * Negative quantity_change = stock leaving inventory.
-                                 * Positive quantity_change = stock entering inventory.
-                                 */
+                  @php
+    /*
+     * StockMovement schema uses quantity_change.
+     * Negative = stock leaving inventory, positive = stock entering inventory.
+     */
+    $quantityChange = (float) ($movement->quantity_change ?? 0);
+    $isIncoming = $quantityChange > 0;
 
-                                $quantityChange = (float) ($movement->quantity_change ?? 0);
+    // "App\Models\Sale" or "app\models\sale"  →  "sale"
+    $referenceType = strtolower(
+        class_basename((string) ($movement->reference_type ?? $movement->type ?? 'movement'))
+    );
 
-                                $isIncoming = $quantityChange > 0;
+    // Human-readable movement labels
+    $movementLabels = [
+        'purchase'      => __('Purchase'),
+        'sale'          => __('Sale'),
+        'order'         => __('Order'),
+        'return'        => __('Return'),
+        'adjustment'    => __('Stock Adjustment'),
+        'transfer'      => __('Stock Transfer'),
+        'opening'       => __('Opening Stock'),
+        'opening_stock' => __('Opening Stock'),
+        'damage'        => __('Damaged Stock'),
+        'expired'       => __('Expired Stock'),
+    ];
 
-                                $referenceType = strtolower(
-                                    (string) ($movement->reference_type ?? $movement->type ?? 'movement')
-                                );
+    $movementLabel = $movementLabels[$referenceType]
+        ?? ucwords(str_replace(['_', '-'], ' ', $referenceType));
 
-                                /*
-                                 * Human-readable movement labels.
-                                 */
-                                $movementLabels = [
-                                    'purchase' => __('Purchase'),
-                                    'sale' => __('Sale'),
-                                    'order' => __('Order'),
-                                    'return' => __('Return'),
-                                    'adjustment' => __('Stock Adjustment'),
-                                    'transfer' => __('Stock Transfer'),
-                                    'opening' => __('Opening Stock'),
-                                    'opening_stock' => __('Opening Stock'),
-                                    'damage' => __('Damaged Stock'),
-                                    'expired' => __('Expired Stock'),
-                                ];
+    // Badge style from quantity direction / reference type
+    if ($isIncoming) {
+        $badgeBg = 'bg-green-100';  $badgeText = 'text-green-700';  $amountColor = 'text-green-600';
+    } elseif (in_array($referenceType, ['order', 'sale'])) {
+        $badgeBg = 'bg-red-100';    $badgeText = 'text-red-700';    $amountColor = 'text-red-600';
+    } elseif ($referenceType === 'adjustment') {
+        $badgeBg = 'bg-yellow-100'; $badgeText = 'text-yellow-700'; $amountColor = 'text-yellow-600';
+    } else {
+        $badgeBg = 'bg-blue-100';   $badgeText = 'text-blue-700';   $amountColor = 'text-blue-600';
+    }
 
-                                $movementLabel = $movementLabels[$referenceType]
-                                    ?? ucwords(str_replace(['_', '-'], ' ', $referenceType));
-
-                                /*
-                                 * Determine the badge style from the actual
-                                 * quantity direction/reference type.
-                                 */
-                                if ($isIncoming) {
-                                    $badgeBg = 'bg-green-100';
-                                    $badgeText = 'text-green-700';
-                                    $amountColor = 'text-green-600';
-                                } elseif (in_array($referenceType, ['order', 'sale'])) {
-                                    $badgeBg = 'bg-red-100';
-                                    $badgeText = 'text-red-700';
-                                    $amountColor = 'text-red-600';
-                                } elseif ($referenceType === 'adjustment') {
-                                    $badgeBg = 'bg-yellow-100';
-                                    $badgeText = 'text-yellow-700';
-                                    $amountColor = 'text-yellow-600';
-                                } else {
-                                    $badgeBg = 'bg-blue-100';
-                                    $badgeText = 'text-blue-700';
-                                    $amountColor = 'text-blue-600';
-                                }
-
-                                /*
-                                 * Always display the absolute quantity.
-                                 * The + / - sign comes from quantity_change.
-                                 */
-                                $displayQuantity = abs($quantityChange);
-                            @endphp
+    // Always show the absolute quantity; the +/- sign is added in the markup
+    $displayQuantity = abs($quantityChange);
+@endphp
 
 
                             <div class="flex items-center justify-between rounded-xl bg-gray-50 p-3">
