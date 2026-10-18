@@ -404,7 +404,7 @@
         @endphp
 
         {{-- Top bar --}}
-        <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <header class="sticky top-0 z-30 border-b border-slate-200 bg-gray/95 backdrop-blur">
 
             <div class="flex h-16 items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
 
@@ -472,7 +472,7 @@
                             aria-haspopup="true"
                             :aria-expanded="open"
                             aria-label="{{ __('Language') }}"
-                            class="inline-flex h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 sm:px-3"
+                            class="inline-flex h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-gray px-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 sm:px-3"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -752,7 +752,7 @@
         window.mahwiShowLoader = showMainLoader;
         window.mahwiHideLoader = hideMainLoader;
     })();
-    
+
     (function () {
         const button = document.getElementById('mahwi-theme-toggle');
         const label = document.getElementById('mahwi-theme-label');

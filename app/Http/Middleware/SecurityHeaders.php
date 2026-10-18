@@ -36,7 +36,15 @@ class SecurityHeaders
         $headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $headers->set('Cross-Origin-Opener-Policy', 'same-origin');
         $headers->set('X-Permitted-Cross-Domain-Policies', 'none');
+        $headers->set('X-Content-Type-Options', 'nosniff');
+        $headers->set('X-Frame-Options', 'SAMEORIGIN');
 
+        // Legacy header, kept because scanners look for it.
+        $headers->set('X-XSS-Protection', '1; mode=block');
+
+        // Cross-origin isolation family of headers. Needed for SharedArrayBuffer and some other features.
+        $headers->set('Cross-Origin-Resource-Policy', 'same-origin');
+        $headers->set('Cross-Origin-Embedder-Policy', 'credentialless');
         // Turn off powerful browser features the app does not use.
         // If you add barcode scanning with the camera, change camera=() to camera=(self).
         $headers->set(

@@ -133,7 +133,7 @@
             WELCOME BANNER
         ============================================================ --}}
 
-        <div class="mb-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
+        <div class="mb-8 bg-gray-200 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
 
             <div class="relative px-6 py-8 sm:px-10 sm:py-10">
 
@@ -158,14 +158,14 @@
 
                 <div class="relative flex flex-col md:flex-row md:items-center md:justify-between">
 
-                    <div class="text-white mb-4 md:mb-0">
+                    <div class="text-blue mb-4 md:mb-0">
 
-                        <h3 class="text-2xl font-bold mb-2">
+                        <h3 class="text-3xl text-gray-900 font-bold mb-2">
                             {{ __('Welcome back') }},
                             {{ auth()->user()->name }}! 👋
                         </h3>
 
-                        <p class="text-indigo-100">
+                        <p class="text-1xl text-emerald-900 font-bold mb-2">
                             {{ __("Here's what's happening with ") }}{{ $shop->business_name }}{{__("   today")}}  
                         </p>
 
@@ -189,7 +189,7 @@
 
                         {{-- New Purchase --}}
                         <a href="{{ route('purchases.create') }}"
-                           class="inline-flex items-center px-5 py-2.5 bg-white/20 text-white rounded-xl font-semibold text-sm hover:bg-white/30 transition-all transform hover:scale-105 backdrop-blur">
+                           class="inline-flex items-center px-5 py-2.5 bg-red-500 text-white rounded-xl font-semibold text-sm hover:bg-red-600 transition-all transform hover:scale-105 backdrop-blur">
 
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -221,13 +221,15 @@
 
 
         {{-- ============================================================
-            NET PROFIT SUMMARY
+            NET PROFIT SUMMARY<div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+                <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
         ============================================================ --}}
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 
             {{-- Daily --}}
-            <div class="p-5 bg-green-50 shadow rounded-2xl border border-green-100">
+            <div class="p-5 bg-gray-50 shadow rounded-2xl border border-gray-100">
 
                 <h3 class="text-green-600 text-lg font-bold">
                     {{ __('Daily Net Profit') }}
@@ -264,7 +266,7 @@
 
 
             {{-- Weekly --}}
-            <div class="p-5 bg-green-50 shadow rounded-2xl border border-green-100">
+            <div class="p-5 bg-gray-50 shadow rounded-2xl border border-gray-100">
 
                 <h3 class="text-green-600 text-lg font-bold">
                     {{ __('Weekly Net Profit') }}
@@ -301,7 +303,7 @@
 
 
             {{-- Yearly --}}
-            <div class="p-5 bg-green-50 shadow rounded-2xl border border-green-100">
+            <div class="p-5 bg-gray-50 shadow rounded-2xl border border-gray-100">
 
                 <h3 class="text-green-600 text-lg font-bold">
                     {{ __('Yearly Net Profit') }}
@@ -339,392 +341,122 @@
         </div>
 
 
-        {{-- ============================================================
-            STATS GRID
-        ============================================================ --}}
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
-
-            {{-- Today's Sales --}}
-            <div class="mahwi-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-
-                <div class="p-6">
-
-                    <div class="flex items-center justify-between mb-4">
-
-                        <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg">
-
-                            <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-
-                            </svg>
-
-                        </div>
-
-                        <span class="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-full">
-                            {{ __('Today') }}
-                        </span>
-
-                    </div>
-
-                    <h3 class="text-sm font-medium text-gray-500 mb-1">
-                        {{ __("Today's Sales") }}
-                    </h3>
-
-                    <p class="text-2xl font-bold text-gray-900">
-                        {{ rwf($stats['today_sales']) }}
-                    </p>
-
-                    <div class="mt-3 flex items-center text-sm">
-                        <span class="text-green-600 font-medium">
-                            {{ __('Revenue') }}
-                        </span>
-                    </div>
-
-                </div>
-
-                <div class="h-1 bg-gradient-to-r from-green-400 to-emerald-600"></div>
-
-            </div>
-
-
-            {{-- Today's Other Income --}}
-            <div class="mahwi-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-
-                <div class="p-6">
-
-                    <div class="flex items-center justify-between mb-4">
-
-                        <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg">
-
-                            <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-
-                            </svg>
-
-                        </div>
-
-                        <span class="text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
-                            {{ __('Today') }}
-                        </span>
-
-                    </div>
-
-                    <h3 class="text-sm font-medium text-gray-500 mb-1">
-                        {{ __("Other Income") }}
-                    </h3>
-
-                    <p class="text-2xl font-bold text-gray-900">
-                        {{ rwf($stats['today_other_income']) }}
-                    </p>
-
-                    <div class="mt-3 flex items-center text-sm">
-                        <span class="text-emerald-600 font-medium">
-                            {{ __('Additional income') }}
-                        </span>
-                    </div>
-
-                </div>
-
-                <div class="h-1 bg-gradient-to-r from-emerald-400 to-teal-600"></div>
-
-            </div>
-
-
-            {{-- Today's Purchases --}}
-            <div class="mahwi-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-
-                <div class="p-6">
-
-                    <div class="flex items-center justify-between mb-4">
-
-                        <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-red-400 to-rose-600 flex items-center justify-center shadow-lg">
-
-                            <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-
-                            </svg>
-
-                        </div>
-
-                        <span class="text-xs font-medium text-red-600 bg-red-50 px-2.5 py-1 rounded-full">
-                            {{ __('Today') }}
-                        </span>
-
-                    </div>
-
-                    <h3 class="text-sm font-medium text-gray-500 mb-1">
-                        {{ __("Today's Purchases") }}
-                    </h3>
-
-                    <p class="text-2xl font-bold text-gray-900">
-                        {{ rwf($stats['today_purchases']) }}
-                    </p>
-
-                    <div class="mt-3 flex items-center text-sm">
-                        <span class="text-red-600 font-medium">
-                            {{ __('Purchases') }}
-                        </span>
-                    </div>
-
-                </div>
-
-                <div class="h-1 bg-gradient-to-r from-red-400 to-rose-600"></div>
-
-            </div>
-
-
-            {{-- Stock In --}}
-            <div class="mahwi-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-
-                <div class="p-6">
-
-                    <div class="flex items-center justify-between mb-4">
-
-                        <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center shadow-lg">
-
-                            <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m0-16l-6 6m6-6l6 6"/>
-
-                            </svg>
-
-                        </div>
-
-                        <span class="text-xs font-medium text-teal-600 bg-teal-50 px-2.5 py-1 rounded-full">
-                            {{ __('Today') }}
-                        </span>
-
-                    </div>
-
-                    <h3 class="text-sm font-medium text-gray-500 mb-1">
-                        {{ __('Stock In') }}
-                    </h3>
-
-                    <p class="text-2xl font-bold text-gray-900">
-                        {{ number_format($todayStockIn) }}
-                    </p>
-
-                    <div class="mt-3 flex items-center text-sm">
-                        <span class="text-teal-600 font-medium">
-                            {{ __('Units received') }}
-                        </span>
-                    </div>
-
-                </div>
-
-                <div class="h-1 bg-gradient-to-r from-teal-400 to-cyan-600"></div>
-
-            </div>
-
-
-            {{-- Stock Out --}}
-            <div class="mahwi-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-
-                <div class="p-6">
-
-                    <div class="p-6">
-
-                        <div class="flex items-center justify-between mb-4">
-
-                            <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-600 flex items-center justify-center shadow-lg">
-
-                                <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 20V4m0 16l-6-6m6 6l6-6"/>
-
-                                </svg>
-
-                            </div>
-
-                            <span class="text-xs font-medium text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full">
-                                {{ __('Today') }}
-                            </span>
-
-                        </div>
-
-                        <h3 class="text-sm font-medium text-gray-500 mb-1">
-                            {{ __('Stock Out') }}
-                        </h3>
-
-                        <p class="text-2xl font-bold text-gray-900">
-                            {{ number_format($todayStockOut) }}
-                        </p>
-
-                        <div class="mt-3 flex items-center text-sm">
-                            <span class="text-orange-600 font-medium">
-                                {{ __('Units dispatched') }}
-                            </span>
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="h-1 bg-gradient-to-r from-orange-400 to-amber-600"></div>
-
-            </div>
-
-
-            {{-- Products --}}
-            <div class="mahwi-card group bg-blue rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-
-                <div class="p-6">
-
-                    <div class="flex items-center justify-between mb-4">
-
-                        <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-400 to-blue-600 flex items-center justify-center shadow-lg">
-
-                            <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-
-                            </svg>
-
-                        </div>
-
-                        <a href="{{ route('products.index') }}"
-                           class="text-xs font-medium text-indigo-600 hover:text-indigo-800">
-                            {{ __('View All') }} →
-                        </a>
-
-                    </div>
-
-                    <h3 class="text-sm font-medium text-gray-500 mb-1">
-                        {{ __('Total Products') }}
-                    </h3>
-
-                    <p class="text-2xl font-bold text-gray-900">
-                        {{ number_format($stats['total_products']) }}
-                    </p>
-
-                    <div class="mt-3 flex items-center text-sm">
-                        <span class="text-indigo-600 font-medium">
-                            {{ __('In inventory') }}
-                        </span>
-                    </div>
-
-                </div>
-
-                <div class="h-1 bg-gradient-to-r from-indigo-400 to-blue-600"></div>
-
-            </div>
+      
+{{-- ============================================================
+    MONTHLY SUMMARY
+============================================================ --}}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+    <div class="bg-gray rounded-2xl shadow-sm
+                border border-gray-100 dark:border-gray-700 overflow-hidden
+                transition-colors duration-300">
+
+        {{-- Header --}}
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700
+                    bg-gradient-to-r from-emerald-50 to-gray-100
+                    dark:from-gray-800 dark:to-gray-900
+                    transition-colors duration-300">
+
+            <h3 class="text-lg font-semibold text-gray-900">    
+                {{ __('Monthly Overview') }}
+            </h3>
 
         </div>
 
+        <div class="p-6">
+            <div class="space-y-4">
 
-        {{-- ============================================================
-            MONTHLY SUMMARY
-        ============================================================ --}}
+                {{-- Sales --}}
+                <div class="flex justify-between items-center gap-3 p-4
+                            bg-gradient-to-r from-green-50 to-emerald-50
+                            dark:from-green-950/40 dark:to-emerald-950/40
+                            border border-green-100 dark:border-green-900/60
+                            rounded-xl transition-colors duration-300">
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <span class="text-emerald-700 dark:text-gray-200 font-medium">
+                        {{ __('Total Sales') }}
+                    </span>
 
-            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-
-                <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-
-                    <h3 class="text-lg font-semibold text-gray-900">
-                        {{ __('Monthly Overview') }}
-                    </h3>
-
+                    <span class="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                        {{ rwf($stats['month_sales']) }}
+                    </span>
                 </div>
 
-                <div class="p-6">
+                {{-- Other Income --}}
+                <div class="flex justify-between items-center gap-3 p-4
+                            bg-gradient-to-r from-emerald-50 to-teal-50
+                            dark:from-emerald-950/40 dark:to-teal-950/40
+                            border border-emerald-100 dark:border-emerald-900/60
+                            rounded-xl transition-colors duration-300">
 
-                    <div class="space-y-4">
+                    <span class="text-emerald-700 dark:text-gray-200 font-medium">
+                        {{ __('Other Income') }}
+                    </span>
 
-                        {{-- Sales --}}
-                        <div class="flex justify-between items-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+                    <span class="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                        {{ rwf($stats['month_other_income']) }}
+                    </span>
+                </div>
 
-                            <span class="text-gray-700 font-medium">
-                                {{ __('Total Sales') }}
-                            </span>
+                {{-- Purchases --}}
+                <div class="flex justify-between items-center gap-3 p-4
+                            bg-gradient-to-r from-red-50 to-rose-50
+                            dark:from-red-950/40 dark:to-rose-950/40
+                            border border-red-100 dark:border-red-900/60
+                            rounded-xl transition-colors duration-300">
 
-                            <span class="text-xl font-bold text-green-600">
-                                {{ rwf($stats['month_sales']) }}
-                            </span>
+                    <span class="text-red-700 dark:text-red-200 font-medium">
+                        {{ __('Total Purchases') }}
+                    </span>
 
-                        </div>
+                    <span class="text-xl font-bold text-red-600 dark:text-red-400">
+                        {{ rwf($stats['month_purchases']) }}
+                    </span>
+                </div>
 
+                {{-- Expenses --}}
+                <div class="flex justify-between items-center gap-3 p-4
+                            bg-gradient-to-r from-orange-50 to-amber-50
+                            dark:from-orange-950/40 dark:to-amber-950/40
+                            border border-orange-100 dark:border-orange-900/60
+                            rounded-xl transition-colors duration-300">
 
-                        {{-- Other Income --}}
-                        <div class="flex justify-between items-center p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl">
+                    <span class="text-orange-700 dark:text-orange-200 font-medium">
+                        {{ __('Total Expenses') }}
+                    </span>
 
-                            <span class="text-gray-700 font-medium">
-                                {{ __('Other Income') }}
-                            </span>
+                    <span class="text-xl font-bold text-orange-600 dark:text-orange-400">
+                        {{ rwf($stats['month_expenses']) }}
+                    </span>
+                </div>
 
-                            <span class="text-xl font-bold text-emerald-600">
-                                {{ rwf($stats['month_other_income']) }}
-                            </span>
-
-                        </div>
-
-
-                        {{-- Purchases --}}
-                        <div class="flex justify-between items-center p-4 bg-gradient-to-r from-red-50 to-rose-50 rounded-xl">
-
-                            <span class="text-gray-700 font-medium">
-                                {{ __('Total Purchases') }}
-                            </span>
-
-                            <span class="text-xl font-bold text-red-600">
-                                {{ rwf($stats['month_purchases']) }}
-                            </span>
-
-                        </div>
-
-
-                        {{-- Expenses --}}
-                        <div class="flex justify-between items-center p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl">
-
-                            <span class="text-gray-700 font-medium">
-                                {{ __('Total Expenses') }}
-                            </span>
-
-                            <span class="text-xl font-bold text-orange-600">
-                                {{ rwf($stats['month_expenses']) }}
-                            </span>
-
-                        </div>
-
-
-                        {{-- Net Profit --}}
-                        <div class="flex justify-between items-center p-4
+                {{-- Net Profit --}}
+                <div class="flex justify-between items-center gap-3 p-4
                             bg-gradient-to-r
                             {{ $stats['month_net_profit'] >= 0
                                 ? 'from-emerald-500 to-green-600'
                                 : 'from-red-500 to-rose-600' }}
                             rounded-xl text-white shadow-lg">
 
-                            <span class="font-semibold">
-                                {{ __('Net Profit') }}
-                            </span>
+                    <span class="font-semibold">
+                        {{ __('Net Profit') }}
+                    </span>
 
-                            <span class="text-2xl font-bold">
-                                {{ rwf($stats['month_net_profit']) }}
-                            </span>
-
-                        </div>
-
-                    </div>
-
+                    <span class="text-xl sm:text-2xl font-bold">
+                        {{ rwf($stats['month_net_profit']) }}
+                    </span>
                 </div>
 
             </div>
+        </div>
+
+    </div>
+
 
 
             {{-- Shop Info --}}
-            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-gray rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 
@@ -842,7 +574,7 @@
 
 
             {{-- Payment Status --}}
-            <div class="bg-blue rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-gray rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 

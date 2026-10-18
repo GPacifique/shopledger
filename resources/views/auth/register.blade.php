@@ -699,9 +699,9 @@
             <input type="checkbox" id="terms" name="terms" value="1" {{ old('terms') ? 'checked' : '' }} required>
             <label for="terms">
               {{ __('I agree to the') }}
-              <a href="{{ Route::has('terms') ? route('/terms') : '#' }}">{{ __('Terms of Service') }}</a>
-              {{ __('and') }}
-              <a href="{{ Route::has('privacy') ? route('/privacy') : '#' }}">{{ __('Privacy Policy') }}</a>.
+              <a href="{{ Route::has('terms') ? route('terms') : '#' }}">{{ __('Terms of Service') }}</a>
+{{ __('and') }}
+<a href="{{ Route::has('privacy') ? route('privacy') : '#' }}">{{ __('Privacy Policy') }}</a>.
             </label>
           </div>
           @error('terms')
