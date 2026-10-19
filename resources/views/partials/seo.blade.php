@@ -7,7 +7,11 @@
     $robots      = trim($__env->yieldContent('robots')) ?: 'index, follow, max-image-preview:large';
     $locale      = ['en' => 'en_US', 'fr' => 'fr_FR', 'rw' => 'rw_RW'][app()->getLocale()] ?? 'en_US';
 @endphp
-
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#15803d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mahwi POS">
+<link rel="apple-touch-icon" href="/icons/mahwi-192.png">
 {{-- Basic --}}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

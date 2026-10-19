@@ -446,6 +446,48 @@
             </button>
         </div>
     </div>
+    <button
+    id="installMahwiBtn"
+    type="button"
+    hidden
+    class="rounded-lg bg-green-700 px-5 py-3
+           font-semibold text-white hover:bg-green-800"
+>
+    Install Mahwi App
+</button>
+
+<script>
+    let deferredInstallPrompt = null;
+
+    const installButton = document.getElementById('installMahwiBtn');
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        installButton.hidden = false;
+    });
+
+    installButton.addEventListener('click', async () => {
+        if (!deferredInstallPrompt) {
+            alert(
+                'Use the install icon in your browser address bar ' +
+                'or open the browser menu and select Install Mahwi.'
+            );
+            return;
+        }
+
+        deferredInstallPrompt.prompt();
+
+        await deferredInstallPrompt.userChoice;
+
+        deferredInstallPrompt = null;
+        installButton.hidden = true;
+    });
+
+    window.addEventListener('appinstalled', () => {
+        installButton.hidden = true;
+    });
+</script>
 </header>
 
 <main id="main">
@@ -928,9 +970,18 @@
         window.mahwiShowLoader = showLoader;
         window.mahwiHideLoader = hideLoader;
     })();
-</script>
-</body>
-</html>
 
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .catch((error) => {
+                    console.error(
+                        'Mahwi service worker registration failed:',
+                        error
+                    );
+                });
+        });
+    }
+</script>
 </body>
 </html>
