@@ -6,7 +6,8 @@
     @resize.window.debounce.150ms="if (window.innerWidth >= 1024) sidebarOpen = false"
 >
 <head>
-
+ @include('partials.seo')
+    @stack('head')
     {{-- Basic meta --}}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
