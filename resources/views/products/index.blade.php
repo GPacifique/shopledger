@@ -1,16 +1,63 @@
-
 {{-- resources/views/products/index.blade.php --}}
 <x-app-layout>
-    <div class="min-h-screen bg-gray-50/70 py-6">
+    @include('partials.ui-theme')
+
+    @php
+        $stockQuantityOf = fn ($p) => (float) ($p->quantity ?? $p->stock ?? 0);
+        $minimumStockOf  = fn ($p) => (float) ($p->minimum_stock ?? $p->min_stock ?? 0);
+
+        $summaryCards = [
+            [
+                'label' => __('Total Products'),
+                'value' => number_format($totalProducts ?? 0),
+                'hint'  => __('Products in your inventory'),
+                'tone'  => 'tone-indigo',
+                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M20 7.5 12 12m0 0L4 7.5M12 12v9m8-13.5v9L12 21l-8-4.5v-9L12 3l8 4.5z"/>',
+            ],
+            [
+                'label' => __('Total Stock'),
+                'value' => number_format($totalStockUnits ?? 0, 2),
+                'hint'  => __('Units available'),
+                'tone'  => 'tone-blue',
+                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M5 7l1 13h12l1-13M9 7V4h6v3"/>',
+            ],
+            [
+                'label' => __('Stock Cost Value'),
+                'value' => number_format($stockValueCost ?? 0, 2),
+                'hint'  => __('Value at buying price'),
+                'tone'  => 'tone-amber',
+                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20m5-16H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>',
+            ],
+            [
+                'label' => __('Stock Retail Value'),
+                'value' => number_format($stockValueRetail ?? 0, 2),
+                'hint'  => __('Value at selling price'),
+                'tone'  => 'tone-green',
+                'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9-9 9-9-9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m3-6H11a2 2 0 000 4h2a2 2 0 010 4h-4"/>',
+            ],
+        ];
+
+        $tableHeads = [
+            [__('Product'),       'text-left'],
+            [__('SKU'),           'text-left'],
+            [__('Buying Price'),  'text-right'],
+            [__('Selling Price'), 'text-right'],
+            [__('Stock'),         'text-right'],
+            [__('Margin'),        'text-right'],
+            [__('Actions'),       'text-right'],
+        ];
+    @endphp
+
+    <div class="ui-page min-h-screen py-6">
         <div class="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
 
             {{-- Page header --}}
             <div class="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+                    <h1 class="ui-text text-2xl font-bold tracking-tight sm:text-3xl">
                         {{ __('Products') }}
                     </h1>
-                    <p class="mt-1 text-sm text-gray-500">
+                    <p class="ui-muted mt-1 text-sm">
                         {{ __('Manage products, inventory, imports and exports.') }}
                     </p>
                 </div>
@@ -19,7 +66,7 @@
                     {{-- Import --}}
                     <button
                         type="button"
-                        class="js-open-import-modal inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                        class="js-open-import-modal ui-focus inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition hover:bg-green-700"
                         aria-controls="import-products-modal"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -32,7 +79,7 @@
                     <div id="export-dropdown-wrapper" class="relative">
                         <button
                             type="button"
-                            class="js-toggle-export inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            class="js-toggle-export ui-focus inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition hover:bg-blue-700"
                             aria-controls="export-dropdown"
                             aria-expanded="false"
                         >
@@ -45,13 +92,9 @@
                             </svg>
                         </button>
 
-                        <div
-                            id="export-dropdown"
-                            class="absolute right-0 z-30 mt-2 hidden w-48 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg"
-                        >
-                            <a href="{{ route('products.export') }}"
-                               class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 transition hover:bg-gray-50">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <div id="export-dropdown" class="ui-menu absolute right-0 z-30 mt-2 hidden w-48 overflow-hidden rounded-xl py-1 shadow-lg">
+                            <a href="{{ route('products.export') }}" class="ui-menu-item flex items-center gap-2 px-4 py-3 text-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="tone-blue st h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6M8 13h8M8 17h8"/>
                                 </svg>
@@ -64,7 +107,7 @@
                     <div id="template-dropdown-wrapper" class="relative">
                         <button
                             type="button"
-                            class="js-toggle-template inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-700 shadow-sm transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                            class="js-toggle-template ui-btn-outline ui-focus inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold uppercase tracking-wider shadow-sm"
                             aria-controls="template-dropdown"
                             aria-expanded="false"
                         >
@@ -78,13 +121,9 @@
                             </svg>
                         </button>
 
-                        <div
-                            id="template-dropdown"
-                            class="absolute right-0 z-30 mt-2 hidden w-56 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg"
-                        >
-                            <a href="{{ route('products.import.template') }}"
-                               class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 transition hover:bg-gray-50">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <div id="template-dropdown" class="ui-menu absolute right-0 z-30 mt-2 hidden w-56 overflow-hidden rounded-xl py-1 shadow-lg">
+                            <a href="{{ route('products.import.template') }}" class="ui-menu-item flex items-center gap-3 px-4 py-3 text-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="tone-green st h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/>
                                 </svg>
                                 {{ __('Download import template') }}
@@ -94,7 +133,7 @@
 
                     {{-- Add product --}}
                     <a href="{{ route('products.create') }}"
-                       class="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                       class="ui-focus inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition hover:bg-indigo-700">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14"/>
                         </svg>
@@ -105,7 +144,7 @@
 
             {{-- Flash messages --}}
             @if (session('success'))
-                <div role="status" class="mb-5 flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+                <div role="status" class="ui-tint tone-green tx mb-5 flex items-start gap-3 rounded-xl p-4 text-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m5 12 4 4L19 6"/>
                     </svg>
@@ -114,13 +153,13 @@
             @endif
 
             @if (session('error'))
-                <div role="alert" class="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                <div role="alert" class="ui-tint tone-red tx mb-5 rounded-xl p-4 text-sm">
                     {{ session('error') }}
                 </div>
             @endif
 
             @if ($errors->any())
-                <div role="alert" class="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                <div role="alert" class="ui-tint tone-red tx mb-5 rounded-xl p-4 text-sm">
                     <p class="font-semibold">{{ __('Please correct the following errors:') }}</p>
                     <ul class="mt-2 list-inside list-disc space-y-1">
                         @foreach ($errors->all() as $error)
@@ -133,72 +172,35 @@
             {{-- Inventory summary --}}
             <div class="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
 
-                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
-                    <div class="flex items-center justify-between gap-3">
-                        <p class="text-sm font-medium text-gray-500">{{ __('Total Products') }}</p>
-                        <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7.5 12 12m0 0L4 7.5M12 12v9m8-13.5v9L12 21l-8-4.5v-9L12 3l8 4.5z"/>
-                            </svg>
-                        </span>
+                @foreach ($summaryCards as $card)
+                    <div class="ui-card rounded-xl p-5 shadow-sm transition hover:shadow-md">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="ui-muted text-sm font-medium">{{ $card['label'] }}</p>
+                            <span class="ui-icon {{ $card['tone'] }} flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                    {!! $card['icon'] !!}
+                                </svg>
+                            </span>
+                        </div>
+                        <p class="ui-text mt-4 break-words text-2xl font-bold tabular-nums">{{ $card['value'] }}</p>
+                        <p class="ui-faint mt-1 text-xs">{{ $card['hint'] }}</p>
                     </div>
-                    <p class="mt-4 text-2xl font-bold tabular-nums text-gray-900">{{ number_format($totalProducts ?? 0) }}</p>
-                    <p class="mt-1 text-xs text-gray-400">{{ __('Products in your inventory') }}</p>
-                </div>
+                @endforeach
 
-                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
+                {{-- Low / out of stock --}}
+                <div class="ui-card rounded-xl p-5 shadow-sm transition hover:shadow-md">
                     <div class="flex items-center justify-between gap-3">
-                        <p class="text-sm font-medium text-gray-500">{{ __('Total Stock') }}</p>
-                        <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M5 7l1 13h12l1-13M9 7V4h6v3"/>
-                            </svg>
-                        </span>
-                    </div>
-                    <p class="mt-4 text-2xl font-bold tabular-nums text-gray-900">{{ number_format($totalStockUnits ?? 0, 2) }}</p>
-                    <p class="mt-1 text-xs text-gray-400">{{ __('Units available') }}</p>
-                </div>
-
-                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
-                    <div class="flex items-center justify-between gap-3">
-                        <p class="text-sm font-medium text-gray-500">{{ __('Stock Cost Value') }}</p>
-                        <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20m5-16H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-                            </svg>
-                        </span>
-                    </div>
-                    <p class="mt-4 break-words text-2xl font-bold tabular-nums text-gray-900">{{ number_format($stockValueCost ?? 0, 2) }}</p>
-                    <p class="mt-1 text-xs text-gray-400">{{ __('Value at buying price') }}</p>
-                </div>
-
-                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
-                    <div class="flex items-center justify-between gap-3">
-                        <p class="text-sm font-medium text-gray-500">{{ __('Stock Retail Value') }}</p>
-                        <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 text-green-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9-9 9-9-9z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m3-6H11a2 2 0 000 4h2a2 2 0 010 4h-4"/>
-                            </svg>
-                        </span>
-                    </div>
-                    <p class="mt-4 break-words text-2xl font-bold tabular-nums text-gray-900">{{ number_format($stockValueRetail ?? 0, 2) }}</p>
-                    <p class="mt-1 text-xs text-gray-400">{{ __('Value at selling price') }}</p>
-                </div>
-
-                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
-                    <div class="flex items-center justify-between gap-3">
-                        <p class="text-sm font-medium text-gray-500">{{ __('Low / Out of Stock') }}</p>
-                        <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                        <p class="ui-muted text-sm font-medium">{{ __('Low / Out of Stock') }}</p>
+                        <span class="ui-icon tone-red flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.3 3.9 2.8 17a2 2 0 001.7 3h15a2 2 0 001.7-3l-7.5-13.1a2 2 0 00-3.4 0z"/>
                             </svg>
                         </span>
                     </div>
-                    <p class="mt-4 text-2xl font-bold tabular-nums text-gray-900">
+                    <p class="ui-text mt-4 text-2xl font-bold tabular-nums">
                         {{ number_format(($lowStockCount ?? 0) + ($outOfStockCount ?? 0)) }}
                     </p>
-                    <p class="mt-1 text-xs text-gray-400">
+                    <p class="ui-faint mt-1 text-xs">
                         {{ number_format($lowStockCount ?? 0) }} {{ __('low') }}
                         <span class="px-1">·</span>
                         {{ number_format($outOfStockCount ?? 0) }} {{ __('out') }}
@@ -207,14 +209,14 @@
             </div>
 
             {{-- Filters --}}
-            <div class="mb-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+            <div class="ui-card mb-6 rounded-xl p-4 shadow-sm sm:p-5">
                 <form method="GET" action="{{ route('products.index') }}" class="grid grid-cols-1 items-end gap-4 md:grid-cols-12">
                     <div class="md:col-span-7">
-                        <label for="product-search" class="mb-1.5 block text-sm font-medium text-gray-700">
+                        <label for="product-search" class="ui-label mb-1.5 block text-sm font-medium">
                             {{ __('Search products') }}
                         </label>
                         <div class="relative">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="ui-faint pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <circle cx="11" cy="11" r="7"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m20 20-4-4"/>
                             </svg>
@@ -224,20 +226,16 @@
                                 name="search"
                                 value="{{ request('search') }}"
                                 placeholder="{{ __('Search by product name, SKU or barcode...') }}"
-                                class="w-full rounded-lg border-gray-300 py-2.5 pl-10 pr-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="ui-input w-full rounded-lg py-2.5 pl-10 pr-3 text-sm shadow-sm"
                             >
                         </div>
                     </div>
 
                     <div class="md:col-span-3">
-                        <label for="stock-status" class="mb-1.5 block text-sm font-medium text-gray-700">
+                        <label for="stock-status" class="ui-label mb-1.5 block text-sm font-medium">
                             {{ __('Stock status') }}
                         </label>
-                        <select
-                            id="stock-status"
-                            name="stock_status"
-                            class="w-full rounded-lg border-gray-300 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        >
+                        <select id="stock-status" name="stock_status" class="ui-input w-full rounded-lg py-2.5 text-sm shadow-sm">
                             <option value="">{{ __('All stock statuses') }}</option>
                             <option value="in_stock" @selected(request('stock_status') === 'in_stock')>{{ __('In stock') }}</option>
                             <option value="low_stock" @selected(request('stock_status') === 'low_stock')>{{ __('Low stock') }}</option>
@@ -246,10 +244,10 @@
                     </div>
 
                     <div class="flex gap-2 md:col-span-2">
-                        <button type="submit" class="inline-flex flex-1 items-center justify-center rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                        <button type="submit" class="ui-btn-dark ui-focus inline-flex flex-1 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold">
                             {{ __('Filter') }}
                         </button>
-                        <a href="{{ route('products.index') }}" class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-50" aria-label="{{ __('Clear filters') }}" title="{{ __('Clear filters') }}">
+                        <a href="{{ route('products.index') }}" class="ui-btn-outline ui-focus inline-flex items-center justify-center rounded-lg px-3 py-2.5 text-sm font-medium" aria-label="{{ __('Clear filters') }}" title="{{ __('Clear filters') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 9"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v6h6"/>
@@ -260,122 +258,103 @@
             </div>
 
             {{-- Products table --}}
-            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                <div class="flex flex-col gap-2 border-b border-gray-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="ui-card overflow-hidden rounded-xl shadow-sm">
+                <div class="ui-bd flex flex-col gap-2 border-b px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 class="text-base font-semibold text-gray-900">{{ __('Product inventory') }}</h2>
-                        <p class="mt-0.5 text-sm text-gray-500">{{ __('Review prices, stock levels and product actions.') }}</p>
+                        <h2 class="ui-text text-base font-semibold">{{ __('Product inventory') }}</h2>
+                        <p class="ui-muted mt-0.5 text-sm">{{ __('Review prices, stock levels and product actions.') }}</p>
                     </div>
                     @if (method_exists($products, 'total'))
-                        <p class="text-sm text-gray-500">
+                        <p class="ui-muted text-sm">
                             {{ __('Showing') }}
-                            <span class="font-semibold text-gray-800">{{ $products->firstItem() ?? 0 }}–{{ $products->lastItem() ?? 0 }}</span>
+                            <span class="ui-text font-semibold">{{ $products->firstItem() ?? 0 }}–{{ $products->lastItem() ?? 0 }}</span>
                             {{ __('of') }}
-                            <span class="font-semibold text-gray-800">{{ $products->total() }}</span>
+                            <span class="ui-text font-semibold">{{ $products->total() }}</span>
                         </p>
                     @endif
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="ui-table min-w-full">
+                        <thead>
                             <tr>
-                                <th scope="col" class="whitespace-nowrap px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Product') }}</th>
-                                <th scope="col" class="whitespace-nowrap px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('SKU') }}</th>
-                                <th scope="col" class="whitespace-nowrap px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Buying Price') }}</th>
-                                <th scope="col" class="whitespace-nowrap px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Selling Price') }}</th>
-                                <th scope="col" class="whitespace-nowrap px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Stock') }}</th>
-                                <th scope="col" class="whitespace-nowrap px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Margin') }}</th>
-                                <th scope="col" class="whitespace-nowrap px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Actions') }}</th>
+                                @foreach ($tableHeads as [$headLabel, $headAlign])
+                                    <th scope="col" class="whitespace-nowrap px-5 py-3.5 {{ $headAlign }} text-xs font-semibold uppercase tracking-wider">{{ $headLabel }}</th>
+                                @endforeach
                             </tr>
                         </thead>
 
-                        <tbody class="divide-y divide-gray-100 bg-white">
+                        <tbody>
                             @forelse ($products as $product)
-                                <tr class="transition hover:bg-gray-50/80">
+                                @php
+                                    $stockQuantity = $stockQuantityOf($product);
+                                    $minimumStock  = $minimumStockOf($product);
+                                    $marginValue   = (float) ($product->selling_price ?? 0) - (float) ($product->buying_price ?? 0);
+
+                                    $stockTone  = $stockQuantity <= 0
+                                        ? 'tone-red'
+                                        : (($minimumStock > 0 && $stockQuantity <= $minimumStock) ? 'tone-amber' : 'tone-green');
+                                    $marginTone = $marginValue < 0 ? 'tone-red st' : ($marginValue > 0 ? 'tone-green st' : 'ui-muted');
+                                @endphp
+
+                                <tr class="transition">
                                     <td class="px-5 py-4">
-                                        <div class="font-semibold text-gray-900">{{ $product->name }}</div>
+                                        <div class="ui-text font-semibold">{{ $product->name }}</div>
                                         @if (!empty($product->barcode))
-                                            <div class="mt-1 text-xs text-gray-500">
+                                            <div class="ui-muted mt-1 text-xs">
                                                 {{ __('Barcode') }}: {{ $product->barcode }}
                                             </div>
                                         @endif
                                     </td>
 
-                                    <td class="whitespace-nowrap px-5 py-4 text-sm text-gray-600">
+                                    <td class="ui-soft whitespace-nowrap px-5 py-4 text-sm">
                                         {{ $product->sku ?: '—' }}
                                     </td>
 
-                                    <td class="whitespace-nowrap px-5 py-4 text-right text-sm tabular-nums text-gray-700">
+                                    <td class="ui-soft whitespace-nowrap px-5 py-4 text-right text-sm tabular-nums">
                                         {{ number_format((float) ($product->buying_price ?? 0), 2) }}
                                     </td>
 
-                                    <td class="whitespace-nowrap px-5 py-4 text-right text-sm font-medium tabular-nums text-gray-900">
+                                    <td class="ui-text whitespace-nowrap px-5 py-4 text-right text-sm font-medium tabular-nums">
                                         {{ number_format((float) ($product->selling_price ?? 0), 2) }}
                                     </td>
 
                                     <td class="whitespace-nowrap px-5 py-4 text-right">
-                                        @php
-                                            $stockQuantity = (float) ($product->quantity ?? $product->stock ?? 0);
-                                            $minimumStock = (float) ($product->minimum_stock ?? $product->min_stock ?? 0);
-                                        @endphp
-
-                                        @if ($stockQuantity <= 0)
-                                            <span class="inline-flex rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
-                                                {{ number_format($stockQuantity, 2) }}
-                                            </span>
-                                        @elseif ($minimumStock > 0 && $stockQuantity <= $minimumStock)
-                                            <span class="inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                                                {{ number_format($stockQuantity, 2) }}
-                                            </span>
-                                        @else
-                                            <span class="inline-flex rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
-                                                {{ number_format($stockQuantity, 2) }}
-                                            </span>
-                                        @endif
+                                        <span class="ui-badge {{ $stockTone }} inline-flex rounded-full px-2.5 py-1 text-xs font-semibold">
+                                            {{ number_format($stockQuantity, 2) }}
+                                        </span>
                                     </td>
 
                                     <td class="whitespace-nowrap px-5 py-4 text-right text-sm tabular-nums">
-                                        @php
-                                            $marginValue = (float) ($product->selling_price ?? 0) - (float) ($product->buying_price ?? 0);
-                                        @endphp
-                                        <span class="{{ $marginValue < 0 ? 'text-red-600' : ($marginValue > 0 ? 'text-green-700' : 'text-gray-500') }}">
-                                            {{ number_format($marginValue, 2) }}
-                                        </span>
+                                        <span class="{{ $marginTone }}">{{ number_format($marginValue, 2) }}</span>
                                     </td>
 
                                     <td class="whitespace-nowrap px-5 py-4 text-right">
                                         <div class="flex items-center justify-end gap-1.5">
                                             <a href="{{ route('products.show', $product) }}"
-                                               class="inline-flex items-center rounded-lg border border-gray-200 px-2.5 py-2 text-xs font-medium text-gray-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
-                                               title="{{ __('View product') }}"
-                                               aria-label="{{ __('View product') }}">
+                                               class="ui-act tone-gray ui-focus inline-flex items-center rounded-lg px-2.5 py-2 text-xs font-medium"
+                                               title="{{ __('View product') }}" aria-label="{{ __('View product') }}">
                                                 {{ __('View') }}
                                             </a>
 
                                             <a href="{{ route('products.qr-code', $product) }}"
-                                               class="inline-flex items-center rounded-lg border border-gray-200 px-2.5 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-100"
-                                               title="{{ __('Product QR code') }}"
-                                               aria-label="{{ __('Product QR code') }}">
+                                               class="ui-act tone-gray ui-focus inline-flex items-center rounded-lg px-2.5 py-2 text-xs font-medium"
+                                               title="{{ __('Product QR code') }}" aria-label="{{ __('Product QR code') }}">
                                                 {{ __('QR') }}
                                             </a>
 
                                             <a href="{{ route('products.edit', $product) }}"
-                                               class="inline-flex items-center rounded-lg border border-indigo-200 px-2.5 py-2 text-xs font-medium text-indigo-700 transition hover:bg-indigo-50"
-                                               title="{{ __('Edit product') }}"
-                                               aria-label="{{ __('Edit product') }}">
+                                               class="ui-act tone-indigo ui-focus inline-flex items-center rounded-lg px-2.5 py-2 text-xs font-medium"
+                                               title="{{ __('Edit product') }}" aria-label="{{ __('Edit product') }}">
                                                 {{ __('Edit') }}
                                             </a>
 
-                                            <form action="{{ route('products.destroy', $product) }}"
-                                                  method="POST"
-                                                  class="inline js-confirm-delete">
+                                            <form action="{{ route('products.destroy', $product) }}" method="POST" class="inline js-confirm-delete">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                        class="inline-flex items-center rounded-lg border border-red-200 px-2.5 py-2 text-xs font-medium text-red-700 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
-                                                        aria-label="{{ __('Delete product') }}"
-                                                        title="{{ __('Delete product') }}">
+                                                        class="ui-act tone-red ui-focus inline-flex items-center rounded-lg px-2.5 py-2 text-xs font-medium"
+                                                        aria-label="{{ __('Delete product') }}" title="{{ __('Delete product') }}">
                                                     {{ __('Delete') }}
                                                 </button>
                                             </form>
@@ -385,13 +364,13 @@
                             @empty
                                 <tr>
                                     <td colspan="7" class="px-5 py-16 text-center">
-                                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+                                        <div class="ui-icon-circle mx-auto flex h-14 w-14 items-center justify-center rounded-full">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M20 7.5 12 12m0 0L4 7.5M12 12v9m8-13.5v9L12 21l-8-4.5v-9L12 3l8 4.5z"/>
                                             </svg>
                                         </div>
-                                        <h3 class="mt-4 text-sm font-semibold text-gray-900">{{ __('No products found') }}</h3>
-                                        <p class="mt-1 text-sm text-gray-500">{{ __('Try changing your filters or add your first product.') }}</p>
+                                        <h3 class="ui-text mt-4 text-sm font-semibold">{{ __('No products found') }}</h3>
+                                        <p class="ui-muted mt-1 text-sm">{{ __('Try changing your filters or add your first product.') }}</p>
                                         <a href="{{ route('products.create') }}" class="mt-4 inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">
                                             {{ __('Add Product') }}
                                         </a>
@@ -404,7 +383,7 @@
 
                 {{-- Pagination --}}
                 @if (method_exists($products, 'links'))
-                    <div class="border-t border-gray-200 px-5 py-4">
+                    <div class="ui-bd border-t px-5 py-4">
                         {{ $products->withQueryString()->links() }}
                     </div>
                 @endif
@@ -416,18 +395,18 @@
     <div id="import-products-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="import-modal-title">
         <div class="flex min-h-full items-center justify-center p-4 sm:p-6">
             {{-- Backdrop --}}
-            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm js-close-import-modal" aria-hidden="true"></div>
+            <div class="js-close-import-modal fixed inset-0 bg-gray-900/60 backdrop-blur-sm" aria-hidden="true"></div>
 
             {{-- Dialog --}}
-            <div class="relative z-10 w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl">
-                <div class="flex items-start justify-between gap-4 border-b border-gray-200 px-6 py-5">
+            <div class="ui-modal relative z-10 w-full max-w-xl overflow-hidden rounded-2xl shadow-2xl">
+                <div class="ui-bd flex items-start justify-between gap-4 border-b px-6 py-5">
                     <div>
-                        <h2 id="import-modal-title" class="text-lg font-bold text-gray-900">{{ __('Import Products') }}</h2>
-                        <p class="mt-1 text-sm text-gray-500">{{ __('Upload a supported file to import your inventory.') }}</p>
+                        <h2 id="import-modal-title" class="ui-text text-lg font-bold">{{ __('Import Products') }}</h2>
+                        <p class="ui-muted mt-1 text-sm">{{ __('Upload a supported file to import your inventory.') }}</p>
                     </div>
 
                     <button type="button"
-                            class="js-close-import-modal inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            class="js-close-import-modal ui-icon-btn ui-focus inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
                             aria-label="{{ __('Close import dialog') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6 6 18"/>
@@ -440,7 +419,7 @@
 
                     <div class="space-y-5 px-6 py-6">
                         <div>
-                            <label for="products-import-file" class="mb-2 block text-sm font-semibold text-gray-700">
+                            <label for="products-import-file" class="ui-label mb-2 block text-sm font-semibold">
                                 {{ __('Choose file') }}
                             </label>
 
@@ -450,20 +429,20 @@
                                 name="file"
                                 accept=".csv,.xlsx,.xls"
                                 required
-                                class="block w-full cursor-pointer rounded-lg border border-gray-300 text-sm text-gray-700 file:mr-4 file:border-0 file:bg-gray-100 file:px-4 file:py-3 file:text-sm file:font-semibold file:text-gray-700 hover:file:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                class="ui-input ui-soft block w-full cursor-pointer rounded-lg text-sm"
                             >
-                            <p class="mt-2 text-xs text-gray-500">{{ __('Accepted formats: CSV, XLS and XLSX.') }}</p>
+                            <p class="ui-muted mt-2 text-xs">{{ __('Accepted formats: CSV, XLS and XLSX.') }}</p>
                         </div>
 
-                        <div class="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                        <div class="ui-tint tone-blue rounded-xl p-4">
                             <div class="flex items-start gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 shrink-0 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="st mt-0.5 h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                     <circle cx="12" cy="12" r="10"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 11v5m0-8h.01"/>
                                 </svg>
                                 <div>
-                                    <p class="text-sm font-semibold text-blue-900">{{ __('Before importing') }}</p>
-                                    <p class="mt-1 text-sm leading-6 text-blue-800">
+                                    <p class="tx text-sm font-semibold">{{ __('Before importing') }}</p>
+                                    <p class="tx mt-1 text-sm leading-6">
                                         {{ __('Use the provided template and keep the column headings unchanged. Check product names, SKUs, prices and quantities before uploading.') }}
                                     </p>
                                 </div>
@@ -471,9 +450,9 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Template') }}</span>
-                            <a href="{{ route('products.import.template') }}" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <span class="ui-muted text-xs font-semibold uppercase tracking-wider">{{ __('Template') }}</span>
+                            <a href="{{ route('products.import.template') }}" class="ui-btn-outline ui-focus inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="tone-green st h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/>
                                 </svg>
                                 {{ __('Download template') }}
@@ -481,12 +460,12 @@
                         </div>
                     </div>
 
-                    <div class="flex flex-col-reverse gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 sm:flex-row sm:justify-end">
-                        <button type="button" class="js-close-import-modal inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                    <div class="ui-modal-foot flex flex-col-reverse gap-3 px-6 py-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="js-close-import-modal ui-btn-outline ui-focus inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold">
                             {{ __('Cancel') }}
                         </button>
 
-                        <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        <button type="submit" class="ui-focus inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0L7 9m5-5 5 5M4 16v4h16v-4"/>
                             </svg>

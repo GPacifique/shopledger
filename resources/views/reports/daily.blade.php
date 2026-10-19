@@ -2,140 +2,59 @@
 
 @section('content')
 
-<div class="p-6">
+@include('partials.ui-theme')
 
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+<div class="p-4 sm:p-6">
 
+    <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-
-            <h1 class="text-2xl font-bold text-slate-800">
-                Daily Report
-            </h1>
-
-            <p class="text-sm text-slate-500 mt-1">
-                {{ $date->format('l, d F Y') }}
-            </p>
-
+        <h1 class="ui-text text-2xl font-bold">Daily Report</h1>
+        <p class="ui-muted mt-1 text-sm">{{ $date->format('l, d F Y') }}</p>
         </div>
 
-        <button
-            onclick="window.print()"
-            class="mt-4 md:mt-0 px-4 py-2 rounded-lg bg-slate-900 text-white">
-
+        <button type="button" data-print class="ui-btn-dark ui-focus ui-no-print rounded-lg px-4 py-2">
             Print Report
-
         </button>
+    </div>
+
+    {{-- Filters. The export partial sits next to the form, not inside it, so forms never nest. --}}
+    <div class="ui-card mb-6 flex flex-wrap items-end justify-between gap-4 rounded-xl p-5">
+
+        <form method="GET" action="{{ route('reports.daily') }}" class="flex flex-wrap items-end gap-4">
+
+                <div>
+                    <label for="report-date" class="ui-label mb-1 block text-sm font-medium">Date</label>
+                    <input id="report-date" type="date" name="date" value="{{ $date->format('Y-m-d') }}" class="ui-input rounded-lg">
+                </div>
+
+                <div>
+                    <label for="report-shop" class="ui-label mb-1 block text-sm font-medium">Shop</label>
+                    <select id="report-shop" name="shop_id" class="ui-input rounded-lg">
+                        <option value="">Current Shop</option>
+
+                        @foreach(\App\Models\Shop::all() as $reportShop)
+                            <option value="{{ $reportShop->id }}" @selected(request('shop_id') == $reportShop->id)>
+                                {{ $reportShop->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <button type="submit" class="ui-btn-dark ui-focus rounded-lg px-5 py-2.5">Generate</button>
+        </form>
+
+        @include('reports.partials.export-buttons')
 
     </div>
 
-
-    <form method="GET"
-          action="{{ route('reports.daily') }}"
-          class="bg-white border rounded-xl p-5 mb-6">
-
-        <div class="flex flex-col md:flex-row gap-4 items-end">
-
-            <div>
-
-                <label class="block text-sm font-medium mb-1">
-                    Date
-                </label>
-
-                <input
-                    type="date"
-                    name="date"
-                    value="{{ $date->format('Y-m-d') }}"
-                    class="rounded-lg border-slate-300"
-                >
-
-            </div>
-
-
-            <div>
-
-                <label class="block text-sm font-medium mb-1">
-                    Shop
-                </label>
-
-                <select
-                    name="shop_id"
-                    class="rounded-lg border-slate-300">
-
-                    <option value="">
-                        Current Shop
-                    </option>
-
-                    @foreach(\App\Models\Shop::all() as $reportShop)
-
-                        <option
-                            value="{{ $reportShop->id }}"
-                            @selected(request('shop_id') == $reportShop->id)
-                        >
-                            {{ $reportShop->name }}
-                        </option>
-
-                    @endforeach
-
-                </select>
-
-            </div>
-
-
-            <button
-                class="px-5 py-2.5 bg-slate-900 text-white rounded-lg">
-
-                Generate
-
-            </button>
-
-        </div>
-@include('reports.partials.export-buttons')
-    </form>
-
-
     @include('reports.partials.summary-cards')
-
 
     <div class="mt-6 space-y-6">
 
-        @php
-            $salesData = $data['sales'];
-        @endphp
-
-        @include(
-            'reports.partials.sales-table',
-            ['data' => $salesData]
-        )
-
-
-        @php
-            $purchaseData = $data['purchases'];
-        @endphp
-
-        @include(
-            'reports.partials.purchases-table',
-            ['data' => $purchaseData]
-        )
-
-
-        @php
-            $expenseData = $data['expenses'];
-        @endphp
-
-        @include(
-            'reports.partials.expenses-table',
-            ['data' => $expenseData]
-        )
-
-
-        @php
-            $incomeData = $data['other_income'];
-        @endphp
-
-        @include(
-            'reports.partials.other-income-table',
-            ['data' => $incomeData]
-        )
+        @include('reports.partials.sales-table',        ['data' => $data['sales']])
+        @include('reports.partials.purchases-table',    ['data' => $data['purchases']])
+        @include('reports.partials.expenses-table',     ['data' => $data['expenses']])
+        @include('reports.partials.other-income-table', ['data' => $data['other_income']])
 
     </div>
 
