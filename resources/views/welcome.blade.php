@@ -17,6 +17,8 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', $current) }}">
 <head>
+    @include('partials.seo')
+    @stack('head')
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $appName }}: sales, stock and money for every shop you run</title>
