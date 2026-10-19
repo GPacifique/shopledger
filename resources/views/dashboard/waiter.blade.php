@@ -484,7 +484,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         document.addEventListener('alpine:init', () => {
             if (window.__posOrderRegistered) return;
             window.__posOrderRegistered = true;

@@ -338,15 +338,7 @@
     </style>
 
     @stack('styles')
-    <script>
-    (function () {
-        const savedTheme = localStorage.getItem('mahwi-theme');
-        const theme = savedTheme === 'dark' ? 'dark' : 'light';
-
-        document.documentElement.classList.toggle('dark', theme === 'dark');
-        document.documentElement.dataset.theme = theme;
-    })();
-</script>
+   
 </head>
 
 
@@ -660,19 +652,7 @@
 
 
     {{-- Alpine app state --}}
-    <script nonce="{{ Vite::cspNonce() }}">
-        function mahwiApp() {
-            return {
-                sidebarOpen: false,
-
-                init() {
-                    // MahWi is light-only.
-                    document.documentElement.classList.remove('dark');
-                    document.body.classList.remove('dark');
-                }
-            }
-        }
-    </script>
+    
     <script nonce="{{ Vite::cspNonce() }}">
     (() => {
         const overlay = document.getElementById('main-loading-overlay');
@@ -795,6 +775,26 @@
         });
 
         updateThemeUI();
+    })();
+    
+        function mahwiApp() {
+            return {
+                sidebarOpen: false,
+
+                init() {
+                    // MahWi is light-only.
+                    document.documentElement.classList.remove('dark');
+                    document.body.classList.remove('dark');
+                }
+            }
+        }
+        
+    (function () {
+        const savedTheme = localStorage.getItem('mahwi-theme');
+        const theme = savedTheme === 'dark' ? 'dark' : 'light';
+
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        document.documentElement.dataset.theme = theme;
     })();
 </script>
 

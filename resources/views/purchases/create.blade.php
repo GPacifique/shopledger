@@ -149,7 +149,7 @@
         </div>
     </template>
 
-    <script nonce="{{ Vite::cspNonce() }}">nonce="{{ Vite::cspNonce() }}">
+    <script nonce="{{ Vite::cspNonce() }}">
         let itemIndex = 0;
 
         function formatAmount(value) {
