@@ -29,6 +29,20 @@ use App\Http\Controllers\IncomeCategoryController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PosController;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('shops/{shop}/waiter/orders', [WaiterController::class, 'storeOrder'])
+        ->name('waiter.orders.store');
+
+    Route::patch('shops/{shop}/waiter/orders/{order}/status', [WaiterController::class, 'updateStatus'])
+        ->name('waiter.orders.status');
+
+    Route::get('shops/{shop}/waiter/orders/{order}/bill', [WaiterController::class, 'downloadBill'])
+        ->name('waiter.orders.bill');
+
+    Route::get('shops/{shop}/waiter/orders/{order}/receipt', [WaiterController::class, 'printOrder'])
+        ->name('waiter.orders.receipt');
+});
 Route::middleware('auth')->get(
     '/shop-assignment-required',
     function () {
