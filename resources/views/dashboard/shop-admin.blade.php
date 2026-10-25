@@ -159,15 +159,15 @@
             <div class="d-banner animate-fade-in mb-8">
 
                 <div class="d-banner-dots absolute inset-0" aria-hidden="true">
-                    <svg class="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        <defs>
-                            <pattern id="welcome-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                                <circle cx="1" cy="1" r="1" fill="currentColor"/>
-                            </pattern>
-                        </defs>
-                        <rect width="100%" height="100%" fill="url(#welcome-grid)"/>
-                    </svg>
-                </div>
+    <svg class="h-full w-full">
+        <defs>
+            <pattern id="welcome-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1.5" fill="currentColor"/>
+            </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#welcome-grid)"/>
+    </svg>
+</div>
 
                 <div class="relative flex flex-col gap-4 px-6 py-8 sm:px-10 sm:py-10 md:flex-row md:items-center md:justify-between">
 
