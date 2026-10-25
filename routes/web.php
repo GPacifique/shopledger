@@ -29,6 +29,11 @@ use App\Http\Controllers\IncomeCategoryController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PosController;
+use App\Http\Controllers\BuyerController;
+
+Route::middleware(['auth', 'verified'])->prefix('buyer')->name('buyer.')->group(function () {
+    Route::get('dashboard', [BuyerController::class, 'dashboard'])->name('dashboard');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('shops/{shop}/waiter/orders', [WaiterController::class, 'storeOrder'])
@@ -248,6 +253,10 @@ if ($user->role==='waiter'){
     // Seller dashboard
     if ($user->role === 'seller') {
         return redirect()->route('seller.dashboard');
+    }
+    //buyer dashboard
+    if ($user->role === 'buyer') {
+        return redirect()->route('buyer.dashboard');
     }
 
     // Accountant dashboard
