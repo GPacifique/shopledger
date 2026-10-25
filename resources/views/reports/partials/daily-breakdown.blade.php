@@ -1,17 +1,17 @@
 <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
     {{-- Header --}}
-    <div class="flex flex-col gap-3 border-b border-slate-100 bg-gradient-to-r from-white to-slate-50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-slate-100 bg-white  px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center gap-3">
             <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
                 <i class="fas fa-chart-bar text-lg"></i>
             </div>
 
             <div>
-                <h2 class="text-lg font-bold text-slate-800">
+                <h2 class="text-lg bg-white font-bold text-slate-800">
                     Period Performance
                 </h2>
-                <p class="mt-1 text-sm text-slate-500">
+                <p class="mt-1 bg-white text-sm text-slate-500">
                     Financial performance breakdown by date
                 </p>
             </div>
@@ -129,7 +129,7 @@
 
             {{-- Totals --}}
             <tfoot>
-                <tr class="border-t-2 border-slate-200 bg-slate-100/80">
+                <tr class="border-t-2 border-slate-200 bg-white-100/80">
 
                     <td class="px-5 py-5">
                         <span class="font-extrabold uppercase tracking-wide text-slate-800">

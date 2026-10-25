@@ -204,7 +204,7 @@
                                 <div class="col-span-1"></div>
                             </div>
 
-                            <div class="p-4 sm:p-6 space-y-3">
+                            <div class="group relative bg-white-50/70 hover:bg-white-50 border border-white-100 rounded-xl p-4  gap-3 lg:gap-4 lg:items-center transition-colors">
                                 <template x-for="(item, index) in items" :key="item.uid">
                                     <div :id="'line-' + item.uid"
                                          class="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 lg:items-center rounded-xl border p-3 sm:p-4 transition-colors duration-500"
@@ -215,7 +215,7 @@
                                         <input type="hidden" :name="`items[${index}][unit_price]`" :value="item.unitPrice">
 
                                         {{-- Name --}}
-                                        <div class="lg:col-span-4 flex items-start justify-between gap-2 min-w-0">
+                                        <div class="lg:col-span-4 bg-white flex items-start justify-between gap-2 min-w-0">
                                             <div class="min-w-0">
                                                 <p class="font-medium text-gray-900 truncate" x-text="item.name"></p>
                                                 <p class="text-xs mt-0.5" :class="over(item) ? 'text-red-600 font-medium' : 'text-gray-400'"
@@ -257,7 +257,7 @@
                                             </div>
 
                                             {{-- Line total --}}
-                                            <div class="col-span-2 sm:col-span-1 lg:col-span-2 flex items-center justify-between lg:block">
+                                            <div class="col-span-2 bg-white sm:col-span-1 lg:col-span-2 flex items-center justify-between lg:block">
                                                 <label class="text-xs font-medium text-gray-500 lg:hidden">{{ __('Line Total') }}</label>
                                                 <div class="text-base font-semibold text-gray-900 tabular-nums" x-text="formatCurrency(item.quantity * item.unitPrice)"></div>
                                             </div>

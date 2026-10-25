@@ -1,7 +1,7 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-5">
 
     {{-- Sales --}}
-    <div class="relative overflow-hidden rounded-2xl border border-green-100 bg-gradient-to-br from-white to-green-50 p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
+    <div class="relative overflow-hidden rounded-2xl border border-green-100 bg-white  p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
         <div class="flex items-center justify-between">
             <p class="text-sm font-semibold text-slate-500">Total Sales</p>
             <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-600">
@@ -16,7 +16,7 @@
     </div>
 
     {{-- Purchases --}}
-    <div class="relative overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-white to-blue-50 p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
+    <div class="relative overflow-hidden rounded-2xl border border-blue-100 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
         <div class="flex items-center justify-between">
             <p class="text-sm font-semibold text-slate-500">Purchases</p>
             <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
@@ -31,7 +31,7 @@
     </div>
 
     {{-- Expenses --}}
-    <div class="relative overflow-hidden rounded-2xl border border-red-100 bg-gradient-to-br from-white to-red-50 p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
+    <div class="relative overflow-hidden rounded-2xl border border-red-100 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
         <div class="flex items-center justify-between">
             <p class="text-sm font-semibold text-slate-500">Expenses</p>
             <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-red-100 text-red-600">
@@ -46,7 +46,7 @@
     </div>
 
     {{-- Other Income --}}
-    <div class="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50 p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
+    <div class="relative overflow-hidden rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
         <div class="flex items-center justify-between">
             <p class="text-sm font-semibold text-slate-500">Other Income</p>
             <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
@@ -61,7 +61,7 @@
     </div>
 
     {{-- Orders --}}
-    <div class="relative overflow-hidden rounded-2xl border border-violet-100 bg-gradient-to-br from-white to-violet-50 p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
+    <div class="relative overflow-hidden rounded-2xl border border-violet-100 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
         <div class="flex items-center justify-between">
             <p class="text-sm font-semibold text-slate-500">Orders</p>
             <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
@@ -76,7 +76,7 @@
     </div>
 
     {{-- Net Profit --}}
-    <div class="relative overflow-hidden rounded-2xl border border-amber-100 bg-gradient-to-br from-white to-amber-50 p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
+    <div class="relative overflow-hidden rounded-2xl border border-amber-100 bg-white  p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
         <div class="flex items-center justify-between">
             <p class="text-sm font-semibold text-slate-500">Net Profit</p>
             <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600">

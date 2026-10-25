@@ -86,7 +86,7 @@ class RoleMiddleware
     protected function denied(Request $request, string $role): Response
     {
         if ($request->expectsJson() || ! $request->isMethod('GET')) {
-            abort(403, __('You do not have access to that.'));
+            abort(403, __('You do not have access to that page.'));
         }
 
         $route = $this->dashboardRouteFor($role);

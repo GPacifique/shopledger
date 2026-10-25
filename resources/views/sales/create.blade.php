@@ -137,7 +137,7 @@
 
                             <div class="p-4 sm:p-6 space-y-3">
                                 <template x-for="(item, index) in items" :key="item.uid">
-                                    <div class="group relative bg-gray-50/70 hover:bg-gray-50 border border-gray-100 rounded-xl p-4 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 lg:items-center transition-colors"
+                                    <div class="group relative bg-white-50/70 hover:bg-white-50 border border-white-100 rounded-xl p-4 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 lg:items-center transition-colors"
                                          :class="item.quantity > item.stock && item.productId ? 'ring-1 ring-red-200 bg-red-50/60' : ''">
 
                                         <div class="lg:col-span-5">
