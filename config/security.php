@@ -5,7 +5,7 @@
 return [
 
     // off | report | enforce
-    'csp_mode' => env('CSP_MODE', 'report'),
+    'csp_mode' => env('CSP_MODE', 'enforce'),
 
     // Adds "preload" to the HSTS header. The header alone does nothing until
     // you submit the domain at hstspreload.org.

@@ -984,6 +984,13 @@
 
         const charts = [];
 
+        /*
+         * IMPORTANT: chart.options is a Chart.js resolver proxy. Never do
+         *   scale.ticks = scale.ticks || {}
+         * on it: that assigns the proxy to itself and recurses until the stack
+         * overflows. Every nested object touched here (ticks, grid, legend.labels)
+         * is pre-declared in the configs below, so we only write leaf values.
+         */
         function paint(chart) {
             const c = theme();
             const o = chart.options;
@@ -991,17 +998,12 @@
             o.color = c.text;
             o.borderColor = c.grid;
 
-            if (o.scales) {
-                Object.values(o.scales).forEach(scale => {
-                    scale.ticks = scale.ticks || {};
-                    scale.ticks.color = c.muted;
-                    scale.grid = scale.grid || {};
-                    if (scale.grid.display !== false) scale.grid.color = c.grid;
-                });
-            }
+            Object.values(o.scales || {}).forEach(scale => {
+                if (scale.ticks) scale.ticks.color = c.muted;
+                if (scale.grid && scale.grid.display !== false) scale.grid.color = c.grid;
+            });
 
-            if (o.plugins && o.plugins.legend) {
-                o.plugins.legend.labels = o.plugins.legend.labels || {};
+            if (o.plugins && o.plugins.legend && o.plugins.legend.labels) {
                 o.plugins.legend.labels.color = c.text;
             }
 
@@ -1030,9 +1032,12 @@
 
         const categoryColors = ['#10B981', '#F59E0B', '#EF4444', '#6366F1', '#06B6D4', '#8B5CF6', '#F97316', '#14B8A6'];
 
-        const moneyAxis = { beginAtZero: true, ticks: { callback: (v) => rwfFormat(v) } };
-        const moneyTooltip = { callbacks: { label: (c) => c.dataset.label + ': ' + rwfFormat(c.raw) } };
-        const legendBottom = { display: true, position: 'bottom' };
+        // Factories: each chart gets its own fresh objects, with ticks / grid / labels pre-declared
+        const moneyAxis    = () => ({ beginAtZero: true, ticks: { callback: (v) => rwfFormat(v) }, grid: {} });
+        const xAxis        = () => ({ ticks: {}, grid: { display: false } });
+        const legendBottom = () => ({ display: true, position: 'bottom', labels: {} });
+        const legendSide   = () => ({ display: true, position: window.innerWidth < 640 ? 'bottom' : 'right', labels: {} });
+        const moneyTooltip = () => ({ callbacks: { label: (c) => c.dataset.label + ': ' + rwfFormat(c.raw) } });
 
 
         /* Last 7 days */
@@ -1052,8 +1057,8 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: legendBottom, tooltip: moneyTooltip },
-                scales: { y: { ...moneyAxis }, x: { grid: { display: false } } },
+                plugins: { legend: legendBottom(), tooltip: moneyTooltip() },
+                scales: { y: moneyAxis(), x: xAxis() },
                 interaction: { intersect: false, mode: 'index' },
             },
         });
@@ -1084,15 +1089,13 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: legendBottom, tooltip: moneyTooltip },
-                scales: { y: { ...moneyAxis }, x: { grid: { display: false } } },
+                plugins: { legend: legendBottom(), tooltip: moneyTooltip() },
+                scales: { y: moneyAxis(), x: xAxis() },
             },
         });
 
 
         /* Category doughnuts */
-        const legendSide = () => ({ display: true, position: window.innerWidth < 640 ? 'bottom' : 'right' });
-
         function doughnut(id, labels, values) {
             makeChart(id, {
                 type: 'doughnut',
