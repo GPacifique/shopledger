@@ -46,6 +46,7 @@ class Product extends Model
         'expiry_date',
         'product_image',
         'status',
+        'is_featured',
     ];
 
     protected $casts = [
@@ -57,6 +58,7 @@ class Product extends Model
         'minimum_stock' => 'decimal:2',
         'low_stock_threshold' => 'integer',
         'track_stock' => 'boolean',
+        'is_featured' => 'boolean',
 
         'opening_quantity' => 'decimal:2',
         'opening_unit_cost' => 'decimal:2',
@@ -138,5 +140,27 @@ class Product extends Model
         $data = $this->qr_code ?: $this->sku;
 
         return (new QRCode($options))->render($data);
+    }
+    public function getImageUrlAttribute(): ?string
+    {
+        $image = trim((string) $this->product_image);
+
+        if ($image === '') {
+            return null;
+        }
+
+        if (filter_var($image, FILTER_VALIDATE_URL)) {
+            $scheme = parse_url($image, PHP_URL_SCHEME);
+
+            return in_array(strtolower((string) $scheme), ['http', 'https'], true)
+                ? $image
+                : null;
+        }
+
+        $path = str_replace('\\', '/', ltrim($image, '/'));
+        $path = preg_replace('#^public/#i', '', $path);
+        $path = 'images/products/' . basename($path);
+
+        return is_file(public_path($path)) ? asset($path) : null;
     }
 }

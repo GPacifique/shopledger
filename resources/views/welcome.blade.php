@@ -536,6 +536,7 @@
         </a>
 
         <nav class="nav-links" id="site-nav" aria-label="{{ __('Main') }}">
+            <a class="link" href="{{ route('buyer.dashboard') }}">{{ __('Marketplace') }}</a>
             <a class="link" href="#features">{{ __('Features') }}</a>
             <a class="link" href="#roles">{{ __('Who uses it') }}</a>
             <a class="link" href="#how">{{ __('How it works') }}</a>

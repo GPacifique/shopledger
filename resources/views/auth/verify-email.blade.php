@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/svg" href="{{ asset('images/MAHWILOGO.png') }}">
+    <link rel="icon" type="image/svg" href="{{ asset('images/favicon.ico') }}">
     <title>{{ config('app.name', 'Mahwi') }} - Verify your email</title>
 
     <meta name="description" content="Mahwi - Rwanda's leading Business management system for Incomes,inventory, sales, purchases, and staff management. Verify your email to continue.">
@@ -305,7 +305,7 @@
     <div class="showcase-topbar">
       <div class="brand-row">
         <div class="brand-mark">
-          <img src="{{ asset('images/MAHWILOGO.png') }}" alt="{{ config('app.name', 'MahWi') }} logo">
+          <img src="{{ asset('images/favicon.ico') }}" alt="{{ config('app.name', 'MahWi') }} logo">
         </div>
         <div>
           <div class="brand-name">{{ config('app.name', 'MahWi') }}</div>

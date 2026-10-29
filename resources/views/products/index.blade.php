@@ -6,6 +6,8 @@
         $stockQuantityOf = fn ($p) => (float) ($p->quantity ?? $p->stock ?? 0);
         $minimumStockOf  = fn ($p) => (float) ($p->minimum_stock ?? $p->min_stock ?? 0);
 
+        $productImageOf = fn ($p) => $p->image_url;
+
         $summaryCards = [
             [
                 'label' => __('Total Products'),
@@ -158,6 +160,18 @@
                 </div>
             @endif
 
+            {{-- Import warnings / row errors (e.g. missing images, skipped rows) --}}
+            @if (session('import_errors') && count(session('import_errors')))
+                <div role="alert" class="ui-tint tone-amber tx mb-5 rounded-xl p-4 text-sm">
+                    <p class="font-semibold">{{ __('Import notes') }}</p>
+                    <ul class="mt-2 max-h-48 list-inside list-disc space-y-1 overflow-y-auto">
+                        @foreach (session('import_errors') as $importError)
+                            <li>{{ $importError }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             @if ($errors->any())
                 <div role="alert" class="ui-tint tone-red tx mb-5 rounded-xl p-4 text-sm">
                     <p class="font-semibold">{{ __('Please correct the following errors:') }}</p>
@@ -235,11 +249,12 @@
                         <label for="stock-status" class="ui-label mb-1.5 block text-sm font-medium">
                             {{ __('Stock status') }}
                         </label>
+                        {{-- Option values must match ProductController@index: low | out | in --}}
                         <select id="stock-status" name="stock_status" class="ui-input w-full rounded-lg py-2.5 text-sm shadow-sm">
                             <option value="">{{ __('All stock statuses') }}</option>
-                            <option value="in_stock" @selected(request('stock_status') === 'in_stock')>{{ __('In stock') }}</option>
-                            <option value="low_stock" @selected(request('stock_status') === 'low_stock')>{{ __('Low stock') }}</option>
-                            <option value="out_of_stock" @selected(request('stock_status') === 'out_of_stock')>{{ __('Out of stock') }}</option>
+                            <option value="in" @selected(request('stock_status') === 'in')>{{ __('In stock') }}</option>
+                            <option value="low" @selected(request('stock_status') === 'low')>{{ __('Low stock') }}</option>
+                            <option value="out" @selected(request('stock_status') === 'out')>{{ __('Out of stock') }}</option>
                         </select>
                     </div>
 
@@ -290,6 +305,7 @@
                                     $stockQuantity = $stockQuantityOf($product);
                                     $minimumStock  = $minimumStockOf($product);
                                     $marginValue   = (float) ($product->selling_price ?? 0) - (float) ($product->buying_price ?? 0);
+                                    $imageUrl      = $productImageOf($product);
 
                                     $stockTone  = $stockQuantity <= 0
                                         ? 'tone-red'
@@ -299,12 +315,41 @@
 
                                 <tr class="transition">
                                     <td class="px-5 py-4">
-                                        <div class="ui-text font-semibold">{{ $product->name }}</div>
-                                        @if (!empty($product->barcode))
-                                            <div class="ui-muted mt-1 text-xs">
-                                                {{ __('Barcode') }}: {{ $product->barcode }}
+                                        <div class="flex items-center gap-3">
+                                            {{-- Product image (or placeholder) --}}
+                                            <a href="{{ route('products.show', $product) }}"
+                                               class="ui-focus block h-14 w-14 shrink-0 overflow-hidden rounded-lg"
+                                               tabindex="-1" aria-hidden="true">
+                                                @if ($imageUrl)
+                                                    <img
+                                                        src="{{ $imageUrl }}"
+                                                        alt="{{ $product->name }}"
+                                                        width="56"
+                                                        height="56"
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        class="h-14 w-14 rounded-lg border border-gray-200 object-cover dark:border-gray-700"
+                                                    >
+                                                @else
+                                                    <span class="ui-icon-circle flex h-14 w-14 items-center justify-center rounded-lg" title="{{ __('No image') }}">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                                                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 15-5-5L5 21"/>
+                                                        </svg>
+                                                    </span>
+                                                @endif
+                                            </a>
+
+                                            <div class="min-w-0">
+                                                <div class="ui-text font-semibold">{{ $product->name }}</div>
+                                                @if (!empty($product->barcode))
+                                                    <div class="ui-muted mt-1 text-xs">
+                                                        {{ __('Barcode') }}: {{ $product->barcode }}
+                                                    </div>
+                                                @endif
                                             </div>
-                                        @endif
+                                        </div>
                                     </td>
 
                                     <td class="ui-soft whitespace-nowrap px-5 py-4 text-sm">
@@ -444,6 +489,9 @@
                                     <p class="tx text-sm font-semibold">{{ __('Before importing') }}</p>
                                     <p class="tx mt-1 text-sm leading-6">
                                         {{ __('Use the provided template and keep the column headings unchanged. Check product names, SKUs, prices and quantities before uploading.') }}
+                                    </p>
+                                    <p class="tx mt-2 text-sm leading-6">
+                                        {{ __('To import product images, first upload the image files (JPG, JPEG or PNG) to public/images/products, then enter only the file name (for example rice.jpg) in the "Product Image" column.') }}
                                     </p>
                                 </div>
                             </div>

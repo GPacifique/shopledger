@@ -63,7 +63,7 @@
             '@id'   => url('/') . '#org',
             'name'  => $siteName,
             'url'   => url('/'),
-            'logo'  => asset('images/MAHWILOGO.png'),
+            'logo'  => asset('images/favicon.ico'),
         ],
         [
             '@type' => 'WebSite',

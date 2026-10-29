@@ -31,7 +31,20 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\BuyerController;
 
-Route::middleware(['auth', 'verified'])->prefix('buyer')->name('buyer.')->group(function () {
+Route::middleware(['auth', 'shop.roles:shop_admin,seller,cashier'])
+    ->prefix('pos')
+    ->name('pos.')
+    ->group(function () {
+        Route::get('/', [PosController::class, 'index'])->name('index');
+        Route::get('/sales/{sale}/print', [SaleController::class, 'print'])->name('sales.print');
+        Route::get('/sales/{sale}/export', [SaleController::class, 'export'])->name('sales.export');
+
+        Route::post('/checkout', [PosController::class, 'checkout'])
+            ->middleware('throttle:60,1')
+            ->name('checkout');
+    });
+
+Route::prefix('buyer')->name('buyer.')->group(function () {
     Route::get('dashboard', [BuyerController::class, 'dashboard'])->name('dashboard');
 });
 

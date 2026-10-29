@@ -1,3 +1,4 @@
+{{-- resources/views/products/create.blade.php --}}
 <x-app-layout>
 
     <x-slot name="header">
@@ -47,9 +48,11 @@
 
         <div class="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
 
+            {{-- enctype is REQUIRED for the image upload to reach the server --}}
             <form
                 method="POST"
                 action="{{ route('products.store') }}"
+                enctype="multipart/form-data"
                 class="space-y-5"
             >
 
@@ -158,7 +161,7 @@
 
                                     <button
                                         type="button"
-                                        onclick="generateSKU()"
+                                        id="generate-sku-btn"
                                         class="inline-flex items-center gap-1.5 px-3
                                                rounded-r-lg border border-l-0
                                                border-gray-300 bg-gray-50
@@ -332,6 +335,109 @@
                             @error('description')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {{-- ==========================================================
+                     PRODUCT IMAGE
+                =========================================================== --}}
+
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+
+                    <div class="px-4 sm:px-6 py-4 border-b border-gray-100">
+
+                        <h3 class="font-semibold text-gray-900">
+                            {{ __('Product Image') }}
+                        </h3>
+
+                        <p class="text-xs text-gray-500 mt-0.5">
+                            {{ __('Optional. JPG, JPEG or PNG, up to 2 MB.') }}
+                        </p>
+
+                    </div>
+
+
+                    <div class="p-4 sm:p-6">
+
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+
+                            {{-- Preview --}}
+                            <div
+                                class="relative h-28 w-28 shrink-0 overflow-hidden
+                                       rounded-xl border border-dashed border-gray-300
+                                       bg-gray-50 flex items-center justify-center"
+                            >
+
+                                <img
+                                    id="product-image-preview"
+                                    src=""
+                                    alt="{{ __('Product image preview') }}"
+                                    class="hidden h-full w-full object-cover"
+                                >
+
+                                <svg
+                                    id="product-image-placeholder"
+                                    class="h-10 w-10 text-gray-300"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="1.6"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5" stroke-width="1.6"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          stroke-width="1.6" d="m21 15-5-5L5 21"/>
+                                </svg>
+
+                            </div>
+
+
+                            <div class="min-w-0 flex-1">
+
+                                <label
+                                    for="product_image"
+                                    class="block text-sm font-medium text-gray-700"
+                                >
+                                    {{ __('Choose image') }}
+                                </label>
+
+                                <input
+                                    type="file"
+                                    name="product_image"
+                                    id="product_image"
+                                    accept="image/png,image/jpeg"
+                                    class="mt-1.5 block w-full cursor-pointer rounded-lg
+                                           border border-gray-300 bg-white text-sm text-gray-600
+                                           file:mr-3 file:cursor-pointer file:border-0
+                                           file:bg-indigo-50 file:px-4 file:py-2
+                                           file:text-sm file:font-medium file:text-indigo-700
+                                           hover:file:bg-indigo-100"
+                                >
+
+                                <p
+                                    id="product-image-error"
+                                    class="mt-1 hidden text-sm text-red-600"
+                                    role="alert"
+                                ></p>
+
+                                @error('product_image')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+
+                                <button
+                                    type="button"
+                                    id="product-image-clear"
+                                    class="mt-2 hidden text-xs font-medium text-red-600 hover:text-red-700"
+                                >
+                                    {{ __('Remove selected image') }}
+                                </button>
+
+                            </div>
 
                         </div>
 
@@ -564,18 +670,16 @@
 
 
                             {{-- Opening cost --}}
+                            {{-- Field name MUST be opening_unit_cost to match ProductController@store.
+                                 Leave empty to use the buying price. --}}
 
                             <div>
 
                                 <label
-                                    for="opening_stock_cost"
+                                    for="opening_unit_cost"
                                     class="block text-sm font-medium text-gray-700"
                                 >
                                     {{ __('Opening Stock Unit Cost') }}
-
-                                    <span class="text-red-500">
-                                        *
-                                    </span>
                                 </label>
 
                                 <div class="relative mt-1.5">
@@ -587,23 +691,23 @@
 
                                     <input
                                         type="number"
-                                        name="opening_stock_cost"
-                                        id="opening_stock_cost"
-                                        value="{{ old('opening_stock_cost') }}"
+                                        name="opening_unit_cost"
+                                        id="opening_unit_cost"
+                                        value="{{ old('opening_unit_cost') }}"
                                         min="0"
                                         step="0.01"
                                         class="block w-full rounded-lg border-gray-300 pl-14
                                                focus:border-indigo-500 focus:ring-indigo-500"
-                                        placeholder="0.00"
+                                        placeholder="{{ __('Defaults to buying price') }}"
                                     >
 
                                 </div>
 
                                 <p class="mt-1 text-xs text-gray-500">
-                                    {{ __('What one unit of the existing stock originally cost.') }}
+                                    {{ __('What one unit of the existing stock originally cost. If left empty, the buying price is used.') }}
                                 </p>
 
-                                @error('opening_stock_cost')
+                                @error('opening_unit_cost')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
 
@@ -655,7 +759,6 @@
                                 class="block text-sm font-medium text-gray-700"
                             >
                                 {{ __('Opening Stock Date') }}
-                                <span class="text-red-500">*</span>
                             </label>
 
                             <input
@@ -866,7 +969,7 @@
                             />
                         </svg>
 
-                        {{ __('save') }}
+                        {{ __('Save') }}
 
                     </button>
 
@@ -880,98 +983,175 @@
 
 
     {{-- ================================================================
-         JAVASCRIPT
+         JAVASCRIPT (CSP-compatible: no inline event-handler attributes)
     ================================================================= --}}
 
     <script nonce="{{ Vite::cspNonce() }}">
 
-        function generateSKU() {
+        document.addEventListener('DOMContentLoaded', function () {
+
+            /*
+            |--------------------------------------------------------------------------
+            | SKU generator
+            |--------------------------------------------------------------------------
+            */
 
             const nameInput = document.getElementById('name');
             const skuInput = document.getElementById('sku');
+            const skuButton = document.getElementById('generate-sku-btn');
 
-            const name = nameInput.value.trim();
+            function generateSKU() {
 
-            let prefix = 'PRD';
+                const name = nameInput.value.trim();
 
-            if (name) {
+                let prefix = 'PRD';
 
-                prefix =
-                    name
-                        .replace(/[^a-zA-Z]/g, '')
-                        .substring(0, 3)
-                        .toUpperCase() || 'PRD';
+                if (name) {
+                    prefix =
+                        name
+                            .replace(/[^a-zA-Z]/g, '')
+                            .substring(0, 3)
+                            .toUpperCase() || 'PRD';
+                }
 
+                const random = Math.floor(10000 + Math.random() * 90000);
+
+                skuInput.value = prefix + '-' + random;
             }
 
-            const random =
-                Math.floor(10000 + Math.random() * 90000);
+            skuButton.addEventListener('click', generateSKU);
 
-            skuInput.value =
-                prefix + '-' + random;
-        }
-
-
-        document
-            .getElementById('name')
-            .addEventListener('blur', function () {
-
-                const skuInput =
-                    document.getElementById('sku');
-
+            nameInput.addEventListener('blur', function () {
                 if (!skuInput.value.trim()) {
                     generateSKU();
                 }
-
             });
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Opening Stock Value Calculator
-        |--------------------------------------------------------------------------
-        */
+            /*
+            |--------------------------------------------------------------------------
+            | Opening stock value calculator
+            |--------------------------------------------------------------------------
+            |
+            | If no opening unit cost is typed, the buying price is used,
+            | exactly like the controller does.
+            |
+            */
 
-        function calculateOpeningStockValue() {
+            const openingStock = document.getElementById('opening_stock');
+            const openingUnitCost = document.getElementById('opening_unit_cost');
+            const buyingPrice = document.getElementById('buying_price');
+            const valueLabel = document.getElementById('opening-stock-value');
 
-            const quantity =
-                parseFloat(
-                    document.getElementById('opening_stock').value
-                ) || 0;
+            function calculateOpeningStockValue() {
 
-            const cost =
-                parseFloat(
-                    document.getElementById('opening_stock_cost').value
-                ) || 0;
+                const quantity = parseFloat(openingStock.value) || 0;
 
-            const value = quantity * cost;
+                const costRaw = openingUnitCost.value.trim();
 
-            document.getElementById('opening-stock-value').textContent =
-                'RWF ' +
-                value.toLocaleString('en-RW', {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 2
-                });
-        }
+                const cost = costRaw !== ''
+                    ? (parseFloat(costRaw) || 0)
+                    : (parseFloat(buyingPrice.value) || 0);
 
+                const value = quantity * cost;
 
-        document
-            .getElementById('opening_stock')
-            .addEventListener(
-                'input',
-                calculateOpeningStockValue
-            );
+                valueLabel.textContent =
+                    'RWF ' +
+                    value.toLocaleString('en-RW', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2
+                    });
+            }
 
+            openingStock.addEventListener('input', calculateOpeningStockValue);
+            openingUnitCost.addEventListener('input', calculateOpeningStockValue);
+            buyingPrice.addEventListener('input', calculateOpeningStockValue);
 
-        document
-            .getElementById('opening_stock_cost')
-            .addEventListener(
-                'input',
-                calculateOpeningStockValue
-            );
+            calculateOpeningStockValue();
 
 
-        calculateOpeningStockValue();
+            /*
+            |--------------------------------------------------------------------------
+            | Product image: validation + live preview
+            |--------------------------------------------------------------------------
+            |
+            | The server validates again (jpg/jpeg/png, max 2 MB); this just gives
+            | instant feedback. If the preview does not show, add blob: to the
+            | img-src directive of your Content-Security-Policy.
+            |
+            */
+
+            const imageInput = document.getElementById('product_image');
+            const imagePreview = document.getElementById('product-image-preview');
+            const imagePlaceholder = document.getElementById('product-image-placeholder');
+            const imageError = document.getElementById('product-image-error');
+            const imageClear = document.getElementById('product-image-clear');
+
+            const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+            const ALLOWED_TYPES = ['image/jpeg', 'image/png'];
+
+            let previewUrl = null;
+
+            function resetImage() {
+                if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                    previewUrl = null;
+                }
+
+                imageInput.value = '';
+                imagePreview.src = '';
+                imagePreview.classList.add('hidden');
+                imagePlaceholder.classList.remove('hidden');
+                imageClear.classList.add('hidden');
+            }
+
+            function showImageError(message) {
+                imageError.textContent = message;
+                imageError.classList.remove('hidden');
+            }
+
+            imageInput.addEventListener('change', function () {
+
+                imageError.classList.add('hidden');
+                imageError.textContent = '';
+
+                const file = imageInput.files && imageInput.files[0];
+
+                if (!file) {
+                    resetImage();
+                    return;
+                }
+
+                if (!ALLOWED_TYPES.includes(file.type)) {
+                    resetImage();
+                    showImageError(@json(__('Only JPG, JPEG or PNG images are allowed.')));
+                    return;
+                }
+
+                if (file.size > MAX_IMAGE_BYTES) {
+                    resetImage();
+                    showImageError(@json(__('The image must not be larger than 2 MB.')));
+                    return;
+                }
+
+                if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                }
+
+                previewUrl = URL.createObjectURL(file);
+
+                imagePreview.src = previewUrl;
+                imagePreview.classList.remove('hidden');
+                imagePlaceholder.classList.add('hidden');
+                imageClear.classList.remove('hidden');
+            });
+
+            imageClear.addEventListener('click', function () {
+                imageError.classList.add('hidden');
+                resetImage();
+            });
+
+        });
 
     </script>
 

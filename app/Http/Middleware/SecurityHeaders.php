@@ -120,7 +120,7 @@ class SecurityHeaders
         // The layout and sidebar use inline <style> blocks and style="" attributes.
         $style   = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://fonts.bunny.net', 'https://cdnjs.cloudflare.com'];
         $font    = ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://fonts.bunny.net', 'https://cdnjs.cloudflare.com'];
-        $img     = ["'self'", 'data:', 'blob:'];
+        $img     = ["'self'", 'data:', 'blob:', 'https://images.unsplash.com'];
         $connect = ["'self'"];
 
         // Allow the Vite dev server while `npm run dev` is running (never in production).

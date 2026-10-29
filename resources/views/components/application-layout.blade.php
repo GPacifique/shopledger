@@ -38,7 +38,7 @@
     <meta property="og:description"
           content="Manage Incomes, inventory, sales, purchases, orders, expenses, staff, and analytics with MahwiPOS.">
 
-    <meta property="og:image" content="{{ asset('images/MAHWILOGO.png') }}">
+    <meta property="og:image" content="{{ asset('images/favicon.ico') }}">
     <meta property="og:site_name" content="MahwiPOS">
 
     {{-- Twitter --}}
@@ -49,16 +49,16 @@
     <meta name="twitter:description"
           content="Manage Incomes, inventory, sales, purchases, orders, expenses, staff, and analytics with MahwiPOS.">
 
-    <meta name="twitter:image" content="{{ asset('images/MAHWILOGO.png') }}">
+    <meta name="twitter:image" content="{{ asset('images/favicon.ico') }}">
 
     {{-- Favicon --}}
     <link rel="icon"
           type="image/png"
-          href="{{ asset('images/MAHWILOGO.png') }}">
+          href="{{ asset('images/favicon.ico') }}">
 
     <link rel="apple-touch-icon"
           sizes="180x180"
-          href="{{ asset('images/MAHWILOGO.png') }}">
+          href="{{ asset('images/favicon.ico') }}">
 
     {{-- Theme --}}
     <meta name="theme-color" content="#6366f1">

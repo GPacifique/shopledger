@@ -15,7 +15,7 @@
     <div class="py-12">
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                <form method="POST" action="{{ route('products.update', $product) }}" class="p-6 space-y-6">
+                <form method="POST" action="{{ route('products.update', $product) }}" enctype="multipart/form-data" class="p-6 space-y-6">
                     @csrf
                     @method('PUT')
 
@@ -157,6 +157,36 @@
                         @enderror
                     </div>
 
+                    <div class="space-y-3">
+                        <label class="block text-sm font-medium text-gray-700">{{ __('Product Image') }}</label>
+                        @if ($product->image_url)
+                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="h-32 w-32 rounded-lg border border-gray-200 object-cover">
+                        @endif
+
+                        <div>
+                            <label for="product_image" class="block text-sm text-gray-600">{{ __('Upload an image') }}</label>
+                            <input type="file" name="product_image" id="product_image" accept="image/png,image/jpeg" class="mt-1 block w-full text-sm text-gray-700">
+                            @error('product_image')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="product_image_url" class="block text-sm text-gray-600">{{ __('Or use a public image URL') }}</label>
+                            <input type="url" name="product_image_url" id="product_image_url" value="{{ old('product_image_url', filter_var($product->product_image, FILTER_VALIDATE_URL) ? $product->product_image : '') }}" placeholder="https://example.com/product.jpg" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            @error('product_image_url')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        @if ($product->product_image)
+                            <label class="inline-flex items-center gap-2 text-sm text-gray-600">
+                                <input type="checkbox" name="remove_image" value="1" @checked(old('remove_image')) class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                {{ __('Remove current image') }}
+                            </label>
+                        @endif
+                    </div>
+
                     <div>
                         <label for="status" class="block text-sm font-medium text-gray-700">{{ __('Status') }}</label>
                         <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -166,6 +196,14 @@
                         @error('status')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <div>
+                        <input type="hidden" name="is_featured" value="0">
+                        <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <input type="checkbox" name="is_featured" value="1" @checked((bool) old('is_featured', $product->is_featured)) class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                            {{ __('Feature this product in the public marketplace') }}
+                        </label>
                     </div>
 
                     <div class="flex items-center justify-end space-x-3 pt-4 border-t">

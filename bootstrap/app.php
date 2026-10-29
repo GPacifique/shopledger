@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register middleware aliases for selected routes.
         $middleware->alias([
             'role' => RoleMiddleware::class,
+            'shop.roles' => RoleMiddleware::class,
             'shop.approved' => EnsureShopIsApproved::class,
         ]);
     })

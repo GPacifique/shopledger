@@ -98,6 +98,7 @@
         $sellingPrice = (float) ($product->selling_price ?? 0);
         $currentStock = (float) ($product->stock ?? 0);
         $minimumStock = (float) ($product->minimum_stock ?? 0);
+        $productImageUrl = $product->image_url;
 
         $unitProfit = $sellingPrice - $buyingPrice;
 
@@ -204,21 +205,23 @@
 
                             <div class="flex min-w-0 items-start gap-5">
 
-                                <div class="flex h-16 w-16 shrink-0 items-center justify-center
-                                            rounded-2xl bg-indigo-600 text-white
-                                            shadow-lg shadow-indigo-600/20">
-
-                                    <svg class="h-8 w-8"
-                                         fill="none"
-                                         stroke="currentColor"
-                                         viewBox="0 0 24 24">
-
-                                        <path stroke-linecap="round"
-                                              stroke-linejoin="round"
-                                              stroke-width="1.7"
-                                              d="M20 7l-8-4-8 4m16 0v10l-8 4-8-4V7m16 0l-8 4m0 10V11M4 7l8 4"/>
-                                    </svg>
-
+                                <div class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden
+                                            rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
+                                    @if ($productImageUrl)
+                                        <img src="{{ $productImageUrl }}"
+                                             alt="{{ $product->name }}"
+                                             class="h-full w-full object-cover">
+                                    @else
+                                        <svg class="h-8 w-8"
+                                             fill="none"
+                                             stroke="currentColor"
+                                             viewBox="0 0 24 24">
+                                            <path stroke-linecap="round"
+                                                  stroke-linejoin="round"
+                                                  stroke-width="1.7"
+                                                  d="M20 7l-8-4-8 4m16 0v10l-8 4-8-4V7m16 0l-8 4m0 10V11M4 7l8 4"/>
+                                        </svg>
+                                    @endif
                                 </div>
 
 

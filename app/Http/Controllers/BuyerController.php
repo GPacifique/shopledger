@@ -11,12 +11,11 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 /**
- * Marketplace: every product from every approved shop, with the seller
+ * Marketplace: featured products from approved shops, with the seller
  * (shop + owner) shown on each product card.
  */
 class BuyerController extends Controller
 {
-    private const IMAGE_DIR = 'Images/products';
     private const PER_PAGE  = 24;
 
     public function dashboard(Request $request)
@@ -35,11 +34,10 @@ class BuyerController extends Controller
         $approvedIds = Shop::select('id')->where('status', 'approved');
 
         /* ---------------- Product query ---------------- */
-        $query = Product::query()->whereIn('shop_id', $approvedIds);
-
-        if (Schema::hasColumn('products', 'is_active')) {
-            $query->where('is_active', true);
-        }
+        $query = Product::query()
+            ->whereIn('shop_id', $approvedIds)
+            ->where('is_featured', true)
+            ->where('status', 'active');
 
         if (! empty($filters['seller'])) {
             $query->where('shop_id', (int) $filters['seller']);
@@ -98,6 +96,23 @@ class BuyerController extends Controller
             return $this->cardPayload($p, $priceCol, $shop ? $this->sellerPayload($shop, $counts[$shop->id] ?? 0, $owners[$shop->created_by] ?? null) : null);
         })->values()->all();
 
+        $heroSlides = Product::query()
+            ->whereIn('shop_id', Shop::select('id')->where('status', 'approved'))
+            ->where('is_featured', true)
+            ->where('status', 'active')
+            ->whereNotNull('product_image')
+            ->where('product_image', '!=', '')
+            ->latest('id')
+            ->get(['id', 'name', 'product_image', $priceCol])
+            ->map(fn (Product $product) => [
+                'name' => $product->name,
+                'image' => $product->image_url,
+                'price' => (float) $product->getAttribute($priceCol),
+            ])
+            ->filter(fn (array $slide) => $slide['image'] !== null)
+            ->values()
+            ->all();
+
         /* ---------------- Seller banner when browsing one shop ---------------- */
         $activeSeller = null;
 
@@ -115,7 +130,9 @@ class BuyerController extends Controller
 
         /* ---------------- Filter options ---------------- */
         $sellerOptions = Shop::where('status', 'approved')
-            ->whereIn('id', Product::select('shop_id'))
+            ->whereIn('id', Product::select('shop_id')
+                ->where('is_featured', true)
+                ->where('status', 'active'))
             ->orderBy('business_name')
             ->get(['id', 'business_name', 'city']);
 
@@ -126,6 +143,7 @@ class BuyerController extends Controller
         return view('buyer.buyer-dashboard', [
             'products'      => $products,
             'cards'         => $cards,
+            'heroSlides'    => $heroSlides,
             'activeSeller'  => $activeSeller,
             'sellerOptions' => $sellerOptions,
             'cities'        => $cities,
@@ -143,10 +161,7 @@ class BuyerController extends Controller
         }
 
         $query = Product::whereIn('shop_id', $shopIds);
-
-        if (Schema::hasColumn('products', 'is_active')) {
-            $query->where('is_active', true);
-        }
+        $query->where('is_featured', true)->where('status', 'active');
 
         return $query->selectRaw('shop_id, COUNT(*) as c')
             ->groupBy('shop_id')
@@ -163,7 +178,7 @@ class BuyerController extends Controller
             'name'        => $product->name,
             'price'       => (float) ($a[$priceCol] ?? 0),
             'stock'       => isset($a['stock']) ? (int) $a['stock'] : null,
-            'image'       => $this->imageUrl($a['image'] ?? null),
+            'image'       => $product->image_url,
             'description' => isset($a['description']) ? Str::limit(trim(strip_tags((string) $a['description'])), 260) : null,
             'shop'        => $seller,
         ];
@@ -238,19 +253,4 @@ class BuyerController extends Controller
         return null;
     }
 
-    /** Accepts "pizza.jpg", "Images/products/pizza.jpg" or a full URL. */
-    private function imageUrl(?string $file): ?string
-    {
-        if (! $file) {
-            return null;
-        }
-        if (Str::startsWith($file, ['http://', 'https://'])) {
-            return $file;
-        }
-
-        $file = ltrim($file, '/');
-        $path = Str::startsWith($file, self::IMAGE_DIR) ? $file : self::IMAGE_DIR . '/' . $file;
-
-        return file_exists(public_path($path)) ? asset($path) : null;
-    }
 }

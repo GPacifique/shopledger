@@ -14,7 +14,7 @@
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
             <div class="mb-8 border-b border-slate-200 pb-6">
                 <div class="mb-4 flex items-center gap-3">
-                    <img src="{{ asset('images/MAHWILOGO.png') }}"
+                    <img src="{{ asset('images/favicon.ico') }}"
                          alt="Mahwi POS"
                          class="h-12 w-auto object-contain">
 

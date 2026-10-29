@@ -16,7 +16,7 @@
         {{-- Header --}}
         <div class="border-b border-slate-200 bg-slate-50 px-6 py-8 sm:px-10">
             <div class="mb-5 flex items-center gap-3">
-                <img src="{{ asset('images/MAHWILOGO.png') }}"
+                <img src="{{ asset('images/favicon.icoss') }}"
                      alt="{{ config('app.name', 'Mahwi POS') }} logo"
                      class="h-12 w-auto object-contain">
 

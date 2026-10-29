@@ -30,8 +30,8 @@
     </title>
 
     {{-- Favicon --}}
-    <link rel="icon" type="image/png" href="{{ asset('images/MAHWILOGO.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/MAHWILOGO.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/favicon.ico') }}">
 
     {{-- PWA --}}
     @if(file_exists(public_path('manifest.json')))

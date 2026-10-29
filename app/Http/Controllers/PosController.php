@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
-use App\Models\Customer;
 use App\Models\StockMovement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,167 +14,181 @@ use Illuminate\Validation\ValidationException;
 class PosController extends Controller
 {
     /**
-     * POS screen.
+     * POS screen: product cards with images.
      */
-   public function index(Request $request)
-{
-    $products = Product::where('shop_id', $request->user()->shop_id)
-        ->where('status', 'active')
-        ->orderBy('name')
-        ->get();
-        $customers = Customer::where('shop_id', $request->user()->shop_id)
-        ->orderBy('name')
-        ->get();
-
-    return view('pos.index', compact('products', 'customers'));
-}
-    /**
-     * Look up a product by scanned code (barcode, SKU or QR code).
-     * Called by the scanner input on every scan.
-     */
-    public function lookup(Request $request): JsonResponse
-    {
-        $code = trim((string) $request->query('code', ''));
-
-        if ($code === '') {
-            return response()->json(['found' => false, 'message' => 'Empty code.'], 422);
-        }
-
-        $product = Product::where('shop_id', $request->user()->shop_id)
-            ->where('status', 'active')
-            ->where(function ($q) use ($code) {
-                $q->where('barcode', $code)
-                    ->orWhere('sku', $code)
-                    ->orWhere('qr_code', $code);
-            })
-            ->first();
-
-        if (!$product) {
-            return response()->json([
-                'found' => false,
-                'message' => "No product found for code {$code}.",
-            ], 404);
-        }
-
-        return response()->json([
-            'found' => true,
-            'product' => [
-                'id' => $product->id,
-                'name' => $product->name,
-                'sku' => $product->sku,
-                'price' => (float) $product->selling_price,
-                'stock' => (float) $product->stock,
-            ],
-        ]);
-    }
-
-    /**
-     * Save the sale. Prices and costs come from the database, never from
-     * the browser, so a tampered request can't change what is charged.
-     */
-    public function store(Request $request): JsonResponse
+    public function index(Request $request)
     {
         $shopId = $request->user()->shop_id;
 
-        $data = $request->validate([
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.product_id' => ['required', 'integer'],
-            'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
-        ]);
+        abort_if(!$shopId, 403, 'No shop is associated with your account.');
 
-        // Merge duplicate lines of the same product.
-        $lines = [];
-        foreach ($data['items'] as $item) {
-            $id = (int) $item['product_id'];
-            $lines[$id] = ($lines[$id] ?? 0) + (float) $item['quantity'];
+        $products = Product::with('category:id,name')
+            ->where('shop_id', $shopId)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get()
+            ->map(function (Product $product) {
+                return [
+                    'id'            => $product->id,
+                    'name'          => $product->name,
+                    'sku'           => $product->sku,
+                    'barcode'       => $product->barcode,
+                    'price'         => (float) $product->selling_price,
+                    'stock'         => (float) $product->stock,
+                    'minimum_stock' => (float) $product->minimum_stock,
+                    'category_id'   => $product->category_id,
+                    'image'         => $product->image_url,
+                ];
+            })
+            ->values();
+
+        $categories = $products
+            ->pluck('category_id')
+            ->unique()
+            ->filter()
+            ->values();
+
+        $categories = \App\Models\Category::where('shop_id', $shopId)
+            ->whereIn('id', $categories)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $recentSales = Sale::where('shop_id', $shopId)
+            ->latest('id')
+            ->limit(5)
+            ->get(['id', 'sale_date', 'total_amount', 'payment_status']);
+
+        return view('pos.index', compact('products', 'categories', 'recentSales'));
+    }
+
+    /**
+     * Complete a sale.
+     *
+     * Prices and costs are ALWAYS taken from the database, never from
+     * the browser.
+     */
+    public function checkout(Request $request): JsonResponse
+    {
+        $shopId = $request->user()->shop_id;
+
+        if (!$shopId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No shop is associated with your account.',
+            ], 403);
         }
 
-        $sale = DB::transaction(function () use ($lines, $shopId, $request) {
-            // Lock rows in a stable order so two cashiers can't oversell
-            // the same product or deadlock each other.
+        $data = $request->validate([
+            'items'                => ['required', 'array', 'min:1'],
+            'items.*.product_id'   => ['required', 'integer'],
+            'items.*.quantity'     => ['required', 'integer', 'min:1'],
+            'payment_method'       => ['required', 'in:cash,mobile_money,card'],
+            'amount_paid'          => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        // Merge duplicate product lines
+        $requested = [];
+        foreach ($data['items'] as $item) {
+            $id = (int) $item['product_id'];
+            $requested[$id] = ($requested[$id] ?? 0) + (float) $item['quantity'];
+        }
+
+        $sale = DB::transaction(function () use ($requested, $shopId, $data, $request) {
+
+            // Lock rows so two cashiers cannot sell the same last unit
             $products = Product::where('shop_id', $shopId)
-                ->whereIn('id', array_keys($lines))
-                ->orderBy('id')
+                ->where('status', 'active')
+                ->whereIn('id', array_keys($requested))
                 ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
 
-            foreach ($lines as $productId => $qty) {
+            foreach ($requested as $productId => $qty) {
                 $product = $products->get($productId);
 
                 if (!$product) {
                     throw ValidationException::withMessages([
-                        'items' => "Product #{$productId} was not found.",
+                        'items' => "A product in the cart is no longer available.",
                     ]);
                 }
 
-                if ($qty > (float) $product->stock) {
+                if ((float) $product->stock < $qty) {
                     throw ValidationException::withMessages([
                         'items' => "Not enough stock for {$product->name} (available: {$product->stock}).",
                     ]);
                 }
             }
 
-            // Adjust column names (sale_date, customer_id, ...) to your sales table.
+            $total = 0;
+            foreach ($requested as $productId => $qty) {
+                $total += $qty * (float) $products[$productId]->selling_price;
+            }
+            $total = round($total, 2);
+
+            $paid = isset($data['amount_paid'])
+                ? (float) $data['amount_paid']
+                : $total;
+
             $sale = Sale::create([
-                'shop_id' => $shopId,
-                'customer_id' => null,
-                'sale_date' => now(),
-                'total_amount' => 0,
-                'created_by' => $request->user()->id,
+                'shop_id'        => $shopId,
+                'created_by'     => $request->user()->id,
+                'total_amount'   => $total,
+                'payment_status' => $paid >= $total
+                    ? 'Paid'
+                    : ($paid > 0 ? 'Partial' : 'Unpaid'),
+                'payment_method' => $data['payment_method'] === 'mobile_money'
+                    ? 'momo'
+                    : $data['payment_method'],
+                'sale_date'      => now()->toDateString(),
             ]);
 
-            $total = 0;
-
-            foreach ($lines as $productId => $qty) {
+            foreach ($requested as $productId => $qty) {
                 $product = $products[$productId];
-                $price = (float) $product->selling_price;
-                $lineTotal = round($qty * $price, 2);
-                $total += $lineTotal;
+                $unitPrice = (float) $product->selling_price;
+                $stockBefore = (float) $product->stock;
+                $newStock = $stockBefore - $qty;
 
                 SaleItem::create([
-                    'shop_id' => $shopId,
-                    'sale_id' => $sale->id,
-                    'product_id' => $product->id,
-                    'quantity' => $qty,
-                    'unit_price' => $price,
-                    'line_total' => $lineTotal,
+                    'shop_id'            => $shopId,
+                    'sale_id'            => $sale->id,
+                    'product_id'         => $product->id,
+                    'quantity'           => $qty,
+                    'unit_price'         => $unitPrice,
                     'cost_price_at_sale' => $product->buying_price,
+                    'line_total'         => round($qty * $unitPrice, 2),
                 ]);
-
-                $stockAfter = (float) $product->stock - $qty;
 
                 $product->update([
-                    'stock' => $stockAfter,
-                    'quantity' => $stockAfter,
+                    'stock'    => $newStock,
+                    'quantity' => $newStock,
                 ]);
 
-                // If StockService has a sale method, call it here instead.
                 StockMovement::create([
-                    'shop_id' => $shopId,
-                    'product_id' => $product->id,
-                    'type' => 'sale',
-                    'reference_type' => Sale::class,
-                    'reference_id' => $sale->id,
-                    'quantity_change' => -$qty,
-                    'quantity_after' => $stockAfter,
-                    'unit_cost' => $product->buying_price,
-                    'total_cost' => round($qty * (float) $product->buying_price, 2),
-                    'movement_date' => now(),
-                    'created_by' => $request->user()->id,
-                    'note' => 'POS sale',
+                    'shop_id'         => $shopId,
+                    'product_id'      => $product->id,
+                    'type'            => 'sale',
+                    'quantity'        => -(int) $qty,
+                    'stock_before'    => (int) $stockBefore,
+                    'stock_after'     => (int) $newStock,
+                    'reference_type'  => Sale::class,
+                    'reference_id'    => $sale->id,
+                    'created_by'      => $request->user()->id,
+                    'notes'           => 'POS sale',
                 ]);
             }
-
-            $sale->update(['total_amount' => round($total, 2)]);
 
             return $sale;
         });
 
         return response()->json([
             'success' => true,
+            'message' => 'Sale completed successfully.',
             'sale_id' => $sale->id,
-            'total' => (float) $sale->total_amount,
+            'sale_date' => $sale->sale_date->format('M d, Y'),
+            'total_amount' => (float) $sale->total_amount,
+            'payment_status' => $sale->payment_status,
+            'print_url' => route('pos.sales.print', ['sale' => $sale, 'print' => 1]),
+            'pdf_url' => route('pos.sales.export', $sale),
         ]);
     }
 }

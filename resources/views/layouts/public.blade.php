@@ -10,7 +10,7 @@
     <meta name="description"
           content="@yield('meta_description', 'Mahwi POS helps businesses manage sales, inventory, purchases, expenses, and financial reports.')">
 
-    <link rel="icon" type="image/png" href="{{ asset('images/MAHWILOGO.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.ico') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -37,14 +37,11 @@
             <a href="{{ url('/') }}"
                class="flex shrink-0 items-center gap-3"
                aria-label="Mahwi POS home">
-
-                <img src="{{ asset('images/MAHWILOGO.png') }}"
-                     alt="Mahwi POS logo"
-                     class="h-10 w-auto max-w-[150px] object-contain">
-
-                <span class="text-lg font-extrabold tracking-tight text-slate-900">
-                    MAHWI<span class="text-indigo-600">POS</span>
-                </span>
+                <x-application-logo
+                    name="MAHWI POS"
+                    name-class="text-lg font-extrabold tracking-tight text-slate-900"
+                    class="h-10 max-w-[150px]"
+                />
             </a>
 
             {{-- Desktop Navigation --}}
@@ -52,6 +49,11 @@
                 <a href="{{ url('/') }}"
                    class="text-sm font-medium text-slate-600 transition hover:text-indigo-600">
                     Home
+                </a>
+
+                <a href="{{ route('buyer.dashboard') }}"
+                   class="text-sm font-medium text-slate-600 transition hover:text-indigo-600">
+                    Marketplace
                 </a>
 
                 <a href="{{ route('terms') }}"
@@ -97,6 +99,11 @@
                 Home
             </a>
 
+            <a href="{{ route('buyer.dashboard') }}"
+               class="text-xs font-medium text-slate-600 hover:text-indigo-600">
+                Marketplace
+            </a>
+
             <a href="{{ route('terms') }}"
                class="text-xs font-medium text-slate-600 hover:text-indigo-600">
                 Terms
@@ -128,9 +135,7 @@
         <div class="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
 
             <div class="flex items-center gap-3">
-                <img src="{{ asset('images/MAHWILOGO.png') }}"
-                     alt=""
-                     class="h-8 w-auto object-contain">
+                <x-application-logo variant="mark" name="MAHWI POS" class="h-8" />
 
                 <div>
                     <p class="font-bold text-slate-900">Mahwi POS</p>

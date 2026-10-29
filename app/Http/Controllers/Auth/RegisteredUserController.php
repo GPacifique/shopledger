@@ -60,7 +60,7 @@ class RegisteredUserController extends Controller
                     'city'     => $data['city'],
                     'address'  => $data['address'],
                     'password' => Hash::make($data['password']),
-                    'role'     => 'user', // use the exact role string your RoleMiddleware expects
+                    'role'     => 'buyer', // use the exact role string your RoleMiddleware expects
                 ])->save();
 
                 $shop = new Shop();
