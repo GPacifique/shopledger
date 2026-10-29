@@ -182,7 +182,7 @@
     @endphp
 
 
-    <div class="min-h-screen bg-gray-50/70 py-6 sm:py-8">
+    <div class="min-h-screen bg-white py-6 sm:py-8">
 
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
 
@@ -195,8 +195,7 @@
 
                 <div class="relative">
 
-                    <div class="absolute inset-0 bg-gradient-to-r
-                                from-indigo-50 via-white to-emerald-50 opacity-70">
+                    <div class="absolute inset-0 bg-white via-white to-emerald-50 opacity-70">
                     </div>
 
                     <div class="relative p-5 sm:p-7">
@@ -267,7 +266,7 @@
 
                                         @if($product->barcode)
 
-                                            <span class="hidden h-4 w-px bg-gray-200 sm:block"></span>
+                                            <span class="hidden h-4 w-px bg-white sm:block"></span>
 
                                             <span>
                                                 <span class="text-gray-400">Barcode</span>
@@ -280,7 +279,7 @@
 
                                         @if($product->category)
 
-                                            <span class="hidden h-4 w-px bg-gray-200 sm:block"></span>
+                                            <span class="hidden h-4 w-px bg-white sm:block"></span>
 
                                             <span class="text-gray-600">
                                                 {{ $product->category->name }}
@@ -298,7 +297,7 @@
                             {{-- QR CODE --}}
 
                             <div class="flex items-center gap-4 rounded-2xl
-                                        border border-gray-200 bg-white/90 p-3 shadow-sm">
+                                        border border-gray-200 bg-white p-3 shadow-sm">
 
                                 <div>
 
@@ -514,7 +513,7 @@
                 {{-- INVENTORY VALUE --}}
 
                 <div class="rounded-2xl border border-indigo-200
-                            bg-gradient-to-br from-indigo-50 to-white p-5 shadow-sm">
+                            bg-white p-5 shadow-sm">
 
                     <p class="text-sm font-medium text-indigo-700">
                         Inventory Value
@@ -792,7 +791,7 @@
 
                         {{-- UNIT PROFIT --}}
 
-                        <div class="rounded-xl border border-indigo-100 bg-indigo-50/60 p-4">
+                        <div class="rounded-xl border border-indigo-100 bg-white p-4">
 
                             <div class="flex items-center justify-between">
 

@@ -164,7 +164,7 @@
                         {{ __('Cancel') }}
                     </a>
                     <button type="submit"
-                            class="inline-flex min-h-[44px] items-center rounded-lg bg-indigo-600 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+                            class="inline-flex min-h-[44px] items-center rounded-lg bg-white px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
                         {{ __('Save settings') }}
                     </button>
                 </div>
