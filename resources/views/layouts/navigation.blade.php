@@ -328,7 +328,7 @@
         {{-- Quick Sale --}}
         @php $posActive = request()->routeIs('pos.*'); @endphp
         <a
-            href="{{ route('pos.index') }}"
+            href="{{ route('sales.create') }}"
             class="sidebar-link {{ $posActive ? 'sidebar-link-active' : '' }}"
             @if($posActive) aria-current="page" @endif
             @mouseenter="hoverTip(@js(__('Quick Sale')), $el)"
