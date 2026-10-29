@@ -2,8 +2,8 @@ const CACHE_NAME = 'mahwi-static-v1';
 
 const STATIC_ASSETS = [
     '/manifest.json',
-    '/icons/mahwi-192.png',
-    '/icons/mahwi-512.png'
+    '/icons/icon-192.png',
+    '/icons/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {

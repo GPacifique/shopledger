@@ -134,7 +134,7 @@
     @stack('head')
 
     {{-- Runs before first paint: applies the saved/system theme, and catches the install event early --}}
-    <script nonce="{{ $cspNonce ?? '' }}">
+    <script nonce="{{ Vite::cspNonce() }}">
         (function () {
             var t = null;
             try { t = localStorage.getItem('mahwi-theme'); } catch (e) {}
@@ -157,7 +157,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <style nonce="{{ $cspNonce ?? '' }}">
+    <style nonce="{{ Vite::cspNonce() }}">
         :root {
             --counter: #E8EDF0;
             --slip: #FFFFFF;
@@ -859,7 +859,7 @@
     </div>
 </footer>
 
-<script nonce="{{ $cspNonce ?? '' }}">
+<script nonce="{{ Vite::cspNonce() }}">
     (function () {
         var root = document.documentElement;
 
