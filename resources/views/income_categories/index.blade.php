@@ -37,20 +37,7 @@
 
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            {{-- Success --}}
-            @if(session('success'))
-                <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            {{-- Error --}}
-            @if(session('error'))
-                <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                    {{ session('error') }}
-                </div>
-            @endif
-
+            
 
             {{-- Statistics --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
