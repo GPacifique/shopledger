@@ -15,12 +15,13 @@
                 </div>
             </div>
             <div class="flex space-x-3">
-                <button onclick="window.open('{{ route('sales.print', $sale) }}?print=1', '_blank')" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-200 transition">
+                {{-- CSP-safe: plain link opening in a new tab instead of an inline onclick --}}
+                <a href="{{ route('sales.print', $sale) }}?print=1" target="_blank" rel="noopener" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-200 transition">
                     <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                     </svg>
                     {{ __('Print') }}
-                </button>
+                </a>
                 <a href="{{ route('sales.export', $sale) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition">
                     <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -36,6 +37,16 @@
             </div>
         </div>
     </x-slot>
+
+    @php
+        // Static class names so Tailwind's build can detect them (dynamic "bg-{{ }}-50" is purged in production).
+        $profitPositive = $profit >= 0;
+        $profitBox   = $profitPositive ? 'bg-emerald-50' : 'bg-rose-50';
+        $profitLabel = $profitPositive ? 'text-emerald-600' : 'text-rose-600';
+        $profitValue = $profitPositive ? 'text-emerald-700' : 'text-rose-700';
+        $profitSub   = $profitPositive ? 'text-emerald-500' : 'text-rose-500';
+        $canManage   = auth()->user()->isSystemAdmin() || auth()->user()->isShopAdmin();
+    @endphp
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
@@ -89,7 +100,7 @@
 
                 <!-- Sale Details -->
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                         <div>
                             <p class="text-xs text-gray-500 uppercase tracking-wider">{{ __('Date') }}</p>
                             <p class="font-medium text-gray-900">{{ $sale->sale_date->format('M d, Y') }}</p>
@@ -200,11 +211,11 @@
                             <p class="text-sm text-red-600 font-medium">{{ __('Cost of Goods') }}</p>
                             <p class="text-2xl font-bold text-red-700 mt-1">{{ rwf($sale->total_amount - $profit) }}</p>
                         </div>
-                        <div class="bg-{{ $profit >= 0 ? 'emerald' : 'rose' }}-50 rounded-xl p-4 text-center">
-                            <p class="text-sm text-{{ $profit >= 0 ? 'emerald' : 'rose' }}-600 font-medium">{{ __('Net Profit') }}</p>
-                            <p class="text-2xl font-bold text-{{ $profit >= 0 ? 'emerald' : 'rose' }}-700 mt-1">{{ rwf($profit) }}</p>
+                        <div class="{{ $profitBox }} rounded-xl p-4 text-center">
+                            <p class="text-sm {{ $profitLabel }} font-medium">{{ __('Net Profit') }}</p>
+                            <p class="text-2xl font-bold {{ $profitValue }} mt-1">{{ rwf($profit) }}</p>
                             @if($sale->total_amount > 0)
-                                <p class="text-xs text-{{ $profit >= 0 ? 'emerald' : 'rose' }}-500 mt-1">
+                                <p class="text-xs {{ $profitSub }} mt-1">
                                     {{ number_format(($profit / $sale->total_amount) * 100, 1) }}% {{ __('margin') }}
                                 </p>
                             @endif
@@ -251,22 +262,26 @@
                     </span>
                 </p>
                 <div class="flex items-center space-x-3">
-                    @if(auth()->user()->isSystemAdmin() || auth()->user()->isShopAdmin())
+                    @if($canManage)
                         <a href="{{ route('sales.edit', $sale) }}" class="inline-flex items-center px-4 py-2 border border-amber-300 rounded-lg shadow-sm text-sm font-medium text-amber-700 bg-white hover:bg-amber-50 transition">
                             <svg class="-ml-1 mr-2 h-4 w-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-9.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 6.5-6.5z"/>
                             </svg>
                             {{ __('Edit Sale') }}
                         </a>
-                        <form action="{{ route('sales.destroy', $sale) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to delete this sale? This will restore all stock.') }}')">
+
+                        {{-- CSP-safe: no inline onsubmit. Handled by the global [data-confirm] listener in resources/js/app.js --}}
+                        <form action="{{ route('sales.destroy', $sale) }}"
+                              method="POST"
+                              data-confirm="{{ __('Are you sure you want to delete this sale? This will restore all stock.') }}">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 transition">
-                            <svg class="-ml-1 mr-2 h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                            {{ __('Delete Sale') }}
-                        </button>
+                                <svg class="-ml-1 mr-2 h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                {{ __('Delete Sale') }}
+                            </button>
                         </form>
                     @endif
                 </div>
