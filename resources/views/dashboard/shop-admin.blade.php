@@ -43,6 +43,7 @@
             </div>
         </div>
     </x-slot>
+    
 
     @php
         $approved = $shop->status === 'approved';
