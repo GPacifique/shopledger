@@ -103,6 +103,10 @@
     The drawer's open/closed state is `sidebarOpen`, owned by the root <html x-data="mahwiApp()">
     in layouts/app.blade.php. It is NOT redeclared here, so the header's menu button, the overlay
     and this sidebar all share the same value.
+
+    ICON SIZING: every <svg> below carries BOTH Tailwind size classes and width/height attributes.
+    If the stylesheet is late, cached, or blocked (e.g. by CSP), the attributes still keep icons at
+    their intended size instead of stretching to fill their container.
 --}}
 <aside
     id="app-sidebar"
@@ -214,7 +218,7 @@
         :aria-label="collapsed ? @js(__('Expand sidebar')) : @js(__('Collapse sidebar'))"
         class="sidebar-collapse-btn absolute -right-3 top-5 z-10 hidden h-6 w-6 items-center justify-center rounded-full lg:flex"
     >
-        <svg class="h-3.5 w-3.5 transition-transform duration-200" :class="{ 'rotate-180': collapsed }" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <svg class="h-3.5 w-3.5 shrink-0 transition-transform duration-200" :class="{ 'rotate-180': collapsed }" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="{{ $icons['collapse'] }}"/>
         </svg>
     </button>
@@ -229,10 +233,10 @@
         <button
             type="button"
             @click="sidebarOpen = false"
-            class="sidebar-close-btn inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg lg:hidden"
+            class="sidebar-close-btn inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg lg:hidden"
             aria-label="{{ __('Close menu') }}"
         >
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <svg class="h-5 w-5 shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['close'] }}"/>
             </svg>
         </button>
@@ -266,7 +270,7 @@
             @mouseenter="hoverTip(@js(__('Dashboard')), $el)"
             @mouseleave="release()"
         >
-            <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['home'] }}"/></svg>
+            <svg class="sidebar-icon h-5 w-5 shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['home'] }}"/></svg>
             <span class="sb-label">{{ __('Dashboard') }}</span>
         </a>
 
@@ -286,12 +290,12 @@
                     :aria-expanded="rail ? flyout === '{{ $key }}' : open.{{ $key }}"
                     class="sidebar-group-button {{ $groupActive ? 'sidebar-group-active' : '' }}"
                 >
-                    <span class="flex items-center gap-3">
-                        <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons[$group['icon']] }}"/></svg>
-                        <span class="sb-label">{{ $group['label'] }}</span>
+                    <span class="flex min-w-0 items-center gap-3">
+                        <svg class="sidebar-icon h-5 w-5 shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons[$group['icon']] }}"/></svg>
+                        <span class="sb-label truncate">{{ $group['label'] }}</span>
                     </span>
 
-                    <svg class="sb-hide h-4 w-4 transition-transform" :class="{ 'rotate-180': open.{{ $key }} }" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <svg class="sb-hide h-4 w-4 shrink-0 transition-transform" :class="{ 'rotate-180': open.{{ $key }} }" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['chevron'] }}"/>
                     </svg>
                 </button>
@@ -319,7 +323,7 @@
                     @mouseenter="hoverTip(@js($label), $el)"
                     @mouseleave="release()"
                 >
-                    <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons[$icon] }}"/></svg>
+                    <svg class="sidebar-icon h-5 w-5 shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons[$icon] }}"/></svg>
                     <span class="sb-label">{{ $label }}</span>
                 </a>
             @endforeach
@@ -334,7 +338,7 @@
             @mouseenter="hoverTip(@js(__('Quick Sale')), $el)"
             @mouseleave="release()"
         >
-            <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['pos'] }}"/></svg>
+            <svg class="sidebar-icon h-5 w-5 shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['pos'] }}"/></svg>
             <span class="sb-label">{{ __('Quick Sale') }}</span>
         </a>
 
@@ -350,7 +354,7 @@
                     @mouseenter="hoverTip(@js($ordersLabel), $el)"
                     @mouseleave="release()"
                 >
-                    <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['orders'] }}"/></svg>
+                    <svg class="sidebar-icon h-5 w-5 shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['orders'] }}"/></svg>
                     <span class="sb-label flex-1">{{ $ordersLabel }}</span>
 
                     @if($pendingOrdersCount > 0)
@@ -363,8 +367,9 @@
             </div>
         @endif
 
-        {{-- Pushes Log Out to the bottom when the list is short; collapses when the list is long --}}
-        <div class="flex-1" style="min-height: 1rem"></div>
+        {{-- Pushes Log Out to the bottom when the list is short; collapses when the list is long.
+             (Tailwind class instead of an inline style attribute, so it is CSP-safe.) --}}
+        <div class="min-h-[1rem] flex-1"></div>
 
         {{-- Log out --}}
         <form method="POST" action="{{ route('logout') }}" class="sidebar-divider border-t pt-3">
@@ -375,13 +380,14 @@
                 @mouseenter="hoverTip(@js(__('Log Out')), $el)"
                 @mouseleave="release()"
             >
-                <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['logout'] }}"/></svg>
+                <svg class="sidebar-icon h-5 w-5 shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icons['logout'] }}"/></svg>
                 <span class="sb-label">{{ __('Log Out') }}</span>
             </button>
         </form>
     </nav>
 
-    {{-- Flyouts (collapsed desktop rail). Fixed-position so the nav's overflow can't clip them. --}}
+    {{-- Flyouts (collapsed desktop rail). Fixed-position so the nav's overflow can't clip them.
+         Alpine object-style :style is used (not a template string) so it works under a strict CSP. --}}
     @foreach($groups as $key => $group)
         <div
             x-show="rail && flyout === '{{ $key }}'"
@@ -389,10 +395,10 @@
             x-transition.opacity.duration.100ms
             @mouseenter="hold()"
             @mouseleave="release()"
-            :style="`top:${flyoutTop}px`"
+            :style="{ top: flyoutTop + 'px' }"
             class="fixed left-[4.5rem] z-[60] pl-2"
         >
-            <div class="sidebar-flyout w-56 p-1.5">
+            <div class="sidebar-flyout w-56 max-w-[calc(100vw-5.5rem)] p-1.5">
                 <div class="sidebar-muted px-2.5 pb-1 pt-1.5 text-xs font-semibold">{{ $group['label'] }}</div>
                 @foreach($group['items'] as [$label, $routeName, $pattern])
                     <a href="{{ route($routeName) }}" class="sidebar-sub-link {{ request()->routeIs($pattern) ? 'sidebar-sub-link-active' : '' }}">
@@ -407,14 +413,16 @@
     <div
         x-show="rail && tip"
         x-cloak
-        :style="`top:${tipTop}px`"
+        :style="{ top: tipTop + 'px' }"
         x-text="tip"
         class="sidebar-tip pointer-events-none fixed left-[4.5rem] z-[60] ml-2 -translate-y-1/2 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium"
     ></div>
 </aside>
 
 
-<style>
+{{-- If your CSP also restricts style-src, this nonce lets the block run. It is skipped safely when
+     your CSP package does not provide csp_nonce(). Best long-term: move these rules into resources/css/app.css. --}}
+<style @if(function_exists('csp_nonce')) nonce="{{ csp_nonce() }}" @endif>
     [x-cloak] { display: none !important; }
 
     /* Colour tokens (--surface, --border, ...) and --sidebar-w come from layouts/app.blade.php.
@@ -429,7 +437,12 @@
         border-right: 1px solid var(--border, #e2e8f0);
         box-shadow: var(--shadow, 0 10px 30px -10px rgb(15 23 42 / .25));
         transition: width .2s ease, transform .25s ease, visibility 0s;
+        -webkit-tap-highlight-color: transparent;
     }
+
+    /* Safety net: no icon inside the sidebar may ever grow past its box, whatever else loads. */
+    #app-sidebar svg { max-width: none; flex-shrink: 0; }
+    #app-sidebar svg.sidebar-icon { width: 1.25rem; height: 1.25rem; }
 
     /* ---------- Phones & tablets: off-canvas drawer ---------- */
     @media (max-width: 1023px) {
@@ -446,6 +459,17 @@
             transition: transform .25s ease, visibility 0s;
         }
         #app-sidebar nav { padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); }
+
+        /* Comfortable touch targets (>= 44px) on touch devices */
+        #app-sidebar .sidebar-link,
+        #app-sidebar .sidebar-group-button { min-height: 2.75rem; }
+        #app-sidebar .sidebar-sub-link     { min-height: 2.5rem; display: flex; align-items: center; }
+    }
+
+    /* Very small phones */
+    @media (max-width: 360px) {
+        #app-sidebar .sidebar-link,
+        #app-sidebar .sidebar-group-button { font-size: .85rem; padding-left: .65rem; padding-right: .65rem; }
     }
 
     /* ---------- Desktop: fixed sidebar, optional icon rail ---------- */
@@ -466,6 +490,13 @@
 
         html.sidebar-collapsed #app-sidebar .sidebar-row  { justify-content: center; padding-left: 0; padding-right: 0; }
         html.sidebar-collapsed #app-sidebar .sidebar-shop { justify-content: center; padding-left: 0; padding-right: 0; margin-left: .75rem; margin-right: .75rem; }
+    }
+
+    /* Short laptop screens: tighten vertical rhythm so more fits without scrolling */
+    @media (min-width: 1024px) and (max-height: 700px) {
+        #app-sidebar .sidebar-link,
+        #app-sidebar .sidebar-group-button { padding-top: .55rem; padding-bottom: .55rem; }
+        #app-sidebar nav { padding-top: .75rem; padding-bottom: .75rem; }
     }
 
     .sb-dot {
@@ -526,7 +557,7 @@
     }
 
     .sidebar-link         { gap: .75rem; padding: .7rem .8rem; }
-    .sidebar-group-button { justify-content: space-between; padding: .7rem .8rem; }
+    .sidebar-group-button { justify-content: space-between; gap: .5rem; padding: .7rem .8rem; }
 
     .sidebar-link:hover,
     .sidebar-group-button:hover { background-color: var(--hover, #f1f5f9); color: var(--text, #0f172a); }
@@ -544,7 +575,7 @@
     /* Group that contains the current page */
     .sidebar-group-active { color: var(--accent-text, #047857); font-weight: 600; }
 
-    .sidebar-icon { width: 1.15rem; height: 1.15rem; flex-shrink: 0; color: currentColor; }
+    .sidebar-icon { width: 1.25rem; height: 1.25rem; flex-shrink: 0; color: currentColor; }
 
     .sidebar-submenu {
         margin: .2rem 0 .3rem 1.1rem;
