@@ -1,15 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-             <div>
-            <h2 class="text-2xl font-semibold leading-tight text-green-800">
-                Sales Overview
-            </h2>
+            <div>
+                <h2 class="text-2xl font-semibold leading-tight text-green-800">
+                    Sales Overview
+                </h2>
 
-            <p class="mt-1 text-sm text-blue-500">
-                Track and manage your business Sales.
-            </p>
-        </div>
+                <p class="mt-1 text-sm text-blue-500">
+                    Track and manage your business Sales.
+                </p>
+            </div>
             <a href="{{ route('sales.create') }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
                 <svg class="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -26,6 +26,7 @@
                     {{ session('success') }}
                 </div>
             @endif
+
             <!-- Stats Cards -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5">
@@ -106,6 +107,16 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
+                            @php
+                                $paymentBadgeColors = [
+                                    'cash' => 'bg-green-100 text-green-800',
+                                    'momo' => 'bg-yellow-100 text-yellow-800',
+                                    'bank' => 'bg-blue-100 text-blue-800',
+                                    'card' => 'bg-purple-100 text-purple-800',
+                                ];
+                                $canManage = auth()->user()->isSystemAdmin() || auth()->user()->isShopAdmin();
+                            @endphp
+
                             @forelse($sales as $sale)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -123,14 +134,6 @@
                                     {{ format_qty($sale->items->sum('quantity')) }} {{ __('units') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @php
-                                        $paymentBadgeColors = [
-                                            'cash' => 'bg-green-100 text-green-800',
-                                            'momo' => 'bg-yellow-100 text-yellow-800',
-                                            'bank' => 'bg-blue-100 text-blue-800',
-                                            'card' => 'bg-purple-100 text-purple-800',
-                                        ];
-                                    @endphp
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $paymentBadgeColors[$sale->payment_method] ?? 'bg-gray-100 text-gray-800' }}">
                                         {{ \App\Models\Sale::PAYMENT_METHODS[$sale->payment_method] ?? ucfirst($sale->payment_method) }}
                                     </span>
@@ -143,9 +146,14 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                     <a href="{{ route('sales.show', $sale) }}" class="text-indigo-600 hover:text-indigo-900">{{ __('View') }}</a>
-                                    @if(auth()->user()->isSystemAdmin() || auth()->user()->isShopAdmin())
+                                    @if($canManage)
                                         <a href="{{ route('sales.edit', $sale) }}" class="text-amber-600 hover:text-amber-900">{{ __('Edit') }}</a>
-                                        <form action="{{ route('sales.destroy', $sale) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure? This will restore stock.') }}')">
+
+                                        {{-- CSP-safe: no inline onsubmit. Handled by the global [data-confirm] listener in resources/js/app.js --}}
+                                        <form action="{{ route('sales.destroy', $sale) }}"
+                                              method="POST"
+                                              class="inline"
+                                              data-confirm="{{ __('Are you sure? This will restore stock.') }}">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900">{{ __('Delete') }}</button>
@@ -155,7 +163,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                <td colspan="8" class="px-6 py-12 text-center text-gray-500">
                                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                     </svg>
