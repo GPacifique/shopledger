@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Jobs\SendShopReportJob;
 use App\Models\ReportDelivery;
 use App\Models\ReportSchedule;
-use App\Models\Shop;
 use App\Services\ReportDeliveryService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -18,6 +17,19 @@ class SendScheduledShopReports extends Command
                             {--force : Ignore schedule time/frequency checks}';
 
     protected $description = 'Dispatch scheduled MahWi shop reports';
+
+    /**
+     * How many minutes after the scheduled time a report is still
+     * considered "due". Must be >= the scheduler interval (cPanel
+     * runs schedule:run every 5 minutes).
+     */
+    protected const DUE_WINDOW_MINUTES = 5;
+
+    /**
+     * Delivery statuses that mean "do not dispatch this period again".
+     * Adjust to match the statuses your ReportDelivery model really uses.
+     */
+    protected const BLOCKING_STATUSES = ['sent', 'queued', 'pending'];
 
     public function handle(
         ReportDeliveryService $reportDeliveryService
@@ -69,7 +81,22 @@ class SendScheduledShopReports extends Command
              * It bypasses send time and frequency checks.
              */
             if (!$this->option('force')) {
-                if (!$this->isDue($schedule, $referenceDate)) {
+                try {
+                    $due = $this->isDue($schedule, $referenceDate);
+                } catch (\Throwable $e) {
+                    // One bad schedule must not break all the others.
+                    $this->error(
+                        "Skipped schedule {$schedule->id}: " .
+                        $e->getMessage()
+                    );
+
+                    report($e);
+
+                    $skipped++;
+                    continue;
+                }
+
+                if (!$due) {
                     $skipped++;
                     continue;
                 }
@@ -85,23 +112,23 @@ class SendScheduledShopReports extends Command
                 );
 
             /*
-             * Prevent dispatching a report that has already
-             * been successfully delivered.
+             * Prevent dispatching a report that has already been
+             * delivered, or is already queued/pending for this period.
              */
-            $alreadySent = ReportDelivery::query()
+            $alreadyHandled = ReportDelivery::query()
                 ->where('shop_id', $shop->id)
                 ->where('report_type', $type)
                 ->whereDate('period_start', $periodStart->toDateString())
                 ->whereDate('period_end', $periodEnd->toDateString())
-                ->where('status', 'sent')
+                ->whereIn('status', self::BLOCKING_STATUSES)
                 ->exists();
 
-            if ($alreadySent) {
+            if ($alreadyHandled) {
                 $this->line(
                     "Skipped: {$shop->business_name} / {$type} / " .
                     "{$periodStart->toDateString()} - " .
                     "{$periodEnd->toDateString()} " .
-                    '(already sent)'
+                    '(already sent or queued)'
                 );
 
                 $skipped++;
@@ -144,24 +171,36 @@ class SendScheduledShopReports extends Command
         $type = strtolower(trim($schedule->report_type));
 
         /*
-         * Compare using the application/server time.
-         *
-         * cPanel is currently running the scheduler every 5 minutes,
-         * so schedules should preferably use times such as 07:00,
-         * 07:05, 07:10, etc.
+         * send_at may be a Carbon instance (model cast), a plain time
+         * string such as "07:00:00", or a full datetime string such as
+         * "2026-10-30 07:00:00". Carbon::parse() handles all three, and
+         * we only keep the hour and minute, so the date is never
+         * concatenated twice.
          */
-        $scheduledTime = Carbon::parse(
-            $referenceDate->toDateString() . ' ' . $schedule->send_at
+        if (empty($schedule->send_at)) {
+            return false;
+        }
+
+        $sendAt = Carbon::parse($schedule->send_at);
+
+        $scheduledTime = $referenceDate->copy()->setTime(
+            $sendAt->hour,
+            $sendAt->minute,
+            0
         );
 
         /*
-         * Allow a small window around the scheduled minute.
-         * This is useful because cPanel invokes schedule:run
-         * every 5 minutes.
+         * Due window: from the scheduled time up to
+         * DUE_WINDOW_MINUTES after it. cPanel invokes schedule:run
+         * every 5 minutes, so an exact-minute match could be missed.
+         * Duplicates are prevented by the ReportDelivery check.
          */
+        $secondsAfter =
+            $referenceDate->getTimestamp() - $scheduledTime->getTimestamp();
+
         if (
-            $referenceDate->hour !== $scheduledTime->hour ||
-            $referenceDate->minute !== $scheduledTime->minute
+            $secondsAfter < 0 ||
+            $secondsAfter >= self::DUE_WINDOW_MINUTES * 60
         ) {
             return false;
         }
@@ -170,18 +209,18 @@ class SendScheduledShopReports extends Command
             'daily' => true,
 
             'weekly' => (
-                ($schedule->day_of_week ?? 1)
+                (int) ($schedule->day_of_week ?? 1)
                 === $referenceDate->dayOfWeekIso
             ),
 
             'monthly' => (
-                ($schedule->day_of_month ?? 1)
+                (int) ($schedule->day_of_month ?? 1)
                 === $referenceDate->day
             ),
 
             'yearly' => (
                 $referenceDate->month === 1 &&
-                ($schedule->day_of_month ?? 1)
+                (int) ($schedule->day_of_month ?? 1)
                 === $referenceDate->day
             ),
 
