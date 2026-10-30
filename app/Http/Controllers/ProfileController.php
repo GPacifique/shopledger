@@ -3,17 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
+    private const PHOTO_DIR = 'images/users';
+
     public function edit(Request $request): View
     {
         return view('profile.edit', [
@@ -21,25 +22,36 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user->fill($request->safe()->except(['photo', 'remove_photo']));
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        if ($request->boolean('remove_photo')) {
+            $this->deletePhoto($user);
+        }
+
+        if ($request->hasFile('photo')) {
+            $this->deletePhoto($user);
+
+            $file = $request->file('photo');
+
+            File::ensureDirectoryExists(public_path(self::PHOTO_DIR));
+
+            // Saved as images/users/{user id}.jpg or .png (type detected from the real file)
+            $file->move(public_path(self::PHOTO_DIR), $user->id . '.' . $file->extension());
+        }
+
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    /**
-     * Delete the user's account.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
@@ -50,11 +62,19 @@ class ProfileController extends Controller
 
         Auth::logout();
 
+        $this->deletePhoto($user);
         $user->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    private function deletePhoto(User $user): void
+    {
+        foreach (['jpg', 'jpeg', 'png'] as $ext) {
+            File::delete(public_path(self::PHOTO_DIR . "/{$user->id}.{$ext}"));
+        }
     }
 }

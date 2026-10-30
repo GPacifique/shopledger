@@ -1,7 +1,7 @@
 {
   "name": "MahWi",
   "short_name": "MahWi",
-  "description": "Sales, stock and money for every shop you run.",
+  "description": "Sales, stock, incomes, expenses and money for every business you run.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

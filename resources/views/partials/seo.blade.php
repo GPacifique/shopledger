@@ -1,7 +1,7 @@
 @php
     $siteName    = 'MahWi';
-    $title       = trim($__env->yieldContent('title')) ?: 'MahWi: sales, stock and money for every shop you run';
-    $description = trim($__env->yieldContent('description')) ?: 'Point of sale, purchases, expenses, products and reports for one shop or many. Built for shops in Rwanda.';
+    $title       = trim($__env->yieldContent('title')) ?: 'MahWi: sales, stock, incomes, expenses and money for every business you run';
+    $description = trim($__env->yieldContent('description')) ?: 'Point of sale, purchases, expenses, products and reports for one business or many. Built for businesses in Rwanda.';
     $image       = trim($__env->yieldContent('og_image')) ?: asset('images/og-image.png');
     $canonical   = trim($__env->yieldContent('canonical')) ?: url()->current();
     $robots      = trim($__env->yieldContent('robots')) ?: 'index, follow, max-image-preview:large';

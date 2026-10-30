@@ -6,9 +6,7 @@
     @resize.window.debounce.150ms="if (window.innerWidth >= 1024) sidebarOpen = false"
 >
 <head>
- @include('partials.seo')
-    @stack('head')
-    {{-- Basic meta --}}
+    {{-- Basic meta (charset must come first) --}}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -21,6 +19,9 @@
     <meta name="application-name" content="MahWi POS">
     <meta name="description" content="MahWi is a business management system for sales, inventory, purchases, expenses, income and business operations.">
 
+    @include('partials.seo')
+    @stack('head')
+
     <title>
         @hasSection('title')
             @yield('title') — MahWi
@@ -30,7 +31,7 @@
     </title>
 
     {{-- Favicon --}}
-    <link rel="icon" type="image/png" href="{{ asset('images/favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/favicon.ico') }}">
 
     {{-- PWA --}}
@@ -307,7 +308,7 @@
         ------------------------------------------------------------------ */
         .main-loading-overlay {
             position: fixed;
-            top: 4rem;
+            top: calc(4rem + env(safe-area-inset-top, 0px));
             right: 0;
             bottom: 0;
             left: var(--sidebar-w, 18rem);
@@ -470,13 +471,8 @@
         @php
             $authUser = Auth::user();
 
-            $photo = null;
-            foreach (['profile_photo_path', 'profile_image', 'avatar'] as $field) {
-                if (!empty($authUser?->{$field})) {
-                    $photo = asset('storage/' . $authUser->{$field});
-                    break;
-                }
-            }
+            // Profile photo saved as public/images/users/{id}.jpg|jpeg|png (see User::getProfilePhotoUrlAttribute)
+            $photo = $authUser?->profile_photo_url;
 
             $initials = collect(preg_split('/\s+/', trim($authUser?->name ?? 'U')))
                 ->filter()
@@ -485,8 +481,11 @@
                 ->implode('');
 
             $roleLabel = match ($authUser?->role) {
+                'system_admin'        => __('System administrator'),
                 'admin', 'shop_admin' => __('Administrator'),
+                'manager'             => __('Manager'),
                 'seller'              => __('Seller'),
+                'cashier'             => __('Cashier'),
                 'waiter'              => __('Waiter'),
                 'accountant'          => __('Accountant'),
                 'owner'               => __('Owner'),

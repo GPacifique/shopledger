@@ -54,6 +54,11 @@
         .notes   { margin-top: 16px; border-left: 3px solid #c7d2fe; background: #f8fafc; padding: 8px 11px; }
         .footer  { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e5e7eb; text-align: center; color: #9ca3af; font-size: 9px; }
 
+        /* QR code */
+        .qr      { margin-top: 20px; text-align: center; page-break-inside: avoid; }
+        .qr img  { width: 90px; height: 90px; }
+        .qr .cap { margin-top: 4px; font-size: 9px; color: #6b7280; }
+
         @media print { body { margin: 0; } }
     </style>
 </head>
@@ -73,19 +78,49 @@
     $paymentMethod = ucfirst(str_replace('_', ' ', $order->payment_method ?? '—'));
     $paymentStatus = ucfirst($order->payment_status ?? '—');
 
-    // Logo: read from the public disk and embed it, so it renders in PDFs as well as in the browser.
+    // Logo: embedded as base64 so it renders in PDFs as well as in the browser.
+    // New logos live in public/images/logos; older ones (shop-logos/...) are still read from storage.
     $logoSrc = null;
     if (!empty($shop->logo)) {
-        $logoPath = ltrim(preg_replace('#^(public/|storage/)#', '', $shop->logo), '/');
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
         try {
-            if ($disk->exists($logoPath)) {
-                $mime = $disk->mimeType($logoPath) ?: 'image/png';
-                $logoSrc = 'data:' . $mime . ';base64,' . base64_encode($disk->get($logoPath));
+            $logoFile = str_starts_with($shop->logo, 'images/')
+                ? public_path($shop->logo)
+                : storage_path('app/public/' . ltrim(preg_replace('#^(public/|storage/)#', '', $shop->logo), '/'));
+
+            if (is_file($logoFile)) {
+                $mime = mime_content_type($logoFile) ?: 'image/png';
+                $logoSrc = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoFile));
             }
         } catch (\Throwable $e) {
             $logoSrc = null;   // never let a bad logo break the bill
         }
+    }
+
+    // QR code: embedded as a base64 SVG <img>, which works in both the browser and DomPDF.
+    // What it contains: order number, shop, date and total (swap for a signed URL if you prefer).
+    $orderNo   = $order->order_number ?? $order->id;
+    $qrPayload = implode("\n", [
+        'Order: #' . $orderNo,
+        'Shop: ' . ($shop->business_name ?? 'MahWi POS'),
+        'Date: ' . optional($order->created_at)->format('Y-m-d H:i'),
+        'Total: ' . $currency . ' ' . $money($order->total_amount ?? 0),
+    ]);
+    // Option: link to the order instead (replace 'orders.receipt' with your route name)
+    // $qrPayload = \Illuminate\Support\Facades\URL::signedRoute('orders.receipt', $order);
+
+    // PNG data URI (needs the GD extension, which DomPDF already uses). Works in PDF and browser.
+    $qrSrc = null;
+    try {
+        $qrSrc = \Endroid\QrCode\Builder\Builder::create()
+            ->writer(new \Endroid\QrCode\Writer\PngWriter())
+            ->data($qrPayload)
+            ->size(300)
+            ->margin(0)
+            ->build()
+            ->getDataUri();
+    } catch (\Throwable $e) {
+        report($e);      // logged to storage/logs/laravel.log; the bill still prints without the QR
+        $qrSrc = null;
     }
 @endphp
 
@@ -221,6 +256,14 @@
         <div class="notes" style="border-left-color:#fca5a5; background:#fef2f2;">
             <div class="label">Rejection reason</div>
             {{ $order->rejection_reason }}
+        </div>
+    @endif
+
+    {{-- ===== QR code ===== --}}
+    @if ($qrSrc)
+        <div class="qr">
+            <img src="{{ $qrSrc }}" alt="QR code for order #{{ $orderNo }}" width="90" height="90">
+            <div class="cap">Scan to verify order #{{ $orderNo }}</div>
         </div>
     @endif
 

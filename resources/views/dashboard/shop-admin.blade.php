@@ -1,10 +1,17 @@
 <x-app-layout>
-    <x-slot name="header">
+   <x-slot name="header">
         <div class="flex items-center justify-between gap-4">
             <div class="flex min-w-0 items-center gap-4">
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-lg font-bold text-white shadow-lg">
-                    {{ mb_strtoupper(mb_substr($shop->business_name, 0, 2)) }}
-                </div>
+                {{-- Shop logo (images/logos/...), or initials when the shop has no logo --}}
+                @if ($shop->logo_url)
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-white p-1 shadow-lg">
+                        <img src="{{ $shop->logo_url }}" alt="{{ $shop->business_name }}" class="h-full w-full object-contain">
+                    </div>
+                @else
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-lg font-bold text-white shadow-lg">
+                        {{ mb_strtoupper(mb_substr($shop->business_name, 0, 2)) }}
+                    </div>
+                @endif
 
                 <div class="min-w-0">
                     <h2 class="tone-blue tx truncate text-xl font-bold leading-tight sm:text-3xl">

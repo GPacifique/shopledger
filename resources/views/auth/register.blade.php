@@ -688,7 +688,7 @@
 
           <div class="field">
             <label for="logo">{{ __('Shop logo') }} <span class="opt">({{ __('optional') }})</span></label>
-            <input id="logo" name="logo" type="file" accept="image/*">
+            <input id="logo" name="logo" type="file" accept="image/png,image/jpeg">
             <p class="field-hint">{{ __('PNG or JPG, up to 2 MB.') }}</p>
             @error('logo')
               <p class="field-error">{{ $message }}</p>

@@ -25,6 +25,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'shop_id',
         'account_status',
         'locale',
+        'phone',
+        'country',
+        'city',
+        'address',
     ];
 
     /**
@@ -50,7 +54,23 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    
+    /**
+     * Public URL of the profile photo saved as public/images/users/{id}.jpg|jpeg|png,
+     * or null when the user has no photo. No database column needed.
+     */
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        foreach (['jpg', 'jpeg', 'png'] as $ext) {
+            $relative = "images/users/{$this->id}.{$ext}";
+            $full = public_path($relative);
+
+            if (is_file($full)) {
+                return asset($relative) . '?v=' . filemtime($full);   // ?v= refreshes the browser cache after a change
+            }
+        }
+
+        return null;
+    }
 
     public function sales()
     {
@@ -81,8 +101,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->role === 'seller';
     }
-   public function shop()
-{
-    return $this->belongsTo(Shop::class, 'shop_id');
-}
+
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class, 'shop_id');
+    }
 }

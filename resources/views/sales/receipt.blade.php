@@ -15,13 +15,33 @@
         .right { text-align: right; }
         h2 { margin:6px 0; font-size:18px; }
         p { margin:4px 0; font-size:13px; }
+        .qr { margin-top:14px; text-align:center; }
+        .qr svg { width:110px; height:110px; }
+        .qr small { display:block; margin-top:4px; font-size:11px; color:#555; }
+        @media print { .qr svg { width:30mm; height:30mm; } }
     </style>
 </head>
 <body>
+    @php
+        $receiptNo = '#' . str_pad($sale->id, 5, '0', STR_PAD_LEFT);
+
+        // What the QR code contains. Swap this for a signed URL if you want
+        // customers to open the receipt online (see note below).
+        $qrPayload = implode("\n", [
+            'Receipt: ' . $receiptNo,
+            'Shop: ' . ($sale->shop->business_name ?? 'Shop'),
+            'Date: ' . $sale->sale_date->format('Y-m-d') . ' ' . $sale->created_at->format('H:i'),
+            'Total: ' . rwf($sale->total_amount),
+        ]);
+
+        // Option: link to the receipt instead (replace 'sales.receipt' with your route name)
+        // $qrPayload = \Illuminate\Support\Facades\URL::signedRoute('sales.receipt', $sale);
+    @endphp
+
     <div class="receipt">
         <div class="center">
-            @if(!empty($sale->shop->logo))
-                <img src="{{ asset('storage/' . $sale->shop->logo) }}" alt="logo" style="max-height:60px; margin-bottom:6px">
+            @if($sale->shop->logo_url)
+                <img src="{{ $sale->shop->logo_url }}" alt="logo" style="max-height:60px; margin-bottom:6px">
             @endif
             <h2>{{ $sale->shop->business_name ?? 'Shop' }}</h2>
             @if($sale->shop->address ?? null)
@@ -30,7 +50,7 @@
             @if($sale->shop->phone ?? null)
                 <p>Tel: {{ $sale->shop->phone }}</p>
             @endif
-            <p>Receipt: #{{ str_pad($sale->id, 5, '0', STR_PAD_LEFT) }}</p>
+            <p>Receipt: {{ $receiptNo }}</p>
             <p>{{ $sale->sale_date->format('M d, Y') }} {{ $sale->created_at->format('h:i A') }}</p>
         </div>
 
@@ -68,6 +88,13 @@
         @if($sale->customer)
             <p class="center">Customer: {{ $sale->customer->name }}</p>
         @endif
+
+        <div class="line"></div>
+
+        <div class="qr">
+            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(110)->margin(0)->errorCorrection('M')->generate($qrPayload) !!}
+            <small>Scan to verify receipt {{ $receiptNo }}</small>
+        </div>
 
         <p class="center" style="margin-top:12px; font-size:12px">Thank you for your business</p>
     </div>

@@ -121,7 +121,7 @@ class SecurityHeaders
         $style   = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://fonts.bunny.net', 'https://cdnjs.cloudflare.com'];
         $font    = ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://fonts.bunny.net', 'https://cdnjs.cloudflare.com'];
         $img     = ["'self'", 'data:', 'blob:', 'https://images.unsplash.com'];
-        $connect = ["'self'"];
+        $connect = ["'self'", 'https://cdn.jsdelivr.net'];
 
         // Allow the Vite dev server while `npm run dev` is running (never in production).
         if (! app()->environment('production') && is_file($hot = public_path('hot'))) {

@@ -25,8 +25,3 @@ self.addEventListener('activate', (event) => {
         ).then(() => self.clients.claim())
     );
 });
-
-self.addEventListener('fetch', (event) => {
-    // Do not cache Laravel requests or authenticated business data.
-    // Add carefully selected offline strategies in a later step.
-});

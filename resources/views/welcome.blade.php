@@ -21,7 +21,7 @@
     $policyUpdated = \Illuminate\Support\Carbon::create(2026, 10, 20)->locale($current)->translatedFormat('j F Y');
 
     // SEO values handed to partials.seo
-    $seoTitle       = $appName . ': ' . __('sales, stock and money for every shop you run');
+    $seoTitle       = $appName . ': ' . __('sales, stock ,incomes,expenses and money for every business you run');
     $seoDescription = __('Point of sale, purchases, expenses, products and reports for one shop or many. Sellers, waiters, managers and accountants each get the screens they need.');
 
     $features = [
@@ -615,7 +615,7 @@
     <div class="hero">
         <div class="wrap hero-grid">
             <div>
-                <h1>{{ __('Sales, stock and money for every shop you run.') }}</h1>
+                <h1>{{ __('Sales, stock, incomes, expenses and money for every business you run.') }}</h1>
                 <p class="lede">
                     {{ __('Sell at the till, record what you buy and spend, and see profit and loss by day, week, month or year. Your sellers, waiters, managers and accountants each get the screens they need and nothing more.') }}
                 </p>
@@ -725,11 +725,11 @@
     {{-- ================= ABOUT ================= --}}
     <section id="about">
         <div class="wrap about-grid">
-            <h2>{{ __('Built for the people who actually run shops.') }}</h2>
+            <h2>{{ __('Built for the people who actually run businesses.') }}</h2>
             <div class="about-copy">
-                <p>{!! __(':app started with a simple question: why does a small shop need three notebooks, a calculator and a spreadsheet to know whether it made money today?', ['app' => '<strong>' . e($appName) . '</strong>']) !!}</p>
-                <p>{{ __('So we put selling, buying, spending and reporting in one app. Owners get a clear picture of every shop. Staff get a short list of screens that match their job. Nobody has to learn accounting to use it.') }}</p>
-                <p>{{ __('It works for a single counter, a restaurant with waiters, or an owner with several locations, because each shop keeps its own records under one login.') }}</p>
+                <p>{!! __(':app started with a simple question: why does a small business need three notebooks, a calculator and a spreadsheet to know whether it made money today?', ['app' => '<strong>' . e($appName) . '</strong>']) !!}</p>
+                <p>{{ __('So we put selling, buying, spending and reporting in one app. Owners get a clear picture of every business. Staff get a short list of screens that match their job. Nobody has to learn accounting to use it.') }}</p>
+                <p>{{ __('It works for a single counter, a restaurant with waiters, or an owner with several locations, because each business keeps its own records under one login.') }}</p>
                 <div class="stat-line">
                     {{ __('Questions before you sign up?') }}
                     @if ($hasContact)
@@ -793,7 +793,7 @@
                     <a href="{{ route('dashboard') }}" class="btn btn-primary">{{ __('Open dashboard') }}</a>
                 @else
                     @if ($hasRegister)
-                        <a href="{{ route('register') }}" class="btn btn-primary">{{ __('Register your shop') }}</a>
+                        <a href="{{ route('register') }}" class="btn btn-primary">{{ __('Register your business') }}</a>
                     @endif
                     @if ($hasLogin)
                         <a href="{{ route('login') }}" class="btn btn-ghost">{{ __('Log in') }}</a>
@@ -813,7 +813,7 @@
                     <img src="{{ asset('icons/icon-192.png') }}" alt="" width="36" height="36" class="brand-logo">
                     <span>{{ $appName }}</span>
                 </a>
-                <p>{{ __('Sales, stock and money for every shop you run.') }}</p>
+                <p>{{ __('Sales, stock, incomes, expenses and money for every business you run.') }}</p>
             </div>
             <div>
                 <h3>{{ __('Product') }}</h3>
@@ -840,7 +840,7 @@
                         <li><a href="{{ route('dashboard') }}">{{ __('Open dashboard') }}</a></li>
                     @else
                         @if ($hasLogin)<li><a href="{{ route('login') }}">{{ __('Log in') }}</a></li>@endif
-                        @if ($hasRegister)<li><a href="{{ route('register') }}">{{ __('Register your shop') }}</a></li>@endif
+                        @if ($hasRegister)<li><a href="{{ route('register') }}">{{ __('Register your business') }}</a></li>@endif
                     @endauth
                 </ul>
                 @if (Route::has('language.switch'))

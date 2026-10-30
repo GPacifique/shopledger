@@ -10,14 +10,16 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 class RegisteredUserController extends Controller
 {
+    private const LOGO_DIR = 'images/logos';
+
     public function create()
     {
         return view('auth.register');
@@ -41,12 +43,12 @@ class RegisteredUserController extends Controller
             'country'             => ['required', 'string', 'max:100'],
             'city'                => ['required', 'string', 'max:100'],
             'address'             => ['required', 'string', 'max:500'],
-            'logo'                => ['nullable', 'image', 'max:2048'],
+
+            // JPG / PNG only, max 2 MB
+            'logo'                => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ]);
 
-        $logoPath = $request->hasFile('logo')
-            ? $request->file('logo')->store('shop-logos', 'public')
-            : null;
+        $logoPath = $this->saveLogo($request);   // e.g. images/logos/k3jfx92aqw7bnc1d.png, or null
 
         try {
             $user = DB::transaction(function () use ($data, $logoPath) {
@@ -60,7 +62,7 @@ class RegisteredUserController extends Controller
                     'city'     => $data['city'],
                     'address'  => $data['address'],
                     'password' => Hash::make($data['password']),
-                    'role'     => 'buyer', // use the exact role string your RoleMiddleware expects
+                    'role'     => 'user', // use the exact role string your RoleMiddleware expects
                 ])->save();
 
                 $shop = new Shop();
@@ -75,7 +77,7 @@ class RegisteredUserController extends Controller
                     'country'             => $data['country'],
                     'city'                => $data['city'],
                     'address'             => $data['address'],
-                    'logo'                => $logoPath,
+                    'logo'                => $logoPath,   // stored as images/logos/xxxx.png|jpg
                     'status'              => 'pending', // a system admin approves it later
                 ]);
 
@@ -94,7 +96,7 @@ class RegisteredUserController extends Controller
         } catch (\Throwable $e) {
             // Don't leave an orphaned logo file if the database write failed
             if ($logoPath) {
-                Storage::disk('public')->delete($logoPath);
+                File::delete(public_path($logoPath));
             }
             throw $e;
         }
@@ -104,6 +106,24 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect()->route('verification.notice');
+    }
+
+    /**
+     * Moves the uploaded logo into public/images/logos and returns its public-relative path.
+     */
+    private function saveLogo(Request $request): ?string
+    {
+        if (! $request->hasFile('logo')) {
+            return null;
+        }
+
+        $file = $request->file('logo');
+        $name = strtolower(Str::random(16)) . '.' . $file->extension();   // extension comes from the real file type: jpg or png
+
+        File::ensureDirectoryExists(public_path(self::LOGO_DIR));
+        $file->move(public_path(self::LOGO_DIR), $name);
+
+        return self::LOGO_DIR . '/' . $name;
     }
 
     private function generateRegistrationNumber(): string

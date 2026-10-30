@@ -103,4 +103,15 @@ class Shop extends Model
     {
         return $this->hasMany(ReportDelivery::class);
     }
+    public function getLogoUrlAttribute(): ?string
+{
+    if (! $this->logo) {
+        return null;
+    }
+
+    // New logos: images/logos/xxx.png  |  older logos: shop-logos/xxx.png (in storage)
+    return str_starts_with($this->logo, 'images/')
+        ? asset($this->logo)
+        : asset('storage/' . $this->logo);
+}
 }

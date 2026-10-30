@@ -11,7 +11,7 @@
 
     <title>
         {{ config('app.name', 'MahwiPOS') }}
-        | @yield('title', 'All-in-one business management system for shops')
+        | @yield('title', 'All-in-one business management system for businesses in Rwanda and beyond')
     </title>
 
     <meta name="application-name" content="MahwiPOS">
