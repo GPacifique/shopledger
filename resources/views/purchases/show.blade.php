@@ -45,12 +45,7 @@
 
     <div class="py-12">
         <div class="mx-auto max-w-4xl sm:px-6 lg:px-8">
-            @if(session('success'))
-                <div role="status"
-                     class="mb-4 rounded border border-[color:var(--accent)] bg-[color:var(--accent-soft)] px-4 py-3 text-[color:var(--accent-text)]">
-                    {{ session('success') }}
-                </div>
-            @endif
+           
 
             <!-- Purchase Info -->
             <div class="{{ $card }} mb-6">
