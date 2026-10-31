@@ -1,34 +1,24 @@
-<div class="flex flex-wrap gap-2 mb-6">
+{{-- Coloured buttons keep white text; Print uses the theme classes. No bottom margin: it sits inside the filter card. --}}
+<div class="ui-no-print flex flex-wrap gap-2">
 
-    <a
-        href="{{ route('reports.export.pdf', request()->query()) }}"
-        class="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">
-
+    <a href="{{ route('reports.export.pdf', request()->query()) }}"
+       class="ui-focus inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700">
         PDF
     </a>
 
-
-    <a
-        href="{{ route('reports.export.excel', request()->query()) }}"
-        class="inline-flex items-center px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">
-
+    <a href="{{ route('reports.export.excel', request()->query()) }}"
+       class="ui-focus inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700">
         Excel
     </a>
 
-
-    <a
-        href="{{ route('reports.export.csv', request()->query()) }}"
-        class="inline-flex items-center px-4 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-800">
-
+    <a href="{{ route('reports.export.csv', request()->query()) }}"
+       class="ui-focus inline-flex items-center rounded-lg bg-slate-700 px-4 py-2 text-white hover:bg-slate-600">
         CSV
     </a>
 
-
-    <button
-        type="button"
-        onclick="window.print()"
-        class="inline-flex items-center px-4 py-2 rounded-lg border bg-white hover:bg-slate-50">
-
+    {{-- data-print is handled by the script in partials/ui-theme (CSP-safe, no inline onclick) --}}
+    <button type="button" data-print
+            class="ui-btn-outline ui-focus inline-flex items-center rounded-lg px-4 py-2">
         Print
     </button>
 
