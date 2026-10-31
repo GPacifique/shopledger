@@ -21,6 +21,316 @@
         </div>
     </x-slot>
 
+    {{-- =========================================================
+         3D PRODUCT CARD STYLES
+    ========================================================== --}}
+    <style nonce="{{ Vite::cspNonce() }}">
+        /* Scene: gives every card its own perspective so tilt looks real */
+        .pos-scene {
+            perspective: 900px;
+            perspective-origin: 50% 40%;
+        }
+
+        .pos-card {
+            --rx: 0deg;
+            --ry: 0deg;
+            --lift: 0px;
+            --mx: 50%;
+            --my: 0%;
+            --hue: 230;
+
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 1.15rem;
+            cursor: pointer;
+            outline: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+
+            transform-style: preserve-3d;
+            transform: rotateX(var(--rx)) rotateY(var(--ry)) translateZ(var(--lift));
+            transition: transform .45s cubic-bezier(.2, .8, .2, 1), box-shadow .45s cubic-bezier(.2, .8, .2, 1);
+            will-change: transform;
+
+            box-shadow:
+                0 1px 2px rgba(10, 10, 30, .25),
+                0 10px 18px -8px rgba(10, 10, 40, .45),
+                0 22px 34px -16px rgba(40, 30, 120, .35);
+        }
+
+        .pos-card.is-tilting {
+            transition: transform .08s linear, box-shadow .3s ease;
+        }
+
+        @media (hover: hover) {
+            .pos-card:not(.is-out):hover {
+                --lift: 18px;
+                box-shadow:
+                    0 2px 4px rgba(10, 10, 30, .25),
+                    0 18px 28px -10px rgba(10, 10, 40, .55),
+                    0 38px 56px -22px rgba(60, 40, 180, .55);
+            }
+        }
+
+        .pos-card:not(.is-out):active {
+            --lift: 4px;
+            transition-duration: .12s;
+        }
+
+        .pos-card:focus-visible {
+            box-shadow: 0 0 0 3px #fff, 0 0 0 6px #6366f1, 0 18px 30px -10px rgba(60, 40, 180, .5);
+        }
+
+        .pos-card.is-out {
+            cursor: not-allowed;
+        }
+
+        .pos-card.is-out .pos-media {
+            filter: grayscale(1) brightness(.75);
+        }
+
+        /* Image layer: full card background, clipped to rounded corners */
+        .pos-media {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            border-radius: inherit;
+            background: linear-gradient(135deg,
+                hsl(var(--hue) 70% 48%),
+                hsl(calc(var(--hue) + 45) 75% 28%));
+            transform: translateZ(0);
+        }
+
+        .pos-media img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.03);
+            transition: transform .7s cubic-bezier(.2, .8, .2, 1);
+        }
+
+        @media (hover: hover) {
+            .pos-card:not(.is-out):hover .pos-media img {
+                transform: scale(1.12);
+            }
+        }
+
+        /* Initial letter shown when a product has no image */
+        .pos-initial {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 18%;
+            font-size: 5.5rem;
+            font-weight: 800;
+            line-height: 1;
+            color: rgba(255, 255, 255, .22);
+            text-shadow: 0 6px 24px rgba(0, 0, 0, .25);
+        }
+
+        /* Legibility gradient behind floating text */
+        .pos-scrim {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top,
+                rgba(8, 8, 22, .88) 0%,
+                rgba(8, 8, 22, .35) 42%,
+                rgba(8, 8, 22, 0) 68%);
+        }
+
+        /* Light that follows the pointer */
+        .pos-shine {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity .3s ease;
+            background: radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, .38), transparent 55%);
+            pointer-events: none;
+        }
+
+        .pos-card.is-tilting .pos-shine {
+            opacity: 1;
+        }
+
+        /* Glass edge */
+        .pos-media::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22), inset 0 1px 0 rgba(255, 255, 255, .35);
+            pointer-events: none;
+        }
+
+        /* Floating layers sit at different depths above the image */
+        .pos-float {
+            position: absolute;
+            transform: translateZ(var(--z, 40px));
+        }
+
+        .pos-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .22rem .6rem;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.2;
+            color: #fff;
+            background: rgba(14, 14, 32, .5);
+            -webkit-backdrop-filter: blur(10px) saturate(150%);
+            backdrop-filter: blur(10px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, .22);
+            box-shadow: 0 8px 16px -6px rgba(0, 0, 0, .55);
+        }
+
+        .pos-dot {
+            width: .5rem;
+            height: .5rem;
+            border-radius: 999px;
+        }
+
+        .pos-dot.ok   { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+        .pos-dot.low  { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
+        .pos-dot.none { background: #f87171; box-shadow: 0 0 8px #f87171; }
+
+        /* Quantity stepper shown once a product is in the cart */
+        .pos-stepper {
+            display: inline-flex;
+            align-items: center;
+            gap: .1rem;
+            padding: .15rem;
+            border-radius: 999px;
+            color: #fff;
+            background: rgba(79, 70, 229, .85);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, .3);
+            box-shadow: 0 10px 18px -6px rgba(30, 20, 120, .7);
+        }
+
+        .pos-step-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.65rem;
+            height: 1.65rem;
+            border-radius: 999px;
+            font-size: .95rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #fff;
+            background: rgba(255, 255, 255, .16);
+            transition: background .15s ease;
+        }
+
+        .pos-step-btn:hover {
+            background: rgba(255, 255, 255, .32);
+        }
+
+        .pos-step-count {
+            min-width: 1.4rem;
+            text-align: center;
+            font-size: .8rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Bottom stack: price tag floats above the glass info panel */
+        .pos-bottom {
+            position: absolute;
+            left: .6rem;
+            right: .6rem;
+            bottom: .6rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transform-style: preserve-3d;
+        }
+
+        .pos-price {
+            --z: 80px;
+            position: relative;
+            z-index: 2;
+            margin-bottom: -.4rem;
+            margin-left: .4rem;
+            padding: .28rem .7rem;
+            border-radius: .65rem;
+            font-size: .85rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: .01em;
+            color: #fff;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: 1px solid rgba(255, 255, 255, .35);
+            box-shadow: 0 12px 20px -8px rgba(60, 40, 200, .85), inset 0 1px 0 rgba(255, 255, 255, .35);
+            transform: translateZ(var(--z)) rotateZ(-2deg);
+        }
+
+        .pos-info {
+            --z: 50px;
+            position: relative;
+            width: 100%;
+            padding: .7rem .7rem .6rem;
+            border-radius: .85rem;
+            color: #fff;
+            background: rgba(14, 14, 32, .5);
+            -webkit-backdrop-filter: blur(12px) saturate(150%);
+            backdrop-filter: blur(12px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, .22);
+            box-shadow: 0 14px 24px -10px rgba(0, 0, 0, .65);
+            transform: translateZ(var(--z));
+        }
+
+        .pos-name {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-size: .85rem;
+            font-weight: 700;
+            line-height: 1.2;
+            text-shadow: 0 1px 6px rgba(0, 0, 0, .5);
+        }
+
+        .pos-sku {
+            margin-top: .15rem;
+            font-size: 11px;
+            color: rgba(255, 255, 255, .72);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Feedback when a product is added */
+        @keyframes pos-pop {
+            0%   { transform: rotateX(0) rotateY(0) translateZ(0) scale(1); }
+            40%  { transform: rotateX(-6deg) rotateY(0) translateZ(34px) scale(1.05); }
+            100% { transform: rotateX(0) rotateY(0) translateZ(0) scale(1); }
+        }
+
+        .pos-card.pos-pop {
+            animation: pos-pop .45s cubic-bezier(.2, .8, .2, 1);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .pos-card,
+            .pos-media img {
+                transition: none;
+            }
+
+            .pos-card.pos-pop {
+                animation: none;
+            }
+        }
+    </style>
+
     <div class="py-4 sm:py-6">
         <div class="mx-auto max-w-screen-2xl px-3 sm:px-6 lg:px-8">
             <div id="checkout-success" class="mb-4 hidden rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-900/30 dark:text-green-200" role="alert" aria-live="polite">
@@ -86,9 +396,9 @@
                         <div id="pos-categories" class="mt-3 flex gap-2 overflow-x-auto pb-1"></div>
                     </div>
 
-                    {{-- Cards grid --}}
+                    {{-- Cards grid (padding leaves room for the 3D lift and shadows) --}}
                     <div id="pos-grid"
-                         class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"></div>
+                         class="grid grid-cols-2 gap-4 p-1 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"></div>
 
                     <p id="pos-empty"
                        class="hidden rounded-xl border border-dashed border-gray-300 p-10 text-center text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400">
@@ -217,6 +527,9 @@
             const byId = new Map(products.map(p => [p.id, p]));
             const cart = new Map();            // product id -> quantity
             let activeCategory = 'all';
+            let lastAddedId = null;            // drives the "pop" animation
+
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
             /* ---------------------------------------------------------
              | Elements
@@ -363,76 +676,112 @@
             }
 
             /* ---------------------------------------------------------
-             | Product cards
+             | Product cards (square, image background, floating text, 3D)
              --------------------------------------------------------- */
+            function buildCard(p) {
+                const out = p.stock <= 0;
+                const inCart = cart.get(p.id) || 0;
+                const low = !out && p.minimum_stock > 0 && p.stock <= p.minimum_stock;
+
+                const scene = el('div', 'pos-scene');
+
+                const card = el(
+                    'div',
+                    'pos-card' + (out ? ' is-out' : '') + (p.id === lastAddedId ? ' pos-pop' : '')
+                );
+                card.setAttribute('role', 'button');
+                card.setAttribute('aria-disabled', out ? 'true' : 'false');
+                card.setAttribute('aria-label', p.name + ', ' + money(p.price));
+                card.tabIndex = out ? -1 : 0;
+                card.dataset.id = p.id;
+                card.style.setProperty('--hue', String((Number(p.id) * 47) % 360));
+
+                /* Layer 0: image fills the whole card */
+                const media = el('div', 'pos-media');
+
+                if (p.image) {
+                    const img = document.createElement('img');
+                    img.src = p.image;
+                    img.alt = '';
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
+                    img.draggable = false;
+                    img.addEventListener('error', () => {
+                        img.remove();
+                        media.prepend(el('span', 'pos-initial', (p.name || '?').charAt(0).toUpperCase()));
+                    });
+                    media.appendChild(img);
+                } else {
+                    media.appendChild(el('span', 'pos-initial', (p.name || '?').charAt(0).toUpperCase()));
+                }
+
+                media.appendChild(el('div', 'pos-scrim'));
+                media.appendChild(el('div', 'pos-shine'));
+                card.appendChild(media);
+
+                /* Floating: stock chip (top-left) */
+                const chip = el('span', 'pos-chip pos-float');
+                chip.style.setProperty('--z', '45px');
+                chip.style.left = '.6rem';
+                chip.style.top = '.6rem';
+                chip.appendChild(el('span', 'pos-dot ' + (out ? 'none' : low ? 'low' : 'ok')));
+                chip.appendChild(document.createTextNode(
+                    out
+                        ? @json(__('Out of stock'))
+                        : Number(p.stock).toLocaleString('en-RW', { maximumFractionDigits: 2 }) + ' ' + @json(__('left'))
+                ));
+                card.appendChild(chip);
+
+                /* Floating: quantity stepper (top-right) once in cart */
+                if (inCart > 0) {
+                    const stepper = el('div', 'pos-stepper pos-float');
+                    stepper.style.setProperty('--z', '70px');
+                    stepper.style.right = '.5rem';
+                    stepper.style.top = '.5rem';
+
+                    const minus = el('button', 'pos-step-btn', '−');
+                    minus.type = 'button';
+                    minus.dataset.cardAct = 'dec';
+                    minus.setAttribute('aria-label', @json(__('Remove one')));
+
+                    const count = el('span', 'pos-step-count', String(inCart));
+
+                    const plus = el('button', 'pos-step-btn', '+');
+                    plus.type = 'button';
+                    plus.dataset.cardAct = 'inc';
+                    plus.setAttribute('aria-label', @json(__('Add one')));
+
+                    stepper.append(minus, count, plus);
+                    card.appendChild(stepper);
+                }
+
+                /* Floating: price tag over glass panel with name + SKU */
+                const bottom = el('div', 'pos-bottom');
+                bottom.appendChild(el('div', 'pos-price', money(p.price)));
+
+                const info = el('div', 'pos-info');
+                info.appendChild(el('p', 'pos-name', p.name));
+                if (p.sku) {
+                    info.appendChild(el('p', 'pos-sku', p.sku));
+                }
+                bottom.appendChild(info);
+                card.appendChild(bottom);
+
+                scene.appendChild(card);
+                return scene;
+            }
+
             function renderGrid() {
                 const list = filtered();
                 const shown = list.slice(0, MAX_CARDS);
 
                 gridEl.replaceChildren();
 
-                shown.forEach(p => {
-                    const out = p.stock <= 0;
-                    const inCart = cart.get(p.id) || 0;
+                const frag = document.createDocumentFragment();
+                shown.forEach(p => frag.appendChild(buildCard(p)));
+                gridEl.appendChild(frag);
 
-                    const card = el(
-                        'button',
-                        'group relative flex flex-col overflow-hidden rounded-xl border bg-white text-left shadow-sm transition dark:bg-gray-800 ' +
-                        (out
-                            ? 'cursor-not-allowed border-gray-200 opacity-60 dark:border-gray-700'
-                            : 'border-gray-200 hover:-translate-y-0.5 hover:border-indigo-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700')
-                    );
-                    card.type = 'button';
-                    card.dataset.id = p.id;
-                    card.disabled = out;
-
-                    // Image area
-                    const imgWrap = el('div', 'relative flex aspect-square w-full items-center justify-center bg-gray-50 dark:bg-gray-900');
-
-                    if (p.image) {
-                        const img = document.createElement('img');
-                        img.src = p.image;
-                        img.alt = p.name;
-                        img.loading = 'lazy';
-                        img.decoding = 'async';
-                        img.className = 'h-full w-full object-cover';
-                        imgWrap.appendChild(img);
-                    } else {
-                        imgWrap.innerHTML = PLACEHOLDER_SVG;
-                    }
-
-                    // Stock badge
-                    const low = !out && p.minimum_stock > 0 && p.stock <= p.minimum_stock;
-                    const badge = el(
-                        'span',
-                        'absolute left-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-semibold ' +
-                        (out ? 'bg-red-100 text-red-700' : low ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'),
-                        out ? @json(__('Out of stock')) : (Number(p.stock).toLocaleString('en-RW', { maximumFractionDigits: 2 }) + ' ' + @json(__('left')))
-                    );
-                    imgWrap.appendChild(badge);
-
-                    // In-cart indicator
-                    if (inCart > 0) {
-                        imgWrap.appendChild(el(
-                            'span',
-                            'absolute right-2 top-2 flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-indigo-600 px-1.5 text-xs font-bold text-white',
-                            String(inCart)
-                        ));
-                    }
-
-                    card.appendChild(imgWrap);
-
-                    // Info
-                    const info = el('div', 'flex flex-1 flex-col gap-1 p-3');
-                    info.appendChild(el('p', 'line-clamp-2 text-sm font-semibold leading-snug text-gray-900 dark:text-gray-100', p.name));
-                    if (p.sku) {
-                        info.appendChild(el('p', 'text-[11px] text-gray-500 dark:text-gray-400', p.sku));
-                    }
-                    info.appendChild(el('p', 'mt-auto pt-1 text-sm font-bold tabular-nums text-indigo-700 dark:text-indigo-300', money(p.price)));
-
-                    card.appendChild(info);
-                    gridEl.appendChild(card);
-                });
+                lastAddedId = null;
 
                 emptyEl.classList.toggle('hidden', list.length > 0);
                 moreEl.classList.toggle('hidden', list.length <= MAX_CARDS);
@@ -466,6 +815,7 @@
                 }
 
                 cart.set(p.id, next);
+                lastAddedId = p.id;
                 renderCart();
                 renderGrid();
                 toast('+ ' + p.name);
@@ -590,13 +940,77 @@
                 renderGrid();
             });
 
-            // Product cards
+            // Product cards: stepper buttons first, then the card itself
             gridEl.addEventListener('click', function (e) {
-                const card = e.target.closest('button[data-id]');
-                if (!card) return;
+                const stepBtn = e.target.closest('[data-card-act]');
+
+                if (stepBtn) {
+                    const card = stepBtn.closest('.pos-card');
+                    if (!card) return;
+                    const id = Number(card.dataset.id);
+                    const qty = cart.get(id) || 0;
+                    setQty(id, stepBtn.dataset.cardAct === 'inc' ? qty + 1 : qty - 1);
+                    return;
+                }
+
+                const card = e.target.closest('.pos-card');
+                if (!card || card.getAttribute('aria-disabled') === 'true') return;
+
                 const p = byId.get(Number(card.dataset.id));
                 if (p) addToCart(p, 1);
             });
+
+            // Keyboard: Enter / Space on a focused card adds it
+            gridEl.addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+
+                const card = e.target.closest('.pos-card');
+                if (!card || e.target !== card) return;
+
+                e.preventDefault();
+                if (card.getAttribute('aria-disabled') === 'true') return;
+
+                const p = byId.get(Number(card.dataset.id));
+                if (p) addToCart(p, 1);
+            });
+
+            // 3D tilt that follows the mouse (skipped for touch and reduced motion)
+            if (!reduceMotion) {
+                const MAX_TILT = 14;
+
+                gridEl.addEventListener('pointermove', function (e) {
+                    if (e.pointerType !== 'mouse') return;
+
+                    const scene = e.target.closest('.pos-scene');
+                    if (!scene) return;
+
+                    const card = scene.firstElementChild;
+                    if (!card || card.classList.contains('is-out')) return;
+
+                    // Measure the un-tilted scene so the maths stays stable
+                    const rect = scene.getBoundingClientRect();
+                    const px = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+                    const py = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
+
+                    card.classList.add('is-tilting');
+                    card.style.setProperty('--ry', ((px - 0.5) * 2 * MAX_TILT).toFixed(2) + 'deg');
+                    card.style.setProperty('--rx', ((0.5 - py) * 2 * MAX_TILT).toFixed(2) + 'deg');
+                    card.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+                    card.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+                });
+
+                gridEl.addEventListener('pointerout', function (e) {
+                    const scene = e.target.closest('.pos-scene');
+                    if (!scene || scene.contains(e.relatedTarget)) return;
+
+                    const card = scene.firstElementChild;
+                    if (!card) return;
+
+                    card.classList.remove('is-tilting');
+                    card.style.setProperty('--rx', '0deg');
+                    card.style.setProperty('--ry', '0deg');
+                });
+            }
 
             // Live search
             searchEl.addEventListener('input', renderGrid);
