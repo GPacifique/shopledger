@@ -318,10 +318,12 @@
                                         <div class="flex items-center gap-3">
                                             {{-- Product image (or placeholder) --}}
                                             <a href="{{ route('products.show', $product) }}"
-                                               class="ui-focus block h-14 w-14 shrink-0 overflow-hidden rounded-lg"
+                                               class="ui-focus relative block h-14 w-14 shrink-0 overflow-hidden rounded-lg"
                                                tabindex="-1" aria-hidden="true">
-                                                @if ($imageUrl)
+
+                                                @if (filled($imageUrl))
                                                     <img
+                                                        data-product-img
                                                         src="{{ $imageUrl }}"
                                                         alt="{{ $product->name }}"
                                                         width="56"
@@ -330,15 +332,19 @@
                                                         decoding="async"
                                                         class="h-14 w-14 rounded-lg border border-gray-200 object-cover dark:border-gray-700"
                                                     >
-                                                @else
-                                                    <span class="ui-icon-circle flex h-14 w-14 items-center justify-center rounded-lg" title="{{ __('No image') }}">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-                                                            <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                                            <circle cx="8.5" cy="8.5" r="1.5"/>
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 15-5-5L5 21"/>
-                                                        </svg>
-                                                    </span>
                                                 @endif
+
+                                                {{-- Placeholder: shown when there is no URL, revealed by JS if the image fails to load --}}
+                                                <span
+                                                    class="js-img-placeholder {{ filled($imageUrl) ? 'hidden' : 'flex' }} h-14 w-14 flex-col items-center justify-center rounded-lg border border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500"
+                                                    title="{{ __('No image') }}"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 15-5-5L5 21"/>
+                                                    </svg>
+                                                </span>
                                             </a>
 
                                             <div class="min-w-0">
@@ -576,6 +582,36 @@
                     fileInput.focus();
                 }
             }
+
+            // Show the placeholder when a product image fails to load.
+            function showImagePlaceholder(img) {
+                img.classList.add('hidden');
+
+                const placeholder = img.parentElement
+                    ? img.parentElement.querySelector('.js-img-placeholder')
+                    : null;
+
+                if (placeholder) {
+                    placeholder.classList.remove('hidden');
+                    placeholder.classList.add('flex');
+                }
+            }
+
+            // "error" events don't bubble, so listen in the capture phase.
+            document.addEventListener('error', function (event) {
+                const img = event.target;
+
+                if (img instanceof HTMLImageElement && img.matches('[data-product-img]')) {
+                    showImagePlaceholder(img);
+                }
+            }, true);
+
+            // Catch images that already failed before this script ran.
+            document.querySelectorAll('img[data-product-img]').forEach(function (img) {
+                if (img.complete && img.naturalWidth === 0) {
+                    showImagePlaceholder(img);
+                }
+            });
 
             document.addEventListener('click', function (event) {
                 const target = event.target;
