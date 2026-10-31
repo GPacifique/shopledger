@@ -522,16 +522,17 @@ public function exportCsv(Request $request)
             );
 
             $buyingPrice = (float) (
-                $item->buying_price
-                ?? $item->cost_price
+                $item?->cost_price_at_sale
+                ?? $item?->buying_price
+                ?? $item?->cost_price
                 ?? $product?->buying_price
                 ?? 0
             );
 
             $sellingPrice = (float) (
-                $item->selling_price
-                ?? $item->unit_price
-                ?? $item->price
+                $item?->unit_price
+                ?? $item?->selling_price
+                ?? $item?->price
                 ?? 0
             );
 
@@ -549,17 +550,17 @@ public function exportCsv(Request $request)
 
             fputcsv($handle, [
 
-                $row['order']->created_at?->format(
-                    'Y-m-d H:i'
-                ),
+                ($row['sale'] ?? $row['order'])?->sale_date
+                    ? \Carbon\Carbon::parse(($row['sale'] ?? $row['order'])->sale_date)->format('Y-m-d H:i')
+                    : (($row['sale'] ?? $row['order'])?->created_at?->format('Y-m-d H:i') ?? ''),
 
-                $row['order']->id,
+                ($row['sale'] ?? $row['order'])?->id ?? '',
 
                 $product?->name
                     ?? 'Unknown Product',
 
                 $product?->sku
-                    ?? $item->sku
+                    ?? $item?->sku
                     ?? '',
 
                 $quantity,

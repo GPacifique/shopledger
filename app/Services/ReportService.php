@@ -43,6 +43,7 @@ class ReportService
             foreach ($sale->items as $item) {
                 $items->push([
                     'sale' => $sale,
+                    'order' => $sale,
                     'item' => $item,
                     'product' => $item->product,
                 ]);

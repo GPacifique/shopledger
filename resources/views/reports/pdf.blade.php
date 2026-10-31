@@ -193,23 +193,26 @@
 
             @php
 
-                $item = $row['item'];
+                $item = $row['item'] ?? null;
 
-                $product = $row['product'];
+                $product = $row['product'] ?? null;
 
-                $quantity = (float) ($item->quantity ?? 0);
+                $sale = $row['sale'] ?? $row['order'] ?? null;
+
+                $quantity = (float) ($item?->quantity ?? 0);
 
                 $buyingPrice = (float) (
-                    $item->buying_price
-                    ?? $item->cost_price
+                    $item?->cost_price_at_sale
+                    ?? $item?->buying_price
+                    ?? $item?->cost_price
                     ?? $product?->buying_price
                     ?? 0
                 );
 
                 $sellingPrice = (float) (
-                    $item->selling_price
-                    ?? $item->unit_price
-                    ?? $item->price
+                    $item?->unit_price
+                    ?? $item?->selling_price
+                    ?? $item?->price
                     ?? 0
                 );
 
@@ -224,11 +227,13 @@
             <tr>
 
                 <td>
-                    {{ $row['order']->created_at?->format('d/m/Y') }}
+                    {{ $sale?->sale_date
+                        ? \Carbon\Carbon::parse($sale->sale_date)->format('d/m/Y')
+                        : ($sale?->created_at?->format('d/m/Y') ?? '—') }}
                 </td>
 
                 <td>
-                    #{{ $row['order']->id }}
+                    #{{ $sale?->id ?? '—' }}
                 </td>
 
                 <td>

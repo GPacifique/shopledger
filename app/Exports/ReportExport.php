@@ -43,25 +43,28 @@ class ReportExport implements
 
     public function map($row): array
     {
-        $item = $row['item'];
+        $item = $row['item'] ?? null;
 
-        $product = $row['product'];
+        $product = $row['product'] ?? null;
+
+        $sale = $row['sale'] ?? $row['order'] ?? null;
 
         $quantity = (float) (
             $item->quantity ?? 0
         );
 
         $buyingPrice = (float) (
-            $item->buying_price
-            ?? $item->cost_price
+            $item?->cost_price_at_sale
+            ?? $item?->buying_price
+            ?? $item?->cost_price
             ?? $product?->buying_price
             ?? 0
         );
 
         $sellingPrice = (float) (
-            $item->selling_price
-            ?? $item->unit_price
-            ?? $item->price
+            $item?->unit_price
+            ?? $item?->selling_price
+            ?? $item?->price
             ?? 0
         );
 
@@ -70,13 +73,15 @@ class ReportExport implements
         $cost = $quantity * $buyingPrice;
 
         return [
-            $row['order']->created_at?->format('Y-m-d H:i'),
+            $sale?->sale_date
+                ? \Carbon\Carbon::parse($sale->sale_date)->format('Y-m-d H:i')
+                : ($sale?->created_at?->format('Y-m-d H:i') ?? ''),
 
-            $row['order']->id,
+            $sale?->id ?? '',
 
             $product?->name ?? 'Unknown Product',
 
-            $product?->sku ?? $item->sku ?? '',
+            $product?->sku ?? $item?->sku ?? '',
 
             $quantity,
 
