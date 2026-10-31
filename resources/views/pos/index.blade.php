@@ -31,6 +31,8 @@
             perspective-origin: 50% 40%;
         }
 
+        /* Card = square. Top part shows the full image, bottom strip holds the text.
+           Colours follow Tailwind's `.dark` class. */
         .pos-card {
             --rx: 0deg;
             --ry: 0deg;
@@ -38,15 +40,20 @@
             --mx: 50%;
             --my: 0%;
             --hue: 230;
+            --info-h: 36%;
+            --radius: 1.15rem;
 
             position: relative;
             width: 100%;
             aspect-ratio: 1 / 1;
-            border-radius: 1.15rem;
+            border-radius: var(--radius);
             cursor: pointer;
             outline: none;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+
+            background: #ffffff;
+            border: 1px solid rgba(15, 23, 42, .1);
 
             transform-style: preserve-3d;
             transform: rotateX(var(--rx)) rotateY(var(--ry)) translateZ(var(--lift));
@@ -54,9 +61,18 @@
             will-change: transform;
 
             box-shadow:
-                0 1px 2px rgba(10, 10, 30, .25),
-                0 10px 18px -8px rgba(10, 10, 40, .45),
-                0 22px 34px -16px rgba(40, 30, 120, .35);
+                0 1px 2px rgba(15, 23, 42, .12),
+                0 10px 18px -8px rgba(15, 23, 42, .28),
+                0 22px 34px -16px rgba(79, 70, 229, .25);
+        }
+
+        .dark .pos-card {
+            background: #1f2937;
+            border-color: rgba(255, 255, 255, .1);
+            box-shadow:
+                0 1px 2px rgba(0, 0, 0, .5),
+                0 12px 20px -8px rgba(0, 0, 0, .7),
+                0 24px 36px -16px rgba(99, 102, 241, .3);
         }
 
         .pos-card.is-tilting {
@@ -67,9 +83,16 @@
             .pos-card:not(.is-out):hover {
                 --lift: 18px;
                 box-shadow:
-                    0 2px 4px rgba(10, 10, 30, .25),
-                    0 18px 28px -10px rgba(10, 10, 40, .55),
-                    0 38px 56px -22px rgba(60, 40, 180, .55);
+                    0 2px 4px rgba(15, 23, 42, .15),
+                    0 18px 28px -10px rgba(15, 23, 42, .4),
+                    0 38px 56px -22px rgba(79, 70, 229, .45);
+            }
+
+            .dark .pos-card:not(.is-out):hover {
+                box-shadow:
+                    0 2px 4px rgba(0, 0, 0, .55),
+                    0 20px 30px -10px rgba(0, 0, 0, .8),
+                    0 40px 60px -22px rgba(99, 102, 241, .5);
             }
         }
 
@@ -82,20 +105,31 @@
             box-shadow: 0 0 0 3px #fff, 0 0 0 6px #6366f1, 0 18px 30px -10px rgba(60, 40, 180, .5);
         }
 
+        .dark .pos-card:focus-visible {
+            box-shadow: 0 0 0 3px #111827, 0 0 0 6px #818cf8, 0 18px 30px -10px rgba(0, 0, 0, .7);
+        }
+
         .pos-card.is-out {
             cursor: not-allowed;
         }
 
         .pos-card.is-out .pos-media {
-            filter: grayscale(1) brightness(.75);
+            filter: grayscale(1) brightness(.8);
         }
 
-        /* Image layer: full card background, clipped to rounded corners */
+        .pos-card.is-out .pos-info {
+            opacity: .65;
+        }
+
+        /* Image area: shown clean, no overlay darkening it */
         .pos-media {
             position: absolute;
-            inset: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: var(--info-h);
             overflow: hidden;
-            border-radius: inherit;
+            border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
             background: linear-gradient(135deg,
                 hsl(var(--hue) 70% 48%),
                 hsl(calc(var(--hue) + 45) 75% 28%));
@@ -108,13 +142,12 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scale(1.03);
             transition: transform .7s cubic-bezier(.2, .8, .2, 1);
         }
 
         @media (hover: hover) {
             .pos-card:not(.is-out):hover .pos-media img {
-                transform: scale(1.12);
+                transform: scale(1.08);
             }
         }
 
@@ -125,31 +158,20 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding-bottom: 18%;
-            font-size: 5.5rem;
+            font-size: 4.5rem;
             font-weight: 800;
             line-height: 1;
-            color: rgba(255, 255, 255, .22);
+            color: rgba(255, 255, 255, .3);
             text-shadow: 0 6px 24px rgba(0, 0, 0, .25);
         }
 
-        /* Legibility gradient behind floating text */
-        .pos-scrim {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top,
-                rgba(8, 8, 22, .88) 0%,
-                rgba(8, 8, 22, .35) 42%,
-                rgba(8, 8, 22, 0) 68%);
-        }
-
-        /* Light that follows the pointer */
+        /* Light that follows the pointer (subtle so the photo stays true) */
         .pos-shine {
             position: absolute;
             inset: 0;
             opacity: 0;
             transition: opacity .3s ease;
-            background: radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, .38), transparent 55%);
+            background: radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, .28), transparent 55%);
             pointer-events: none;
         }
 
@@ -157,17 +179,7 @@
             opacity: 1;
         }
 
-        /* Glass edge */
-        .pos-media::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22), inset 0 1px 0 rgba(255, 255, 255, .35);
-            pointer-events: none;
-        }
-
-        /* Floating layers sit at different depths above the image */
+        /* Floating layers sit at different depths above the card */
         .pos-float {
             position: absolute;
             transform: translateZ(var(--z, 40px));
@@ -183,10 +195,10 @@
             font-weight: 600;
             line-height: 1.2;
             color: #fff;
-            background: rgba(14, 14, 32, .5);
+            background: rgba(14, 14, 32, .62);
             -webkit-backdrop-filter: blur(10px) saturate(150%);
             backdrop-filter: blur(10px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, .22);
+            border: 1px solid rgba(255, 255, 255, .25);
             box-shadow: 0 8px 16px -6px rgba(0, 0, 0, .55);
         }
 
@@ -208,7 +220,7 @@
             padding: .15rem;
             border-radius: 999px;
             color: #fff;
-            background: rgba(79, 70, 229, .85);
+            background: rgba(79, 70, 229, .9);
             -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, .3);
@@ -242,24 +254,12 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* Bottom stack: price tag floats above the glass info panel */
-        .pos-bottom {
-            position: absolute;
-            left: .6rem;
-            right: .6rem;
-            bottom: .6rem;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            transform-style: preserve-3d;
-        }
-
+        /* Price tag floats over the seam between image and text strip */
         .pos-price {
-            --z: 80px;
-            position: relative;
-            z-index: 2;
-            margin-bottom: -.4rem;
-            margin-left: .4rem;
+            --z: 70px;
+            position: absolute;
+            right: .6rem;
+            bottom: calc(var(--info-h) - .95rem);
             padding: .28rem .7rem;
             border-radius: .65rem;
             font-size: .85rem;
@@ -268,24 +268,31 @@
             letter-spacing: .01em;
             color: #fff;
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            border: 1px solid rgba(255, 255, 255, .35);
+            border: 1px solid rgba(255, 255, 255, .4);
             box-shadow: 0 12px 20px -8px rgba(60, 40, 200, .85), inset 0 1px 0 rgba(255, 255, 255, .35);
             transform: translateZ(var(--z)) rotateZ(-2deg);
         }
 
+        /* Text strip below the image: name + SKU, theme aware */
         .pos-info {
-            --z: 50px;
-            position: relative;
-            width: 100%;
-            padding: .7rem .7rem .6rem;
-            border-radius: .85rem;
-            color: #fff;
-            background: rgba(14, 14, 32, .5);
-            -webkit-backdrop-filter: blur(12px) saturate(150%);
-            backdrop-filter: blur(12px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, .22);
-            box-shadow: 0 14px 24px -10px rgba(0, 0, 0, .65);
-            transform: translateZ(var(--z));
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: var(--info-h);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: .45rem .75rem;
+            overflow: hidden;
+            border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px);
+            border-top: 1px solid rgba(15, 23, 42, .08);
+            color: #111827;
+        }
+
+        .dark .pos-info {
+            border-top-color: rgba(255, 255, 255, .08);
+            color: #f3f4f6;
         }
 
         .pos-name {
@@ -293,19 +300,22 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            font-size: .85rem;
+            font-size: .8rem;
             font-weight: 700;
             line-height: 1.2;
-            text-shadow: 0 1px 6px rgba(0, 0, 0, .5);
         }
 
         .pos-sku {
             margin-top: .15rem;
             font-size: 11px;
-            color: rgba(255, 255, 255, .72);
+            color: #6b7280;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .dark .pos-sku {
+            color: #9ca3af;
         }
 
         /* Feedback when a product is added */
@@ -676,7 +686,7 @@
             }
 
             /* ---------------------------------------------------------
-             | Product cards (square, image background, floating text, 3D)
+             | Product cards (square, clean image on top, text strip below, 3D)
              --------------------------------------------------------- */
             function buildCard(p) {
                 const out = p.stock <= 0;
@@ -715,7 +725,6 @@
                     media.appendChild(el('span', 'pos-initial', (p.name || '?').charAt(0).toUpperCase()));
                 }
 
-                media.appendChild(el('div', 'pos-scrim'));
                 media.appendChild(el('div', 'pos-shine'));
                 card.appendChild(media);
 
@@ -755,17 +764,16 @@
                     card.appendChild(stepper);
                 }
 
-                /* Floating: price tag over glass panel with name + SKU */
-                const bottom = el('div', 'pos-bottom');
-                bottom.appendChild(el('div', 'pos-price', money(p.price)));
+                /* Price tag floats on the seam between image and text strip */
+                card.appendChild(el('div', 'pos-price', money(p.price)));
 
+                /* Text strip below the image: name + SKU */
                 const info = el('div', 'pos-info');
                 info.appendChild(el('p', 'pos-name', p.name));
                 if (p.sku) {
                     info.appendChild(el('p', 'pos-sku', p.sku));
                 }
-                bottom.appendChild(info);
-                card.appendChild(bottom);
+                card.appendChild(info);
 
                 scene.appendChild(card);
                 return scene;
