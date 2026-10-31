@@ -80,34 +80,53 @@
             color: #777;
             font-size: 8px;
         }
+        .header-table,
+.header-table td {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.header-table {
+    margin-bottom: 0;
+}
+
+.logo-cell {
+    width: 60px;
+    vertical-align: top;
+}
     </style>
 </head>
 
 <body>
 
 <div class="header">
+    <table class="header-table">
+        <tr>
+            <td class="logo-cell">
+                <x-application-logo width="48" height="48" />
+            </td>
+            <td>
+                <h1>MAHWI-REPORT</h1>
+                <div>
+                    Period:
+                    {{ $startDate->format('d M Y') }}
+                    -
+                    {{ $endDate->format('d M Y') }}
+                </div>
 
-    <h1> MAHWI-REPORT</h1>
-    <div>
-        Period:
-        {{ $startDate->format('d M Y') }}
-        -
-        {{ $endDate->format('d M Y') }}
-    </div>
+                @if($shop)
+                    <div>BUSINESS: {{ $shop->business_name }}</div>
+                @endif
 
-    @if($shop)
-        <div>
-            BUSINESS: {{ $shop->business_name }}
-        </div>
-    @endif
-
-    <div>
-        Generated:
-        {{ now()->format('d M Y H:i') }} By MAHWI
-    </div>
-
+                <div>
+                    Generated:
+                    {{ now()->format('d M Y H:i') }} By MAHWI
+                </div>
+            </td>
+        </tr>
+    </table>
 </div>
-
 
 {{-- SUMMARY --}}
 
@@ -193,26 +212,23 @@
 
             @php
 
-                $item = $row['item'] ?? null;
+                $item = $row['item'];
 
-                $product = $row['product'] ?? null;
+                $product = $row['product'];
 
-                $sale = $row['sale'] ?? $row['order'] ?? null;
-
-                $quantity = (float) ($item?->quantity ?? 0);
+                $quantity = (float) ($item->quantity ?? 0);
 
                 $buyingPrice = (float) (
-                    $item?->cost_price_at_sale
-                    ?? $item?->buying_price
-                    ?? $item?->cost_price
+                    $item->buying_price
+                    ?? $item->cost_price
                     ?? $product?->buying_price
                     ?? 0
                 );
 
                 $sellingPrice = (float) (
-                    $item?->unit_price
-                    ?? $item?->selling_price
-                    ?? $item?->price
+                    $item->selling_price
+                    ?? $item->unit_price
+                    ?? $item->price
                     ?? 0
                 );
 
@@ -227,13 +243,11 @@
             <tr>
 
                 <td>
-                    {{ $sale?->sale_date
-                        ? \Carbon\Carbon::parse($sale->sale_date)->format('d/m/Y')
-                        : ($sale?->created_at?->format('d/m/Y') ?? '—') }}
+                    {{ $row['order']->created_at?->format('d/m/Y') }}
                 </td>
 
                 <td>
-                    #{{ $sale?->id ?? '—' }}
+                    #{{ $row['order']->id }}
                 </td>
 
                 <td>
