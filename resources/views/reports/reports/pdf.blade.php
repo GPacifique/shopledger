@@ -80,34 +80,53 @@
             color: #777;
             font-size: 8px;
         }
+        .header-table,
+.header-table td {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.header-table {
+    margin-bottom: 0;
+}
+
+.logo-cell {
+    width: 60px;
+    vertical-align: top;
+}
     </style>
 </head>
 
 <body>
 
 <div class="header">
+    <table class="header-table">
+        <tr>
+            <td class="logo-cell">
+                <x-application-logo width="48" height="48" />
+            </td>
+            <td>
+                <h1>MAHWI-REPORT</h1>
+                <div>
+                    Period:
+                    {{ $startDate->format('d M Y') }}
+                    -
+                    {{ $endDate->format('d M Y') }}
+                </div>
 
-    <h1> MAHWI-REPORT</h1>
-    <div>
-        Period:
-        {{ $startDate->format('d M Y') }}
-        -
-        {{ $endDate->format('d M Y') }}
-    </div>
+                @if($shop)
+                    <div>BUSINESS: {{ $shop->business_name }}</div>
+                @endif
 
-    @if($shop)
-        <div>
-            BUSINESS: {{ $shop->business_name }}
-        </div>
-    @endif
-
-    <div>
-        Generated:
-        {{ now()->format('d M Y H:i') }} By MAHWI
-    </div>
-
+                <div>
+                    Generated:
+                    {{ now()->format('d M Y H:i') }} By MAHWI
+                </div>
+            </td>
+        </tr>
+    </table>
 </div>
-
 
 {{-- SUMMARY --}}
 
