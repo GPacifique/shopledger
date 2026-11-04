@@ -16,7 +16,9 @@ return new class extends Migration
             });
 
             DB::table($tableName)
-                ->whereNull('uuid')
+                ->where(function ($query): void {
+                    $query->whereNull('uuid')->orWhere('uuid', '');
+                })
                 ->orderBy('id')
                 ->chunkById(500, function ($records) use ($tableName): void {
                     foreach ($records as $record) {

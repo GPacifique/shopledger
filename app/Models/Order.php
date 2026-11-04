@@ -23,6 +23,16 @@ class Order extends Model
         });
     }
 
+    public function ensureUuid(): string
+    {
+        if (blank($this->uuid)) {
+            $this->uuid = (string) Str::uuid();
+            $this->saveQuietly();
+        }
+
+        return $this->uuid;
+    }
+
     protected $fillable = [
         'shop_id',
         'customer_id',

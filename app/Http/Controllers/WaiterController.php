@@ -256,7 +256,7 @@ class WaiterController extends Controller
                     - (float) $item->discount_amount
                     + (float) $item->tax_amount))));
         $orderNo = (string) ($order->order_number ?? $order->id);
-        $verificationUrl = URL::signedRoute('documents.verify', ['uuid' => $order->uuid]);
+        $verificationUrl = URL::signedRoute('documents.verify', ['uuid' => $order->ensureUuid()]);
         $qrMimeType = extension_loaded('imagick') ? 'png' : 'svg+xml';
         $qr = extension_loaded('imagick')
             ? QrCode::format('png')->size(200)->margin(1)->errorCorrection('M')->generate($verificationUrl)

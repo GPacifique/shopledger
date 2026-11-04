@@ -397,7 +397,7 @@ protected function authorizeSaleManage(Request $request, Sale $sale): void
         $qrMimeType = null;
 
         if ($printSettings['show_qr']) {
-            $verificationUrl = URL::signedRoute('documents.verify', ['uuid' => $sale->uuid]);
+            $verificationUrl = URL::signedRoute('documents.verify', ['uuid' => $sale->ensureUuid()]);
             if ($pdfMode && extension_loaded('imagick')) {
                 $qrMimeType = 'png';
                 $qr = base64_encode(

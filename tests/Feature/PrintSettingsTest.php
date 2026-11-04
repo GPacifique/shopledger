@@ -95,7 +95,7 @@ class PrintSettingsTest extends TestCase
             'payment_method' => 'cash',
             'payment_status' => 'Paid',
         ]);
-        $this->assertNotEmpty($sale->uuid);
+        $sale->update(['uuid' => '']);
         SaleItem::create([
             'shop_id' => $shop->id,
             'sale_id' => $sale->id,
@@ -114,6 +114,8 @@ class PrintSettingsTest extends TestCase
             ->assertSee('1,250')
             ->assertSee('RCP-00000001')
             ->assertSee('<svg', false);
+        $sale->refresh();
+        $this->assertNotEmpty($sale->uuid);
 
         $this->actingAs($user)
             ->get(route('sales.print', ['sale' => $sale, 'document' => 'invoice', 'paper' => 'custom']))
@@ -149,12 +151,14 @@ class PrintSettingsTest extends TestCase
             'payment_method' => 'cash',
             'payment_status' => 'Paid',
         ]);
-        $this->assertNotEmpty($order->uuid);
+        $order->update(['uuid' => '']);
         $billPdf = $this->actingAs($user)->get(route('waiter.orders.bill', [
             'shop' => $shop,
             'order' => $order,
         ]));
         $billPdf->assertOk()->assertHeader('content-type', 'application/pdf');
+        $order->refresh();
+        $this->assertNotEmpty($order->uuid);
 
         $orderReceiptPdf = $this->actingAs($user)->get(route('waiter.orders.receipt', [
             'shop' => $shop,
