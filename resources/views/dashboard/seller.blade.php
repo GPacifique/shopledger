@@ -10,33 +10,33 @@
                 </div>
 
                 <div>
-                    <h2 class="font-bold text-2xl text-blue-800 leading-tight">
+                    <h2 class="font-bold text-2xl text-blue-800 dark:text-blue-300 leading-tight">
                         {{ __('Seller Dashboard') }}
                     </h2>
 
-                    <p class="font-bold text-sm text-green-500">
+                    <p class="font-bold text-sm text-green-500 dark:text-green-400">
                         {{ $shop->business_name ?? $shop->name ?? __('Shop') }}
                     </p>
                 </div>
             </div>
 
             <div class="text-right hidden md:block">
-                <p class="text-xs text-gray-500">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
                     {{ __('Welcome back') }}
                 </p>
 
-                <p class="text-sm font-semibold text-gray-700">
+                <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">
                     {{ auth()->user()->name }}
                 </p>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-8">
+    <div class="py-8 min-h-screen bg-gray-100 dark:bg-gray-900">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
             <!-- Quick Sale CTA -->
-            <div class="mb-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
+            <div class="mb-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-gray-800 dark:via-indigo-950 dark:to-gray-900 rounded-2xl shadow-2xl dark:shadow-black/40 dark:border dark:border-gray-700 overflow-hidden animate-fade-in">
                 <div class="relative px-6 py-8 sm:px-10 sm:py-12">
 
                     <div class="absolute inset-0 opacity-10">
@@ -58,34 +58,22 @@
                                 {{ __('Ready to make a sale?') }} 🛒
                             </h3>
 
-                            <p class="text-blue-100 text-lg">
+                            <p class="text-blue-100 dark:text-gray-300 text-lg">
                                 {{ __('Create new sales quickly and easily.') }}
                             </p>
                         </div>
 
                         <a href="{{ route('sales.create') }}"
-                           class="inline-flex items-center px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold text-lg hover:bg-indigo-50 transition-all transform hover:scale-105 shadow-xl hover:shadow-2xl group">
+                           class="inline-flex items-center px-8 py-4 bg-white text-indigo-600 hover:bg-indigo-50 dark:bg-indigo-500 dark:text-white dark:hover:bg-indigo-400 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-xl hover:shadow-2xl group">
 
-                            <svg class="w-6 h-6 mr-3 group-hover:animate-bounce"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 viewBox="0 0 24 24">
-                                <path stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            <svg class="w-6 h-6 mr-3 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                             </svg>
 
                             {{ __('New Sale') }}
 
-                            <svg class="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 viewBox="0 0 24 24">
-                                <path stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                            <svg class="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                             </svg>
                         </a>
                     </div>
@@ -97,34 +85,29 @@
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
 
                 <!-- Shop Sales -->
-                <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
+                <div class="stat-card group bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl dark:hover:shadow-black/40 transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700"
                      style="animation-delay: 0.1s">
 
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
 
                             <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center">
-                                <svg class="h-7 w-7 text-white"
-                                     fill="none"
-                                     stroke="currentColor"
-                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round"
-                                          stroke-linejoin="round"
-                                          stroke-width="2"
+                                <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
 
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
                                 {{ __('Today') }}
                             </span>
                         </div>
 
-                        <h3 class="text-sm font-medium text-green-500 mb-2">
+                        <h3 class="text-sm font-medium text-green-500 dark:text-green-400 mb-2">
                             {{ __('Shop Sales') }}
                         </h3>
 
-                        <p class="text-2xl font-bold text-green-900">
+                        <p class="text-2xl font-bold text-green-900 dark:text-green-100">
                             {{ rwf($todaySales) }}
                         </p>
                     </div>
@@ -132,34 +115,29 @@
 
 
                 <!-- My Sales -->
-                <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
+                <div class="stat-card group bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl dark:hover:shadow-black/40 transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700"
                      style="animation-delay: 0.15s">
 
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
 
                             <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center">
-                                <svg class="h-7 w-7 text-white"
-                                     fill="none"
-                                     stroke="currentColor"
-                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round"
-                                          stroke-linejoin="round"
-                                          stroke-width="2"
+                                <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
                             </div>
 
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
                                 {{ __('My sales') }}
                             </span>
                         </div>
 
-                        <h3 class="text-sm font-medium text-green-500 mb-2">
+                        <h3 class="text-sm font-medium text-green-500 dark:text-green-400 mb-2">
                             {{ __('Your Sales') }}
                         </h3>
 
-                        <p class="text-2xl font-bold text-gray-900">
+                        <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
                             {{ rwf($todayMySales) }}
                         </p>
                     </div>
@@ -167,34 +145,29 @@
 
 
                 <!-- Average Sale -->
-                <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
+                <div class="stat-card group bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl dark:hover:shadow-black/40 transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700"
                      style="animation-delay: 0.2s">
 
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
 
                             <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center">
-                                <svg class="h-7 w-7 text-white"
-                                     fill="none"
-                                     stroke="currentColor"
-                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round"
-                                          stroke-linejoin="round"
-                                          stroke-width="2"
+                                <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
 
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-800">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300">
                                 {{ __('Avg.') }}
                             </span>
                         </div>
 
-                        <h3 class="text-sm font-medium text-green-500 mb-2">
+                        <h3 class="text-sm font-medium text-green-500 dark:text-green-400 mb-2">
                             {{ __('Average Sale') }}
                         </h3>
 
-                        <p class="text-2xl font-bold text-gray-900">
+                        <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
                             {{ rwf($averageSaleValue) }}
                         </p>
                     </div>
@@ -202,34 +175,29 @@
 
 
                 <!-- Transactions -->
-                <div class="stat-card group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
+                <div class="stat-card group bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl dark:hover:shadow-black/40 transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700"
                      style="animation-delay: 0.25s">
 
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
 
                             <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-                                <svg class="h-7 w-7 text-white"
-                                     fill="none"
-                                     stroke="currentColor"
-                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round"
-                                          stroke-linejoin="round"
-                                          stroke-width="2"
+                                <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M7 12h10M12 7v10m-7 0h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2z"/>
                                 </svg>
                             </div>
 
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
                                 {{ __('Orders') }}
                             </span>
                         </div>
 
-                        <h3 class="text-sm font-medium text-gray-500 mb-2">
+                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
                             {{ __('Transactions') }}
                         </h3>
 
-                        <p class="text-2xl font-bold text-gray-900">
+                        <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
                             {{ $todaySalesCount }}
                         </p>
                     </div>
@@ -241,42 +209,42 @@
             <!-- Inventory Summary -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                    <p class="text-sm text-gray-500">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
                         {{ __('Total Products') }}
                     </p>
 
-                    <p class="mt-2 text-3xl font-bold text-gray-900">
+                    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
                         {{ number_format($totalProducts) }}
                     </p>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                    <p class="text-sm text-gray-500">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
                         {{ __('Stock Units') }}
                     </p>
 
-                    <p class="mt-2 text-3xl font-bold text-gray-900">
+                    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
                         {{ format_qty($totalStockUnits) }}
                     </p>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                    <p class="text-sm text-yellow-500">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+                    <p class="text-sm text-yellow-500 dark:text-yellow-400">
                         {{ __('Low Stock') }}
                     </p>
 
-                    <p class="mt-2 text-3xl font-bold text-yellow-600">
+                    <p class="mt-2 text-3xl font-bold text-yellow-600 dark:text-yellow-400">
                         {{ number_format($lowStockProducts) }}
                     </p>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                    <p class="text-sm text-red-500">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+                    <p class="text-sm text-red-500 dark:text-red-400">
                         {{ __('Out of Stock') }}
                     </p>
 
-                    <p class="mt-2 text-3xl font-bold text-red-600">
+                    <p class="mt-2 text-3xl font-bold text-red-600 dark:text-red-400">
                         {{ number_format($outOfStockProducts) }}
                     </p>
                 </div>
@@ -288,46 +256,46 @@
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
 
                 <!-- Inventory Snapshot -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
 
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             {{ __('Inventory Snapshot') }}
                         </h3>
 
-                        <span class="text-sm text-gray-500">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">
                             {{ __('Value') }}: {{ rwf($inventoryValue) }}
                         </span>
                     </div>
 
                     <div class="space-y-4">
 
-                        <div class="flex items-center justify-between rounded-xl bg-gray-50 p-4">
-                            <span class="text-gray-600">
+                        <div class="flex items-center justify-between rounded-xl bg-gray-50 dark:bg-gray-700/50 p-4">
+                            <span class="text-gray-600 dark:text-gray-300">
                                 {{ __('Products in stock') }}
                             </span>
 
-                            <span class="font-semibold text-gray-900">
+                            <span class="font-semibold text-gray-900 dark:text-gray-100">
                                 {{ number_format(max($totalProducts - $outOfStockProducts, 0)) }}
                             </span>
                         </div>
 
-                        <div class="flex items-center justify-between rounded-xl bg-gray-50 p-4">
-                            <span class="text-gray-600">
+                        <div class="flex items-center justify-between rounded-xl bg-gray-50 dark:bg-gray-700/50 p-4">
+                            <span class="text-gray-600 dark:text-gray-300">
                                 {{ __('Purchases today') }}
                             </span>
 
-                            <span class="font-semibold text-gray-900">
+                            <span class="font-semibold text-gray-900 dark:text-gray-100">
                                 {{ rwf($todayPurchases) }}
                             </span>
                         </div>
 
-                        <div class="flex items-center justify-between rounded-xl bg-gray-50 p-4">
-                            <span class="text-gray-600">
+                        <div class="flex items-center justify-between rounded-xl bg-gray-50 dark:bg-gray-700/50 p-4">
+                            <span class="text-gray-600 dark:text-gray-300">
                                 {{ __('My completed sales') }}
                             </span>
 
-                            <span class="font-semibold text-gray-900">
+                            <span class="font-semibold text-gray-900 dark:text-gray-100">
                                 {{ $todayMySalesCount }}
                             </span>
                         </div>
@@ -337,15 +305,15 @@
 
 
                 <!-- Low Stock -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
 
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-yellow-300">
+                        <h3 class="text-lg font-semibold text-yellow-600 dark:text-yellow-300">
                             {{ __('Low Stock Alerts') }}
                         </h3>
 
                         <a href="{{ route('products.index') }}"
-                           class="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                           class="text-sm font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
                             {{ __('View all') }}
                         </a>
                     </div>
@@ -356,20 +324,20 @@
 
                             @foreach($lowStockItems as $item)
 
-                                <div class="flex items-center justify-between rounded-xl border border-yellow-200 bg-yellow-50 p-3">
+                                <div class="flex items-center justify-between rounded-xl border border-yellow-200 bg-yellow-50 dark:border-yellow-700/50 dark:bg-yellow-900/20 p-3">
 
                                     <div>
-                                        <p class="font-medium text-gray-900">
+                                        <p class="font-medium text-gray-900 dark:text-gray-100">
                                             {{ $item->name }}
                                         </p>
 
-                                        <p class="text-xs text-gray-500">
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
                                             {{ __('Minimum') }}:
                                             {{ format_qty($item->minimum_stock) }}
                                         </p>
                                     </div>
 
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300">
                                         {{ format_qty($item->stock) }}
                                         {{ __('left') }}
                                     </span>
@@ -382,7 +350,7 @@
 
                     @else
 
-                        <div class="rounded-xl bg-green-50 border border-green-200 p-4 text-sm text-green-700">
+                        <div class="rounded-xl bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-700/50 dark:text-green-300 p-4 text-sm">
                             {{ __('Inventory is healthy. No low-stock alerts at the moment.') }}
                         </div>
 
@@ -397,21 +365,21 @@
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
 
                 <!-- Weekly Sales Trend -->
-                <div class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="xl:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
 
                     <div class="flex items-center justify-between mb-5">
 
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                 {{ __('Weekly Sales Trend') }}
                             </h3>
 
-                            <p class="text-sm text-gray-500">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
                                 {{ __('Your sales for the last 7 days') }}
                             </p>
                         </div>
 
-                        <span class="text-sm font-medium text-indigo-600">
+                        <span class="text-sm font-medium text-indigo-600 dark:text-indigo-400">
                             {{ __('7 days') }}
                         </span>
 
@@ -436,7 +404,7 @@
                                 <div class="w-full flex justify-center items-end h-full">
 
                                     <div
-                                        class="w-full rounded-t-xl shadow-sm {{ $hasSales ? 'bg-gradient-to-t from-indigo-500 to-blue-400' : 'bg-gray-200' }}"
+                                        class="w-full rounded-t-xl shadow-sm {{ $hasSales ? 'bg-gradient-to-t from-indigo-500 to-blue-400 dark:from-indigo-600 dark:to-blue-500' : 'bg-gray-200 dark:bg-gray-700' }}"
                                         style="height: {{ $barHeight }}%"
                                         title="{{ rwf($total) }}"
                                     ></div>
@@ -445,11 +413,11 @@
 
                                 <div class="mt-3 flex flex-col items-center text-center">
 
-                                    <span class="text-xs font-medium text-gray-500">
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
                                         {{ $trend['day'] }}
                                     </span>
 
-                                    <span class="text-[10px] text-gray-400">
+                                    <span class="text-[10px] text-gray-400 dark:text-gray-500">
                                         {{ $trend['date'] }}
                                     </span>
 
@@ -464,16 +432,16 @@
 
 
                 <!-- Stock Movement -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
 
                     <div class="flex items-center justify-between mb-5">
 
-                        <h3 class="text-lg font-semibold text-gray-900">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             {{ __('Stock Movement') }}
                         </h3>
 
                         <a href="{{ route('products.index') }}"
-                           class="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                           class="text-sm font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
                             {{ __('View all') }}
                         </a>
 
@@ -484,53 +452,61 @@
 
                         @forelse($recentStockMovements as $movement)
 
-                  @php
-    /*
-     * StockMovement schema uses quantity_change.
-     * Negative = stock leaving inventory, positive = stock entering inventory.
-     */
-    $quantityChange = (float) ($movement->quantity_change ?? 0);
-    $isIncoming = $quantityChange > 0;
+                            @php
+                                /*
+                                 * StockMovement schema uses quantity_change.
+                                 * Negative = stock leaving inventory, positive = stock entering inventory.
+                                 */
+                                $quantityChange = (float) ($movement->quantity_change ?? 0);
+                                $isIncoming = $quantityChange > 0;
 
-    // "App\Models\Sale" or "app\models\sale"  →  "sale"
-    $referenceType = strtolower(
-        class_basename((string) ($movement->reference_type ?? $movement->type ?? 'movement'))
-    );
+                                // "App\Models\Sale" or "app\models\sale"  →  "sale"
+                                $referenceType = strtolower(
+                                    class_basename((string) ($movement->reference_type ?? $movement->type ?? 'movement'))
+                                );
 
-    // Human-readable movement labels
-    $movementLabels = [
-        'purchase'      => __('Purchase'),
-        'sale'          => __('Sale'),
-        'order'         => __('Order'),
-        'return'        => __('Return'),
-        'adjustment'    => __('Stock Adjustment'),
-        'transfer'      => __('Stock Transfer'),
-        'opening'       => __('Opening Stock'),
-        'opening_stock' => __('Opening Stock'),
-        'damage'        => __('Damaged Stock'),
-        'expired'       => __('Expired Stock'),
-    ];
+                                // Human-readable movement labels
+                                $movementLabels = [
+                                    'purchase'      => __('Purchase'),
+                                    'sale'          => __('Sale'),
+                                    'order'         => __('Order'),
+                                    'return'        => __('Return'),
+                                    'adjustment'    => __('Stock Adjustment'),
+                                    'transfer'      => __('Stock Transfer'),
+                                    'opening'       => __('Opening Stock'),
+                                    'opening_stock' => __('Opening Stock'),
+                                    'damage'        => __('Damaged Stock'),
+                                    'expired'       => __('Expired Stock'),
+                                ];
 
-    $movementLabel = $movementLabels[$referenceType]
-        ?? ucwords(str_replace(['_', '-'], ' ', $referenceType));
+                                $movementLabel = $movementLabels[$referenceType]
+                                    ?? ucwords(str_replace(['_', '-'], ' ', $referenceType));
 
-    // Badge style from quantity direction / reference type
-    if ($isIncoming) {
-        $badgeBg = 'bg-green-100';  $badgeText = 'text-green-700';  $amountColor = 'text-green-600';
-    } elseif (in_array($referenceType, ['order', 'sale'])) {
-        $badgeBg = 'bg-red-100';    $badgeText = 'text-red-700';    $amountColor = 'text-red-600';
-    } elseif ($referenceType === 'adjustment') {
-        $badgeBg = 'bg-yellow-100'; $badgeText = 'text-yellow-700'; $amountColor = 'text-yellow-600';
-    } else {
-        $badgeBg = 'bg-blue-100';   $badgeText = 'text-blue-700';   $amountColor = 'text-blue-600';
-    }
+                                // Badge style from quantity direction / reference type (light + dark aware)
+                                if ($isIncoming) {
+                                    $badgeBg = 'bg-green-100 dark:bg-green-900/40';
+                                    $badgeText = 'text-green-700 dark:text-green-300';
+                                    $amountColor = 'text-green-600 dark:text-green-400';
+                                } elseif (in_array($referenceType, ['order', 'sale'])) {
+                                    $badgeBg = 'bg-red-100 dark:bg-red-900/40';
+                                    $badgeText = 'text-red-700 dark:text-red-300';
+                                    $amountColor = 'text-red-600 dark:text-red-400';
+                                } elseif ($referenceType === 'adjustment') {
+                                    $badgeBg = 'bg-yellow-100 dark:bg-yellow-900/40';
+                                    $badgeText = 'text-yellow-700 dark:text-yellow-300';
+                                    $amountColor = 'text-yellow-600 dark:text-yellow-400';
+                                } else {
+                                    $badgeBg = 'bg-blue-100 dark:bg-blue-900/40';
+                                    $badgeText = 'text-blue-700 dark:text-blue-300';
+                                    $amountColor = 'text-blue-600 dark:text-blue-400';
+                                }
 
-    // Always show the absolute quantity; the +/- sign is added in the markup
-    $displayQuantity = abs($quantityChange);
-@endphp
+                                // Always show the absolute quantity; the +/- sign is added in the markup
+                                $displayQuantity = abs($quantityChange);
+                            @endphp
 
 
-                            <div class="flex items-center justify-between rounded-xl bg-gray-50 p-3">
+                            <div class="flex items-center justify-between rounded-xl bg-white dark:bg-gray-800 p-3">
 
                                 <div class="min-w-0 flex items-center gap-3">
 
@@ -540,11 +516,11 @@
 
                                     <div class="min-w-0">
 
-                                        <p class="text-sm font-medium text-gray-900 truncate">
+                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                                             {{ $movement->product?->name ?? __('Product') }}
                                         </p>
 
-                                        <p class="text-xs text-gray-500">
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
                                             {{ $movementLabel }}
                                         </p>
 
@@ -565,7 +541,7 @@
 
                         @empty
 
-                            <div class="rounded-xl bg-gray-50 p-4 text-sm text-gray-500">
+                            <div class="rounded-xl bg-gray-50 dark:bg-gray-700/50 p-4 text-sm text-gray-500 dark:text-gray-400">
                                 {{ __('No stock movements recorded yet.') }}
                             </div>
 
@@ -579,15 +555,15 @@
 
 
             <!-- Best Selling Products -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8">
 
                 <div class="flex items-center justify-between mb-5">
 
-                    <h3 class="text-lg font-semibold text-gray-900">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         {{ __('Best Selling Products') }}
                     </h3>
 
-                    <span class="text-sm text-gray-500">
+                    <span class="text-sm text-gray-500 dark:text-gray-400">
                         {{ __('Your top items') }}
                     </span>
 
@@ -614,21 +590,21 @@
 
                             <div class="flex items-center justify-between mb-1">
 
-                                <span class="text-sm font-medium text-gray-900">
+                                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {{ $topProduct?->name ?? __('Unknown product') }}
                                 </span>
 
-                                <span class="text-sm text-gray-500">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">
                                     {{ format_qty($currentQuantity) }}
                                     {{ __('sold') }}
                                 </span>
 
                             </div>
 
-                            <div class="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="w-full h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
 
                                 <div
-                                    class="h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500"
+                                    class="h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500 dark:from-green-500 dark:to-emerald-600"
                                     style="width: {{ $width }}%">
                                 </div>
 
@@ -638,7 +614,7 @@
 
                     @empty
 
-                        <div class="rounded-xl bg-gray-50 p-4 text-sm text-gray-500">
+                        <div class="rounded-xl bg-gray-50 dark:bg-gray-700/50 p-4 text-sm text-gray-500 dark:text-gray-400">
                             {{ __('No sales data yet for your best-selling products.') }}
                         </div>
 
@@ -650,23 +626,17 @@
 
 
             <!-- Recent Sales -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8 animate-slide-up"
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-8 animate-slide-up"
                  style="animation-delay: 0.3s">
 
-                <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white flex justify-between items-center">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex justify-between items-center">
 
                     <div class="flex items-center">
 
-                        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mr-3">
+                        <div class="h-10 w-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center mr-3">
 
-                            <svg class="w-5 h-5 text-white"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 viewBox="0 0 24 24">
-
-                                <path stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
+                            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                             </svg>
 
@@ -674,11 +644,11 @@
 
                         <div>
 
-                            <h3 class="text-lg font-semibold text-gray-900">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                 {{ __('My Recent Sales') }}
                             </h3>
 
-                            <p class="text-xs text-gray-500">
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
                                 {{ __('Your latest transactions') }}
                             </p>
 
@@ -688,20 +658,12 @@
 
 
                     <a href="{{ route('sales.index') }}"
-                       class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 group">
+                       class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 group">
 
                         {{ __('View all') }}
 
-                        <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform"
-                             fill="none"
-                             stroke="currentColor"
-                             viewBox="0 0 24 24">
-
-                            <path stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M9 5l7 7-7 7"/>
-
+                        <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
 
                     </a>
@@ -711,29 +673,29 @@
 
                 <div class="overflow-x-auto">
 
-                    <table class="min-w-full">
+                    <table class="min-w-full bg-white dark:bg-gray-800">
 
-                        <thead class="bg-gray-50">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
 
                             <tr>
 
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-4 bg-gray-50 dark:bg-gray-700 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     {{ __('Sale ID') }}
                                 </th>
 
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-4 bg-gray-50 dark:bg-gray-700 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     {{ __('Date') }}
                                 </th>
 
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-4 bg-gray-50 dark:bg-gray-700 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     {{ __('Items') }}
                                 </th>
 
-                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-4 bg-gray-50 dark:bg-gray-700 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     {{ __('Total') }}
                                 </th>
 
-                                <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-4 bg-gray-50 dark:bg-gray-700 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     {{ __('Action') }}
                                 </th>
 
@@ -742,23 +704,23 @@
                         </thead>
 
 
-                        <tbody class="divide-y divide-gray-100">
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
 
                             @forelse($recentSales as $sale)
 
-                                <tr class="hover:bg-gradient-to-r hover:from-gray-50 hover:to-white transition-all duration-200">
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-all duration-200">
 
                                     <td class="px-6 py-4">
 
                                         <div class="flex items-center">
 
-                                            <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mr-3">
-                                                <span class="text-xs font-bold text-green-600">
+                                            <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40 flex items-center justify-center mr-3">
+                                                <span class="text-xs font-bold text-green-600 dark:text-green-400">
                                                     #
                                                 </span>
                                             </div>
 
-                                            <span class="font-semibold text-gray-900">
+                                            <span class="font-semibold text-gray-900 dark:text-gray-100">
                                                 {{ str_pad($sale->id, 5, '0', STR_PAD_LEFT) }}
                                             </span>
 
@@ -771,11 +733,11 @@
 
                                         <div class="flex flex-col">
 
-                                            <span class="text-sm font-medium text-gray-900">
+                                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                 {{ $sale->sale_date?->format('M d, Y') ?? __('N/A') }}
                                             </span>
 
-                                            <span class="text-xs text-gray-500">
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">
                                                 {{ $sale->sale_date?->format('h:i A') ?? '' }}
                                             </span>
 
@@ -786,7 +748,7 @@
 
                                     <td class="px-6 py-4">
 
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300">
 
                                             {{ __(':count items', [
                                                 'count' => $sale->items->count()
@@ -799,7 +761,7 @@
 
                                     <td class="px-6 py-4 text-right">
 
-                                        <span class="text-lg font-bold text-green-600">
+                                        <span class="text-lg font-bold text-green-600 dark:text-green-400">
                                             {{ rwf($sale->total_amount) }}
                                         </span>
 
@@ -809,23 +771,13 @@
                                     <td class="px-6 py-4 text-center">
 
                                         <a href="{{ route('sales.show', $sale) }}"
-                                           class="inline-flex items-center px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-100 transition-colors">
+                                           class="inline-flex items-center px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50 rounded-lg text-sm font-medium transition-colors">
 
-                                            <svg class="w-4 h-4 mr-1"
-                                                 fill="none"
-                                                 stroke="currentColor"
-                                                 viewBox="0 0 24 24">
-
-                                                <path stroke-linecap="round"
-                                                      stroke-linejoin="round"
-                                                      stroke-width="2"
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-
-                                                <path stroke-linecap="round"
-                                                      stroke-linejoin="round"
-                                                      stroke-width="2"
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                       d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-
                                             </svg>
 
                                             {{ __('View') }}
@@ -844,42 +796,28 @@
 
                                         <div class="flex flex-col items-center">
 
-                                            <div class="h-20 w-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mb-4">
+                                            <div class="h-20 w-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center mb-4">
 
-                                                <svg class="h-10 w-10 text-gray-400"
-                                                     fill="none"
-                                                     stroke="currentColor"
-                                                     viewBox="0 0 24 24">
-
-                                                    <path stroke-linecap="round"
-                                                          stroke-linejoin="round"
-                                                          stroke-width="2"
+                                                <svg class="h-10 w-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                                 </svg>
 
                                             </div>
 
-                                            <h4 class="text-lg font-semibold text-gray-900 mb-1">
+                                            <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
                                                 {{ __('No sales yet') }}
                                             </h4>
 
-                                            <p class="text-gray-500 mb-4">
+                                            <p class="text-gray-500 dark:text-gray-400 mb-4">
                                                 {{ __('Start by creating your first sale') }}
                                             </p>
 
                                             <a href="{{ route('sales.create') }}"
                                                class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-600 hover:to-purple-700 transition-all transform hover:scale-105">
 
-                                                <svg class="w-5 h-5 mr-2"
-                                                     fill="none"
-                                                     stroke="currentColor"
-                                                     viewBox="0 0 24 24">
-
-                                                    <path stroke-linecap="round"
-                                                          stroke-linejoin="round"
-                                                          stroke-width="2"
-                                                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-
+                                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                                 </svg>
 
                                                 {{ __('Create Sale') }}
@@ -904,20 +842,14 @@
 
 
             <!-- Helpful Tips -->
-            <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200">
+            <div class="bg-amber-50 dark:bg-gray-800 rounded-2xl p-6 border border-amber-200 dark:border-amber-700/50">
 
                 <div class="flex items-start">
 
                     <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
 
-                        <svg class="w-5 h-5 text-white"
-                             fill="none"
-                             stroke="currentColor"
-                             viewBox="0 0 24 24">
-
-                            <path stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                         </svg>
 
@@ -925,15 +857,15 @@
 
                     <div class="ml-4">
 
-                        <h4 class="text-sm font-semibold text-amber-800">
+                        <h4 class="text-sm font-semibold text-amber-800 dark:text-amber-300">
                             {{ __('Pro Tip') }}
                         </h4>
 
-                        <p class="text-sm text-amber-700 mt-1">
+                        <p class="text-sm text-amber-700 dark:text-amber-200 mt-1">
 
                             {{ __('Use keyboard shortcut') }}
 
-                            <kbd class="px-2 py-0.5 bg-white rounded text-xs font-mono shadow-sm">
+                            <kbd class="px-2 py-0.5 bg-white text-gray-800 dark:bg-gray-700 dark:text-gray-100 rounded text-xs font-mono shadow-sm">
                                 Ctrl + N
                             </kbd>
 

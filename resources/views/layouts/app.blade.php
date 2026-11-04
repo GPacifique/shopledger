@@ -774,6 +774,129 @@
         </div>
     </div>
 
+    @auth
+        @if(auth()->user()->hasVerifiedEmail() && auth()->user()->shop_id)
+            <div
+                x-data="pendingOrderNotifications(
+                    @js(route('shops.orders.notifications', auth()->user()->shop_id)),
+                    @js(auth()->id()),
+                    @js(auth()->user()->shop_id)
+                )"
+                x-init="start()"
+                x-cloak
+                x-show="open"
+                x-on:keydown.escape.window="open = false"
+                class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="pending-orders-title"
+                aria-live="polite"
+            >
+                <section class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900">
+                    <header class="flex items-start justify-between gap-4 border-b border-gray-200 px-5 py-4 dark:border-slate-700">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">{{ __('Action needed') }}</p>
+                            <h2 id="pending-orders-title" class="mt-1 text-xl font-bold text-gray-900 dark:text-white">
+                                {{ __('Pending orders') }}
+                                <span class="ml-1 inline-flex min-w-6 items-center justify-center rounded-full bg-amber-100 px-2 py-0.5 text-sm text-amber-800 dark:bg-amber-900 dark:text-amber-100" x-text="orders.length"></span>
+                            </h2>
+                        </div>
+                        <button type="button" x-on:click="open = false" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800" aria-label="{{ __('Close notification') }}">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </header>
+
+                    <ul class="max-h-[55vh] divide-y divide-gray-100 overflow-y-auto px-5 dark:divide-slate-800">
+                        <template x-for="order in orders" :key="order.id">
+                            <li class="flex items-center justify-between gap-4 py-4">
+                                <div class="min-w-0">
+                                    <p class="font-semibold text-gray-900 dark:text-white" x-text="'Order ' + order.order_number"></p>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400" x-text="order.waiter ? 'Placed by ' + order.waiter : 'New order awaiting review'"></p>
+                                </div>
+                                <span class="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-900 dark:text-amber-100">{{ __('Pending') }}</span>
+                            </li>
+                        </template>
+                    </ul>
+
+                    <footer class="flex justify-end gap-3 border-t border-gray-200 px-5 py-4 dark:border-slate-700">
+                        <button type="button" x-on:click="open = false" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-800">
+                            {{ __('Dismiss') }}
+                        </button>
+                        <a href="{{ route('shops.orders.index', ['shop' => auth()->user()->shop_id, 'status' => 'pending']) }}" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+                            {{ __('Review orders') }}
+                        </a>
+                    </footer>
+                </section>
+            </div>
+        @endif
+    @endauth
+
+    <script nonce="{{ Vite::cspNonce() }}">
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('pendingOrderNotifications', (feedUrl, userId, shopId) => ({
+                feedUrl,
+                storageKey: `shopledger:seen-pending-orders:${userId}:${shopId}`,
+                seen: [],
+                orders: [],
+                open: false,
+                timer: null,
+                busy: false,
+
+                start() {
+                    try {
+                        this.seen = JSON.parse(localStorage.getItem(this.storageKey) || '[]').map(String);
+                    } catch (error) {
+                        console.warn('Pending order notifications could not read local storage.', error);
+                    }
+
+                    this.poll();
+                    this.timer = window.setInterval(() => this.poll(), 10000);
+                    document.addEventListener('visibilitychange', () => {
+                        if (!document.hidden) this.poll();
+                    });
+                },
+
+                async poll() {
+                    if (this.busy || document.hidden) return;
+                    this.busy = true;
+
+                    try {
+                        const response = await fetch(this.feedUrl, {
+                            headers: { Accept: 'application/json' },
+                            credentials: 'same-origin',
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Pending order feed returned HTTP ${response.status}.`);
+                        }
+
+                        const data = await response.json();
+                        const unseen = data.orders.filter(order => !this.seen.includes(String(order.id)));
+
+                        if (unseen.length) {
+                            this.orders = this.open
+                                ? [...new Map([...unseen, ...this.orders].map(order => [String(order.id), order])).values()]
+                                : unseen;
+                            this.seen = [...new Set([...this.seen, ...unseen.map(order => String(order.id))])];
+                            this.open = true;
+
+                            try {
+                                localStorage.setItem(this.storageKey, JSON.stringify(this.seen.slice(-200)));
+                            } catch (error) {
+                                console.warn('Pending order notifications could not save seen orders.', error);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Unable to check for pending orders.', error);
+                    } finally {
+                        this.busy = false;
+                    }
+                },
+            }));
+        });
+    </script>
 
     <script nonce="{{ Vite::cspNonce() }}">
     (() => {

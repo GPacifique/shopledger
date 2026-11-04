@@ -80,6 +80,7 @@
             'icon'  => 'team',
             'items' => [
                 [__('Staff'), 'staff.index', 'staff.*'],
+                [__('Print settings'), 'print-settings.edit', 'print-settings.*'],
             ],
         ],
     ] : [];

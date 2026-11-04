@@ -144,6 +144,22 @@
 
                             <div class="mt-4 space-y-3">
                                 <div>
+                                    <label for="ordered_by" class="block text-sm font-medium text-gray-700">Ordered by</label>
+                                    <input id="ordered_by" name="ordered_by" type="text" maxlength="120" required
+                                           value="{{ old('ordered_by') }}"
+                                           class="mt-1 w-full rounded-lg border-gray-300 text-sm"
+                                           placeholder="Customer name">
+                                </div>
+                                <div>
+                                    <label for="served_by" class="block text-sm font-medium text-gray-700">Served by</label>
+                                    <select id="served_by" name="served_by" required class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                                        <option value="">Select staff member</option>
+                                        @foreach ($staff as $member)
+                                            <option value="{{ $member->id }}" @selected(old('served_by', auth()->id()) == $member->id)>{{ $member->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
                                     <label for="customer_id" class="block text-sm font-medium text-gray-700">Customer</label>
                                     <select id="customer_id" name="customer_id" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
                                         <option value="">Walk-in customer</option>

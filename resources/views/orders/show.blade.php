@@ -1,6 +1,6 @@
 {{-- resources/views/orders/show.blade.php --}}
 
-<x-application-layout>
+<x-app-layout>
 
     <x-slot name="header">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -156,6 +156,7 @@
                     grid
                     grid-cols-1
                     sm:grid-cols-2
+                    lg:grid-cols-4
                     gap-4
                     mb-6
                     text-sm
@@ -165,7 +166,7 @@
                 <div>
 
                     <span class="text-gray-500">
-                        Waiter
+                        Taken by
                     </span>
 
                     <p class="font-medium text-gray-900 break-anywhere">
@@ -174,6 +175,15 @@
 
                 </div>
 
+                <div>
+                    <span class="text-gray-500">Ordered by</span>
+                    <p class="font-medium text-gray-900 break-anywhere">{{ $order->ordered_by ?? '—' }}</p>
+                </div>
+
+                <div>
+                    <span class="text-gray-500">Served by</span>
+                    <p class="font-medium text-gray-900 break-anywhere">{{ $order->server->name ?? '—' }}</p>
+                </div>
 
                 <div>
 
@@ -865,4 +875,4 @@
 
     </div>
 
-</x-application-layout>
+</x-app-layout>

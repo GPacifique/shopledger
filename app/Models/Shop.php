@@ -29,11 +29,39 @@ class Shop extends Model
         'created_by',
         'approved_by',
         'approved_at',
+        'print_settings',
     ];
 
     protected $casts = [
         'approved_at' => 'datetime',
+        'print_settings' => 'array',
     ];
+
+    public static function defaultPrintSettings(): array
+    {
+        return [
+            'receipt_paper_size' => '80mm',
+            'invoice_paper_size' => 'a4',
+            'receipt_custom_width_mm' => 80,
+            'invoice_custom_width_mm' => 210,
+            'invoice_custom_height_mm' => 297,
+            'show_logo' => true,
+            'show_customer' => true,
+            'show_tax' => true,
+            'show_qr' => true,
+            'show_cashier' => true,
+            'show_contact' => true,
+            'receipt_footer' => 'Thank you for shopping with us!',
+            'invoice_notes' => '',
+            'invoice_terms' => '',
+            'auto_print' => false,
+        ];
+    }
+
+    public function resolvedPrintSettings(): array
+    {
+        return array_replace(self::defaultPrintSettings(), $this->print_settings ?? []);
+    }
 
     /*
     |--------------------------------------------------------------------------

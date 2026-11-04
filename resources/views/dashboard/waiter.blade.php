@@ -36,10 +36,72 @@
         ];
 
         $lineTotal = fn ($item) => (float) $item->quantity * (float) $item->price;
+
+        /*
+         * Resolve a stored product image to a public URL.
+         *
+         * Accepts any of these stored values:
+         *   "burger.png"                    -> public/images/products/burger.png
+         *   "burger"  (no extension)        -> tries .jpg, .jpeg, .png, .webp in public/images/products
+         *   "images/products/burger.jpg"    -> public/images/products/burger.jpg
+         *   "products/burger.jpg"           -> public/images/products/burger.jpg
+         *   "https://..." or "data:..."     -> used as is
+         *
+         * Returns null when nothing usable is found, so the tile falls back to the letter badge.
+         */
+        $imgUrl = function ($value) {
+            $v = trim((string) $value);
+            if ($v === '') {
+                return null;
+            }
+
+            if (preg_match('#^(https?:)?//#i', $v) || str_starts_with($v, 'data:')) {
+                return $v;
+            }
+
+            $v = ltrim(str_replace('\\', '/', $v), '/');
+
+            if (str_starts_with($v, 'public/')) {
+                $v = substr($v, 7);
+            }
+
+            if (! str_contains($v, '/')) {
+                $v = 'images/products/' . $v;
+            } elseif (str_starts_with($v, 'products/')) {
+                $v = 'images/' . $v;
+            }
+
+            $hasExt = (bool) preg_match('/\.(png|jpe?g|webp|gif|avif|svg)$/i', $v);
+
+            if ($hasExt) {
+                return asset($v);
+            }
+
+            foreach (['.jpg', '.jpeg', '.png', '.webp'] as $ext) {
+                if (is_file(public_path($v . $ext))) {
+                    return asset($v . $ext);
+                }
+            }
+
+            return null;
+        };
+
+        // Products for the POS grid, with `image` replaced by a ready-to-use URL
+        $menu = collect($products)->map(function ($p) use ($imgUrl) {
+            $row = is_array($p)
+                ? $p
+                : (method_exists($p, 'toArray') ? $p->toArray() : (array) $p);
+
+            $row['image'] = $imgUrl(
+                $row['image'] ?? $row['image_url'] ?? $row['image_path'] ?? $row['photo'] ?? null
+            );
+
+            return $row;
+        })->values();
     @endphp
 
     <div class="wp py-6"
-         x-data="waiterPos(@js($products), 'waiter-cart-{{ $shop->id }}', @js((bool) session('new_order')))">
+         x-data="waiterPos(@js($menu), 'waiter-cart-{{ $shop->id }}', @js((bool) session('new_order')))">
         <div class="mx-auto w-full max-w-[1500px] space-y-6 px-0">
 
             {{-- ================= Flash messages ================= --}}
@@ -115,7 +177,9 @@
                                     x-on:click="add(p)"
                                     :aria-label="'Add ' + p.name + ' to order'">
                                 <span class="wp-prod-media">
+                                    {{-- Letter badge shows until (or unless) the photo loads --}}
                                     <span class="wp-prod-fallback" x-text="p.name.charAt(0).toUpperCase()"></span>
+
                                     <template x-if="p.image">
                                         <img :src="p.image" :alt="p.name" loading="lazy" decoding="async"
                                              x-on:error="$el.remove()">
@@ -158,6 +222,21 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-3 px-5 pb-3">
+                            <label class="wp-field">
+                                <span>{{ __('Ordered by') }}</span>
+                                <input type="text" name="ordered_by" maxlength="120" required value="{{ old('ordered_by') }}" placeholder="{{ __('Customer name') }}" class="wp-input">
+                            </label>
+
+                            <label class="wp-field">
+                                <span>{{ __('Served by') }}</span>
+                                <select name="served_by" required class="wp-input">
+                                    <option value="">{{ __('Select staff member') }}</option>
+                                    @foreach($staff as $member)
+                                        <option value="{{ $member->id }}" @selected(old('served_by', auth()->id()) == $member->id)>{{ $member->name }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+
                             <label class="wp-field">
                                 <span>{{ __('Table') }}</span>
                                 <input type="text" name="table_number" maxlength="20" value="{{ old('table_number') }}" placeholder="{{ __('e.g. 4') }}" class="wp-input">
@@ -295,12 +374,31 @@
                             </div>
 
                             <div x-show="open" x-collapse x-cloak class="wp-order-body">
+                                <div class="mb-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
+                                    <p class="wp-soft">{{ __('Taken by') }}: <strong class="wp-ink">{{ $order->waiter?->name ?? '—' }}</strong></p>
+                                    <p class="wp-soft">{{ __('Ordered by') }}: <strong class="wp-ink">{{ $order->ordered_by ?? '—' }}</strong></p>
+                                    <p class="wp-soft">{{ __('Served by') }}: <strong class="wp-ink">{{ $order->server?->name ?? '—' }}</strong></p>
+                                </div>
                                 <ul class="divide-y divide-[var(--wp-line)]">
                                     @foreach($order->items as $item)
+                                        @php
+                                            $itemName  = $item->product->name ?? __('Removed product');
+                                            $itemImage = $imgUrl($item->product->product_image ?? null);
+                                        @endphp
+
                                         <li class="flex items-center justify-between gap-3 py-2 text-sm">
-                                            <span class="min-w-0 truncate wp-ink">
-                                                {{ $item->product->name ?? __('Removed product') }}
-                                                <span class="wp-muted">x {{ $item->quantity }}</span>
+                                            <span class="flex min-w-0 items-center gap-3">
+                                                <span class="wp-thumb wp-thumb-sm">
+                                                    <span>{{ mb_strtoupper(mb_substr($itemName, 0, 1)) }}</span>
+                                                    @if($itemImage)
+                                                        <img src="{{ $itemImage }}" alt="" loading="lazy" x-on:error="$el.remove()">
+                                                    @endif
+                                                </span>
+
+                                                <span class="min-w-0 truncate wp-ink">
+                                                    {{ $itemName }}
+                                                    <span class="wp-muted">x {{ $item->quantity }}</span>
+                                                </span>
                                             </span>
                                             <span class="shrink-0 font-medium wp-soft">{{ rwf($lineTotal($item)) }}</span>
                                         </li>
@@ -416,13 +514,13 @@
             background: repeating-linear-gradient(135deg, transparent 0 14px, rgb(15 107 87 / .06) 14px 28px);
         }
         .wp-prod-qty {
-            position: absolute; top: .5rem; right: .5rem; min-width: 1.75rem; height: 1.75rem; padding: 0 .4rem;
+            position: absolute; top: .5rem; right: .5rem; z-index: 1; min-width: 1.75rem; height: 1.75rem; padding: 0 .4rem;
             display: flex; align-items: center; justify-content: center; border-radius: 9999px;
             background: var(--wp-pri); color: var(--wp-on-pri); font-weight: 800; font-size: .875rem;
             box-shadow: 0 2px 8px rgb(0 0 0 / .3);
         }
         .wp-prod-flag {
-            position: absolute; left: .5rem; bottom: .5rem; padding: .125rem .5rem; border-radius: .5rem;
+            position: absolute; left: .5rem; bottom: .5rem; z-index: 1; padding: .125rem .5rem; border-radius: .5rem;
             background: rgb(18 36 31 / .85); color: #fff; font-size: .75rem; font-weight: 600;
         }
         .wp-prod-flag-low { background: var(--wp-acc); color: #3a2800; }
@@ -453,6 +551,7 @@
 
         .wp-thumb { position: relative; display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; flex-shrink: 0; overflow: hidden; border-radius: .625rem; background: var(--wp-card2); color: var(--wp-pri); font-weight: 800; }
         .wp-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .wp-thumb-sm { width: 2rem; height: 2rem; border-radius: .5rem; font-size: .8125rem; }
 
         .wp-step { display: inline-flex; align-items: center; border: 1px solid var(--wp-line); border-radius: .625rem; overflow: hidden; background: var(--wp-card2); }
         .wp-step button { width: 1.875rem; height: 1.875rem; font-size: 1.125rem; line-height: 1; color: var(--wp-ink); }

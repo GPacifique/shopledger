@@ -58,7 +58,10 @@ class PosController extends Controller
             ->limit(5)
             ->get(['id', 'sale_date', 'total_amount', 'payment_status']);
 
-        return view('pos.index', compact('products', 'categories', 'recentSales'));
+        $printSettings = $request->user()->shop?->resolvedPrintSettings()
+            ?? \App\Models\Shop::defaultPrintSettings();
+
+        return view('pos.index', compact('products', 'categories', 'recentSales', 'printSettings'));
     }
 
     /**
@@ -187,7 +190,17 @@ class PosController extends Controller
             'sale_date' => $sale->sale_date->format('M d, Y'),
             'total_amount' => (float) $sale->total_amount,
             'payment_status' => $sale->payment_status,
-            'print_url' => route('pos.sales.print', ['sale' => $sale, 'print' => 1]),
+            'print_url' => route('pos.sales.print', [
+                'sale' => $sale,
+                'paper' => $request->user()->shop?->resolvedPrintSettings()['receipt_paper_size'] ?? '80mm',
+            ]),
+            'auto_print' => (bool) ($request->user()->shop?->resolvedPrintSettings()['auto_print'] ?? false),
+            'auto_print_url' => route('pos.sales.print', [
+                'sale' => $sale,
+                'paper' => $request->user()->shop?->resolvedPrintSettings()['receipt_paper_size'] ?? '80mm',
+                'print' => 1,
+                'auto' => 1,
+            ]),
             'pdf_url' => route('pos.sales.export', $sale),
         ]);
     }

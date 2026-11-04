@@ -30,6 +30,7 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\BuyerController;
+use App\Http\Controllers\PrintSettingsController;
 
 Route::middleware(['auth', 'shop.roles:shop_admin,seller,cashier'])
     ->prefix('pos')
@@ -176,7 +177,10 @@ Route::get('orders/take', [OrderController::class, 'create'])
 
         Route::get('orders', [OrderController::class, 'index'])
             ->name('orders.index');
-           
+
+        Route::get('orders/notifications', [OrderController::class, 'notifications'])
+            ->middleware('throttle:30,1')
+            ->name('orders.notifications');
 
         Route::get('orders/{order}', [OrderController::class, 'show'])
             ->name('orders.show');
@@ -289,6 +293,10 @@ Route::middleware(['auth', 'verified', 'shop.approved'])->group(function () {
 
     // Shop Admin Routes - Only accessible by shop_admin
     Route::middleware(RoleMiddleware::class.':shop_admin','shop.approved')->group(function () {
+        Route::get('/business/print-settings', [PrintSettingsController::class, 'edit'])
+            ->name('print-settings.edit');
+        Route::put('/business/print-settings', [PrintSettingsController::class, 'update'])
+            ->name('print-settings.update');
         Route::get('/shop/dashboard', [ShopAdminController::class, 'dashboard'])->name('shop.dashboard');
         Route::resource('categories', CategoryController::class)->except(['show']);
         Route::resource('suppliers', SupplierController::class);

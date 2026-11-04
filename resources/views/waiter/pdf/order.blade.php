@@ -170,8 +170,8 @@
         <tr>
             <td>
                 <div class="info-box">
-                    <div class="label">Customer</div>
-                    <p><strong>{{ $order->customer->name ?? 'Walk-in customer' }}</strong></p>
+                    <div class="label">Ordered by</div>
+                    <p><strong>{{ $order->ordered_by ?? $order->customer->name ?? 'Walk-in customer' }}</strong></p>
                     @if (!empty($order->customer?->phone))
                         <p class="muted">{{ $order->customer->phone }}</p>
                     @endif
@@ -180,7 +180,8 @@
             <td style="padding-right:0;">
                 <div class="info-box">
                     <div class="label">Served by</div>
-                    <p><strong>{{ $order->waiter->name ?? '—' }}</strong></p>
+                    <p><strong>{{ $order->server->name ?? '—' }}</strong></p>
+                    <p class="muted">Taken by: {{ $waiter ?? '—' }}</p>
                     <p class="muted">Payment: {{ $paymentMethod }} &middot; {{ $paymentStatus }}</p>
                 </div>
             </td>

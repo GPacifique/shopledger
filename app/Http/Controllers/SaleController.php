@@ -291,11 +291,9 @@ protected function authorizeSaleManage(Request $request, Sale $sale): void
         $this->authorizeSale($request, $sale);
         $sale->load(['items.product', 'creator', 'shop', 'customer']);
 
-        $profit = $sale->items->reduce(function ($carry, $item) {
-            return $carry + ($item->line_total - ($item->cost_price_at_sale * $item->quantity));
-        }, 0);
+        [$view, $data] = $this->printDocumentData($request, $sale, false);
 
-        return view('sales.receipt', compact('sale', 'profit'));
+        return view($view, $data);
     }
 
     public function export(Request $request, Sale $sale)
@@ -303,14 +301,185 @@ protected function authorizeSaleManage(Request $request, Sale $sale): void
         $this->authorizeSale($request, $sale);
         $sale->load(['items.product', 'creator', 'shop', 'customer']);
 
-        $profit = $sale->items->reduce(function ($carry, $item) {
-            return $carry + ($item->line_total - ($item->cost_price_at_sale * $item->quantity));
-        }, 0);
+        [$view, $data, $paper] = $this->printDocumentData($request, $sale, true);
 
-        $pdf = Pdf::loadView('sales.receipt', compact('sale', 'profit'))
-            ->setPaper([0, 0, 280, 800], 'portrait');
+        return Pdf::loadView($view, $data)
+            ->setPaper($paper, 'portrait')
+            ->download(strtolower($data['receiptNumber']) . '.pdf');
+    }
 
-        return $pdf->download('sale-' . $sale->id . '.pdf');
+    /**
+     * Resolve printable formats and settings from the sale's owning shop only.
+     * Amounts are read from the transaction; this does not alter sales logic.
+     */
+    private function printDocumentData(Request $request, Sale $sale, bool $pdfMode): array
+    {
+        $validated = $request->validate([
+            'document' => ['nullable', 'in:receipt,invoice'],
+            'paper' => ['nullable', 'in:58mm,80mm,a4,a5,letter,custom'],
+        ]);
+        $documentType = $validated['document'] ?? 'receipt';
+        $printSettings = $sale->shop->resolvedPrintSettings();
+        $defaultPaper = $documentType === 'receipt'
+            ? $printSettings['receipt_paper_size']
+            : $printSettings['invoice_paper_size'];
+        $paperSize = $validated['paper'] ?? $defaultPaper;
+        $allowedPapers = $documentType === 'receipt'
+            ? ['58mm', '80mm', 'custom']
+            : ['a4', 'a5', 'letter', 'custom'];
+
+        if (! in_array($paperSize, $allowedPapers, true)) {
+            $paperSize = $defaultPaper;
+        }
+
+        $millimetersToPoints = static fn (float $millimeters): float => $millimeters * 72 / 25.4;
+
+        $receiptWidthMm = null;
+        if ($documentType === 'receipt') {
+            $receiptWidthMm = match ($paperSize) {
+                '58mm' => 58,
+                'custom' => min(120, max(40, (float) $printSettings['receipt_custom_width_mm'])),
+                default => 80,
+            };
+            $pageSize = $receiptWidthMm . 'mm auto';
+            $pageMargin = $receiptWidthMm <= 58 ? '2mm' : '3mm';
+            $pageWidth = $receiptWidthMm . 'mm';
+            $itemHeight = $sale->items->sum(function ($item) use ($receiptWidthMm): int {
+                $name = (string) ($item->product?->name ?? '');
+                $charactersPerLine = $receiptWidthMm <= 58 ? 24 : 38;
+
+                return 22 + (max(1, (int) ceil(strlen($name) / $charactersPerLine)) * 12);
+            });
+            $pdfPaper = [
+                0,
+                0,
+                $millimetersToPoints($receiptWidthMm),
+                max(360, 250 + $itemHeight + ($printSettings['show_qr'] ? 100 : 0)),
+            ];
+        } else {
+            [$invoiceWidthMm, $invoiceHeightMm, $pageMargin, $pageSize, $pdfPaper] = match ($paperSize) {
+                'a5' => [148, 210, '10mm', 'A5 portrait', 'a5'],
+                'letter' => [216, 279, '15mm', 'letter portrait', 'letter'],
+                'custom' => [
+                    min(300, max(100, (float) $printSettings['invoice_custom_width_mm'])),
+                    min(400, max(100, (float) $printSettings['invoice_custom_height_mm'])),
+                    '12mm',
+                    min(300, max(100, (float) $printSettings['invoice_custom_width_mm'])) . 'mm '
+                        . min(400, max(100, (float) $printSettings['invoice_custom_height_mm'])) . 'mm',
+                    [
+                        0,
+                        0,
+                        $millimetersToPoints(min(300, max(100, (float) $printSettings['invoice_custom_width_mm']))),
+                        $millimetersToPoints(min(400, max(100, (float) $printSettings['invoice_custom_height_mm']))),
+                    ],
+                ],
+                default => [210, 297, '15mm', 'A4 portrait', 'a4'],
+            };
+            $pageWidth = $invoiceWidthMm . 'mm';
+        }
+
+        $saleTotal = (float) $sale->total_amount;
+        $paymentStatus = strtolower((string) $sale->payment_status);
+        $amountPaid = match ($paymentStatus) {
+            'paid' => $saleTotal,
+            'unpaid' => 0.0,
+            default => null,
+        };
+        $balanceDue = is_null($amountPaid) ? null : max(0, $saleTotal - $amountPaid);
+        $paymentMethod = Sale::PAYMENT_METHODS[$sale->payment_method]
+            ?? ucfirst(str_replace('_', ' ', (string) $sale->payment_method));
+        $referencePrefix = $documentType === 'invoice' ? 'INV' : 'RCP';
+        $receiptNumber = $referencePrefix . '-' . str_pad((string) $sale->id, 8, '0', STR_PAD_LEFT);
+        $qrCode = null;
+
+        if ($printSettings['show_qr']) {
+            $qrPayload = implode("\n", [
+                'Reference: ' . $receiptNumber,
+                'Business: ' . $sale->shop->business_name,
+                'Date: ' . $sale->sale_date->format('Y-m-d') . ' ' . $sale->created_at->format('H:i'),
+                'Total: RWF ' . number_format($saleTotal),
+            ]);
+            $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
+                ->size(260)
+                ->margin(1)
+                ->errorCorrection('M')
+                ->generate($qrPayload);
+        }
+
+        $subtotalAttribute = $sale->getAttribute('subtotal');
+        $discountAmount = (float) ($sale->getAttribute('discount_amount') ?? 0);
+        $taxAmount = (float) ($sale->getAttribute('tax_amount') ?? 0);
+        $serviceCharges = (float) ($sale->getAttribute('service_charge') ?? 0);
+        $logoSrc = $printSettings['show_logo'] ? $this->printLogoSource($sale->shop, $pdfMode) : null;
+        $view = $documentType === 'invoice' ? 'sales.invoice' : 'sales.receipt';
+        $data = compact(
+            'sale',
+            'printSettings',
+            'documentType',
+            'paperSize',
+            'pageSize',
+            'pageMargin',
+            'pageWidth',
+            'receiptWidthMm',
+            'receiptNumber',
+            'paymentMethod',
+            'paymentStatus',
+            'amountPaid',
+            'balanceDue',
+            'subtotalAttribute',
+            'discountAmount',
+            'taxAmount',
+            'serviceCharges',
+            'qrCode',
+            'logoSrc',
+            'pdfMode',
+        ) + [
+            'currency' => 'RWF',
+            'money' => static fn ($amount): string => number_format((float) $amount),
+            'subtotal' => is_null($subtotalAttribute)
+                ? max(0, $saleTotal + $discountAmount - $taxAmount - $serviceCharges)
+                : (float) $subtotalAttribute,
+            'paperOptions' => $documentType === 'receipt'
+                ? ['58mm' => '58 mm thermal', '80mm' => '80 mm thermal', 'custom' => 'Custom width']
+                : ['a4' => 'A4', 'a5' => 'A5', 'letter' => 'Letter', 'custom' => 'Custom size'],
+        ];
+        $data['pdfRouteName'] = $request->routeIs('pos.sales.*')
+            ? 'pos.sales.export'
+            : 'sales.export';
+        $data['previewReturnUrl'] = $request->routeIs('pos.sales.*')
+            ? route('pos.index')
+            : route('sales.show', $sale);
+
+        return [$view, $data, $pdfPaper];
+    }
+
+    private function printLogoSource(\App\Models\Shop $shop, bool $pdfMode): ?string
+    {
+        if (! $shop->logo) {
+            return null;
+        }
+
+        if (! $pdfMode) {
+            return $shop->logo_url;
+        }
+
+        $isPublicImage = str_starts_with($shop->logo, 'images/');
+        $basePath = realpath($isPublicImage ? public_path('images') : storage_path('app/public'));
+        $relativePath = $isPublicImage
+            ? substr($shop->logo, strlen('images/'))
+            : preg_replace('#^(public/|storage/)?#', '', $shop->logo);
+        $filePath = $basePath ? realpath($basePath . DIRECTORY_SEPARATOR . $relativePath) : false;
+
+        if (! $basePath || ! $filePath || ! str_starts_with($filePath, $basePath . DIRECTORY_SEPARATOR) || ! is_file($filePath)) {
+            return null;
+        }
+
+        $mimeType = mime_content_type($filePath);
+        if (! in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif'], true)) {
+            return null;
+        }
+
+        return 'data:' . $mimeType . ';base64,' . base64_encode(file_get_contents($filePath));
     }
 
     public function updatePaymentStatus(Request $request, Sale $sale)

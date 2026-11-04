@@ -11,6 +11,9 @@
             'cancelled' => 'Cancelled',
             'all'       => 'All',
         ];
+
+        // The controller resolves the filter and passes $status (null = no filter),
+        // so the highlighted tab always matches the orders actually shown.
         $activeTab = $status ?: 'all';
 
         // Payment options for the approve form (same source as the order page)
@@ -71,7 +74,7 @@
                 </div>
             @endif
 
-            @if ($canReview && $status === 'pending')
+            @if ($canReview && $activeTab === 'pending')
                 <div class="mx-4 sm:mx-0 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 ring-1 ring-amber-200">
                     These orders are waiting for your decision. Approving records a sale and deducts stock.
                 </div>
@@ -82,6 +85,7 @@
                 <div class="flex gap-2 overflow-x-auto pb-1">
                     @foreach ($tabs as $key => $label)
                         <a href="{{ route('shops.orders.index', [$shop, 'status' => $key]) }}"
+                           @if ($activeTab === $key) aria-current="page" @endif
                            class="shrink-0 rounded-full px-4 py-2 text-sm font-medium
                                   {{ $activeTab === $key ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50' }}">
                             {{ $label }}
@@ -185,10 +189,12 @@
                             @empty
                                 <tr>
                                     <td colspan="{{ $isWaiter ? 7 : 8 }}" class="px-4 py-12 text-center text-gray-500">
-                                        <p class="font-medium">No orders found.</p>
+                                        <p class="font-medium">
+                                            No {{ $activeTab === 'all' ? '' : $activeTab . ' ' }}orders found.
+                                        </p>
                                         @if ($isWaiter)
                                             <a href="{{ route('shops.orders.waiter', $shop) }}" class="mt-2 inline-block text-indigo-600 underline">Take your first order</a>
-                                        @elseif ($status === 'pending')
+                                        @elseif ($activeTab === 'pending')
                                             <p class="text-sm">Nothing is waiting for approval.</p>
                                         @endif
                                     </td>

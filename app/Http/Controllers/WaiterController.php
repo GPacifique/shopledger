@@ -8,24 +8,23 @@ use App\Models\Product;
 use App\Models\Shop;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\OrderNumberGenerator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class WaiterController extends Controller
 {
-    /** Product images live in public/Images/products/ */
-    private const IMAGE_DIR = 'Images/products';
-
     /** Status changes a waiter may make: current status => allowed next statuses */
     private const WAITER_TRANSITIONS = [
         'pending'  => ['cancelled'],
         'approved' => ['completed'],
     ];
+
+    public function __construct(private readonly OrderNumberGenerator $orderNumbers) {}
 
     /* ------------------------------------------------------------------
      | Dashboard
@@ -43,7 +42,7 @@ class WaiterController extends Controller
             ->pluck('total', 'status');
 
         $orders = $mine()
-            ->with(['customer', 'items.product'])
+            ->with(['customer', 'waiter', 'server', 'items.product'])
             ->latest()
             ->paginate(15);
 
@@ -54,12 +53,14 @@ class WaiterController extends Controller
             ->values();
 
         $customers = $this->customersFor($shop)->orderBy('name')->get(['id', 'name']);
+        $staff = User::where('shop_id', $shop->id)->orderBy('name')->get(['id', 'name']);
 
         return view('waiter.waiter-dashboard', [
             'shop'            => $shop,
             'orders'          => $orders,
             'products'        => $products,
             'customers'       => $customers,
+            'staff'           => $staff,
             'pendingOrders'   => (int) ($statusCounts['pending'] ?? 0),
             'approvedOrders'  => (int) ($statusCounts['approved'] ?? 0),
             'completedOrders' => (int) ($statusCounts['completed'] ?? 0),
@@ -76,6 +77,12 @@ class WaiterController extends Controller
 
         $data = $request->validate([
             'customer_id'          => ['nullable', 'integer'],
+            'ordered_by'           => ['required', 'string', 'max:120'],
+            'served_by'            => [
+                'required',
+                'integer',
+                Rule::exists('users', 'id')->where('shop_id', $shop->id),
+            ],
             'table_number'         => ['nullable', 'string', 'max:20'],
             'notes'                => ['nullable', 'string', 'max:500'],
             'items'                => ['required', 'array', 'min:1', 'max:100'],
@@ -118,14 +125,16 @@ class WaiterController extends Controller
 
                 // Price always comes from the database, never from the browser
                 $price    = $this->unitPrice($product);
-                $subtotal = round($price * $qty, 2);
-                $total   += $subtotal;
+                $total += round($price * $qty, 2);
 
                 $lines[] = [
-                    'product_id' => $product->id,
-                    'quantity'   => $qty,
-                    'price'      => $price,
-                    'subtotal'   => $subtotal,
+                    'shop_id'         => $shop->id,
+                    'product_id'      => $product->id,
+                    'description'     => $product->name,
+                    'quantity'        => $qty,
+                    'unit_price'      => $price,
+                    'discount_amount' => 0,
+                    'tax_amount'      => 0,
                 ];
             }
 
@@ -137,13 +146,19 @@ class WaiterController extends Controller
                 'shop_id'      => $shop->id,
                 'created_by'   => $user->id,
                 'customer_id'  => $data['customer_id'] ?? null,
+                'ordered_by'  => $data['ordered_by'],
+                'served_by'   => $data['served_by'],
+                'order_number' => $this->orderNumbers->generate($shop),
                 'table_number' => $data['table_number'] ?? null,
                 'notes'        => $data['notes'] ?? null,
                 'status'       => 'pending',
+                'subtotal'     => round($total, 2),
                 'total_amount' => round($total, 2),
             ]);
 
             $order->items()->createMany($lines);
+            $order->load('items');
+            $order->recalculateTotals();
 
             return $order;
         });
@@ -231,16 +246,19 @@ class WaiterController extends Controller
 
     private function pdfData(Shop $shop, Order $order): array
     {
-        $order->load(['items.product', 'customer']);
+        $order->load(['items.product', 'customer', 'waiter', 'server']);
 
         $total = (float) ($order->total_amount
-            ?: $order->items->sum(fn ($i) => (float) $i->quantity * (float) $i->price));
+            ?: $order->items->sum(fn ($item) => (float) ($item->line_total
+                ?? ((float) $item->unit_price * (float) $item->quantity
+                    - (float) $item->discount_amount
+                    + (float) $item->tax_amount))));
 
         return [
             'shop'   => $shop,
             'order'  => $order,
             'total'  => $total,
-            'waiter' => User::find($order->created_by)?->name,
+            'waiter' => $order->waiter?->name,
         ];
     }
 
@@ -260,7 +278,7 @@ class WaiterController extends Controller
             'name'  => $product->name,
             'price' => $this->unitPrice($product),
             'stock' => $this->stockOf($product),
-            'image' => $this->imageUrl($product->getAttributes()['image'] ?? null),
+            'image' => $product->image_url,
         ];
     }
 
@@ -279,23 +297,4 @@ class WaiterController extends Controller
         return isset($a['stock']) ? (int) $a['stock'] : null;
     }
 
-    /**
-     * Accepts "pizza.jpg", "Images/products/pizza.jpg" or a full URL.
-     * Returns null when the file is missing so the page shows a placeholder.
-     */
-    private function imageUrl(?string $file): ?string
-    {
-        if (! $file) {
-            return null;
-        }
-
-        if (Str::startsWith($file, ['http://', 'https://'])) {
-            return $file;
-        }
-
-        $file = ltrim($file, '/');
-        $path = Str::startsWith($file, self::IMAGE_DIR) ? $file : self::IMAGE_DIR . '/' . $file;
-
-        return file_exists(public_path($path)) ? asset($path) : null;
-    }
 }

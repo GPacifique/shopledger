@@ -159,6 +159,21 @@
 
                         <div class="grid grid-cols-2 gap-3 px-5 pb-3">
                             <label class="wp-field">
+                                <span>{{ __('Ordered by') }}</span>
+                                <input type="text" name="ordered_by" maxlength="120" required value="{{ old('ordered_by') }}" placeholder="{{ __('Customer name') }}" class="wp-input">
+                            </label>
+
+                            <label class="wp-field">
+                                <span>{{ __('Served by') }}</span>
+                                <select name="served_by" required class="wp-input">
+                                    <option value="">{{ __('Select staff member') }}</option>
+                                    @foreach($staff as $member)
+                                        <option value="{{ $member->id }}" @selected(old('served_by', auth()->id()) == $member->id)>{{ $member->name }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+
+                            <label class="wp-field">
                                 <span>{{ __('Table') }}</span>
                                 <input type="text" name="table_number" maxlength="20" value="{{ old('table_number') }}" placeholder="{{ __('e.g. 4') }}" class="wp-input">
                             </label>
@@ -295,6 +310,11 @@
                             </div>
 
                             <div x-show="open" x-collapse x-cloak class="wp-order-body">
+                                <div class="mb-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
+                                    <p class="wp-soft">{{ __('Taken by') }}: <strong class="wp-ink">{{ $order->waiter?->name ?? '—' }}</strong></p>
+                                    <p class="wp-soft">{{ __('Ordered by') }}: <strong class="wp-ink">{{ $order->ordered_by ?? '—' }}</strong></p>
+                                    <p class="wp-soft">{{ __('Served by') }}: <strong class="wp-ink">{{ $order->server?->name ?? '—' }}</strong></p>
+                                </div>
                                 <ul class="divide-y divide-[var(--wp-line)]">
                                     @foreach($order->items as $item)
                                         <li class="flex items-center justify-between gap-3 py-2 text-sm">

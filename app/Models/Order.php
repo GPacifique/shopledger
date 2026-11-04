@@ -16,6 +16,9 @@ class Order extends Model
     protected $fillable = [
         'shop_id',
         'customer_id',
+        'ordered_by',
+        'served_by',
+        'table_number',
         'created_by',
         'reviewed_by',
         'sale_id',
@@ -66,6 +69,11 @@ class Order extends Model
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function server(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'served_by');
     }
 
     public function sale(): BelongsTo

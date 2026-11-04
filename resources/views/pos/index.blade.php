@@ -532,6 +532,7 @@
             const categories = @json($categories);
             const CHECKOUT_URL = @json(route('pos.checkout'));
             const CSRF = @json(csrf_token());
+            const AUTO_PRINT = @json((bool) ($printSettings['auto_print'] ?? false));
             const MAX_CARDS = 80;
 
             const byId = new Map(products.map(p => [p.id, p]));
@@ -1095,6 +1096,7 @@
             checkoutBt.addEventListener('click', async function () {
                 if (cart.size === 0) return;
 
+                const autoPrintWindow = AUTO_PRINT ? window.open('about:blank', '_blank') : null;
                 checkoutEr.classList.add('hidden');
                 successAlert.classList.add('hidden');
                 checkoutBt.disabled = true;
@@ -1135,6 +1137,7 @@
                         checkoutEr.textContent = message;
                         checkoutEr.classList.remove('hidden');
                         checkoutBt.disabled = false;
+                        autoPrintWindow?.close();
                         return;
                     }
 
@@ -1151,12 +1154,20 @@
                     successMessage.textContent = data.message || @json(__('Sale completed.'));
                     successPrint.href = data.print_url;
                     successPdf.href = data.pdf_url;
+                    if (data.auto_print) {
+                        if (autoPrintWindow) {
+                            autoPrintWindow.location = data.auto_print_url;
+                        } else {
+                            successMessage.textContent += ' ' + @json(__('Allow pop-ups to automatically print; you can still use Print receipt.'));
+                        }
+                    }
                     successAlert.classList.remove('hidden');
                     addRecentSale(data);
                     toast(data.message || @json(__('Sale completed.')));
                     searchEl.focus();
 
                 } catch (err) {
+                    autoPrintWindow?.close();
                     checkoutEr.textContent = @json(__('Network error. Please try again.'));
                     checkoutEr.classList.remove('hidden');
                     checkoutBt.disabled = false;
