@@ -6,6 +6,7 @@ use App\Models\Shop;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
@@ -152,6 +153,15 @@ class PrintSettingsTest extends TestCase
             'payment_status' => 'Paid',
         ]);
         $order->update(['uuid' => '']);
+        OrderItem::create([
+            'shop_id' => $shop->id,
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'description' => 'Freshly baked sourdough loaf with an extra-long description for wrapping',
+            'quantity' => 2,
+            'unit_price' => 1250,
+            'line_total' => 2500,
+        ]);
         $billPdf = $this->actingAs($user)->get(route('waiter.orders.bill', [
             'shop' => $shop,
             'order' => $order,

@@ -211,10 +211,18 @@ class WaiterController extends Controller
         $this->authorizeOrderAccess($shop, $order);
 
         $data   = $this->pdfData($shop, $order);
-        $height = 360 + ($order->items->count() * 34);   // points; grows with the item count
+        $itemsHeight = $order->items->sum(function ($item): int {
+            $name = (string) ($item->product?->name ?? $item->description ?? 'Item');
+            $wrappedLines = max(1, (int) ceil(mb_strlen($name) / 22));
+
+            return 30 + (($wrappedLines - 1) * 12);
+        });
+        $notesHeight = (int) ceil(mb_strlen((string) $order->notes) / 45) * 12;
+        $rejectionHeight = (int) ceil(mb_strlen((string) $order->rejection_reason) / 45) * 12;
+        $height = 430 + $itemsHeight + $notesHeight + $rejectionHeight;
 
         return Pdf::loadView('waiter.pdf.order', $data)
-            ->setPaper([0, 0, 226.77, $height])           // 80 mm wide
+            ->setPaper([0, 0, 226.77, $height])
             ->stream("receipt-order-{$order->id}.pdf");
     }
 

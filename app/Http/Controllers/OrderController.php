@@ -53,6 +53,23 @@ class OrderController extends Controller
             $status = $isWaiter ? null : 'pending';
         }
 
+        $visibleOrders = $shop->orders()
+            ->when($isWaiter, fn ($q) => $q->where('created_by', $user->id));
+        $statusStats = $visibleOrders
+            ->selectRaw('status, COUNT(*) as order_count, SUM(total_amount) as order_total')
+            ->groupBy('status')
+            ->get()
+            ->keyBy('status');
+        $stats = [
+            'total' => $statusStats->sum('order_count'),
+            'pending' => (int) ($statusStats->get('pending')->order_count ?? 0),
+            'approved' => (int) ($statusStats->get('approved')->order_count ?? 0),
+            'rejected' => (int) ($statusStats->get('rejected')->order_count ?? 0),
+            'cancelled' => (int) ($statusStats->get('cancelled')->order_count ?? 0),
+            'approved_total' => (float) ($statusStats->get('approved')->order_total ?? 0),
+            'today' => (clone $visibleOrders)->whereDate('created_at', today())->count(),
+        ];
+
         $orders = $shop->orders()
             ->with(['customer', 'waiter', 'items'])
             // Waiters only ever see their own orders.
@@ -63,7 +80,7 @@ class OrderController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('orders.index', compact('shop', 'orders', 'status'));
+        return view('orders.index', compact('shop', 'orders', 'status', 'stats'));
     }
 
     public function notifications(Request $request, Shop $shop)

@@ -80,6 +80,25 @@
                 </div>
             @endif
 
+            {{-- Order statistics follow the same shop and waiter visibility rules as the list. --}}
+            <section class="grid grid-cols-2 gap-3 px-4 sm:grid-cols-3 sm:px-0 lg:grid-cols-4 xl:grid-cols-7"
+                     aria-label="{{ __('Order statistics') }}">
+                @foreach ([
+                    ['label' => __('Total orders'), 'value' => number_format($stats['total']), 'tone' => 'text-gray-900'],
+                    ['label' => __('Today'), 'value' => number_format($stats['today']), 'tone' => 'text-indigo-700'],
+                    ['label' => __('Pending'), 'value' => number_format($stats['pending']), 'tone' => 'text-amber-700'],
+                    ['label' => __('Approved'), 'value' => number_format($stats['approved']), 'tone' => 'text-green-700'],
+                    ['label' => __('Rejected'), 'value' => number_format($stats['rejected']), 'tone' => 'text-red-700'],
+                    ['label' => __('Cancelled'), 'value' => number_format($stats['cancelled']), 'tone' => 'text-gray-600'],
+                    ['label' => __('Approved total'), 'value' => number_format($stats['approved_total']) . ' RWF', 'tone' => 'text-indigo-700'],
+                ] as $stat)
+                    <div class="rounded-xl bg-white px-4 py-4 shadow-sm ring-1 ring-gray-100">
+                        <p class="text-xs font-medium text-gray-500">{{ $stat['label'] }}</p>
+                        <p class="mt-1 text-xl font-semibold {{ $stat['tone'] }}">{{ $stat['value'] }}</p>
+                    </div>
+                @endforeach
+            </section>
+
             {{-- Status tabs --}}
             <div class="px-4 sm:px-0">
                 <div class="flex gap-2 overflow-x-auto pb-1">
@@ -151,6 +170,15 @@
                                         <div class="flex items-center justify-end gap-3">
                                             <a href="{{ route('shops.orders.show', [$shop, $order]) }}"
                                                class="text-indigo-600 hover:underline">View</a>
+                                            <a href="{{ route('shops.orders.print', [$shop, $order]) }}"
+                                               target="_blank" rel="noopener"
+                                               class="inline-flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                                               aria-label="{{ __('Print receipt for order :order', ['order' => $order->order_number]) }}">
+                                                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path d="M5 2.5A1.5 1.5 0 0 1 6.5 1h7A1.5 1.5 0 0 1 15 2.5V5H5V2.5ZM4 6h12a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-1v-3H5v3H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm2 7h8v5H6v-5Z"/>
+                                                </svg>
+                                                {{ __('Print') }}
+                                            </a>
 
                                             {{-- Seller / admin review actions --}}
                                             @if ($canReview && $order->canBeReviewed())

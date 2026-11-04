@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <title>Order {{ $order->order_number ?? $order->id }}</title>
     <style>
-        @page { margin: 28px 32px; }
+        @page { margin: 14px 10px; }
         * { box-sizing: border-box; }
-        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #1f2937; margin: 0; line-height: 1.45; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 9px; color: #1f2937; margin: 0; line-height: 1.4; }
 
         table { width: 100%; border-collapse: collapse; }
         td, th { vertical-align: top; }
@@ -17,10 +17,10 @@
         .label  { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: #6b7280; }
 
         /* Header */
-        .brand       { font-size: 20px; font-weight: bold; color: #111827; margin: 0 0 3px; }
-        .doc-title   { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #4f46e5; font-weight: bold; }
-        .order-no    { font-size: 16px; font-weight: bold; color: #111827; margin: 2px 0; }
-        .rule        { border: 0; border-top: 2px solid #4f46e5; margin: 14px 0 16px; }
+        .brand       { font-size: 16px; font-weight: bold; color: #111827; margin: 0 0 3px; }
+        .doc-title   { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: #4f46e5; font-weight: bold; }
+        .order-no    { font-size: 13px; font-weight: bold; color: #111827; margin: 2px 0; }
+        .rule        { border: 0; border-top: 2px solid #4f46e5; margin: 8px 0 9px; }
 
         /* Status pill */
         .pill        { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
@@ -30,33 +30,34 @@
         .pill-cancelled { background: #f3f4f6; color: #374151; }
 
         /* Info blocks */
-        .info td      { width: 50%; padding: 0 10px 0 0; }
-        .info-box     { border: 1px solid #e5e7eb; border-radius: 6px; padding: 9px 11px; }
+        .info td      { width: 50%; padding: 0 4px 0 0; }
+        .info-box     { border: 1px solid #e5e7eb; padding: 6px; }
         .info-box p   { margin: 2px 0; }
 
         /* Items */
-        .items { margin-top: 16px; }
+        .items { margin-top: 9px; table-layout: fixed; }
         .items thead th {
             background: #f3f4f6; color: #374151; font-size: 9px; text-transform: uppercase;
-            letter-spacing: .05em; padding: 7px 8px; border-bottom: 1px solid #d1d5db;
+            letter-spacing: .03em; padding: 5px 2px; border-bottom: 1px solid #d1d5db;
         }
-        .items tbody td { padding: 8px; border-bottom: 1px solid #eef0f3; }
+        .items tbody td { padding: 5px 2px; border-bottom: 1px solid #eef0f3; overflow-wrap: anywhere; }
+        .items tbody tr { page-break-inside: avoid; }
         .items tbody tr:nth-child(even) td { background: #fafafa; }
         .item-name { font-weight: bold; color: #111827; }
 
         /* Totals */
-        .totals-wrap { margin-top: 14px; }
-        .totals      { width: 48%; margin-left: 52%; }
-        .totals td   { padding: 4px 8px; }
-        .totals .grand td { border-top: 2px solid #111827; padding-top: 8px; font-size: 14px; font-weight: bold; color: #111827; }
+        .totals-wrap { margin-top: 8px; page-break-inside: avoid; }
+        .totals      { width: 68%; margin-left: 32%; }
+        .totals td   { padding: 3px 4px; }
+        .totals .grand td { border-top: 2px solid #111827; padding-top: 6px; font-size: 12px; font-weight: bold; color: #111827; }
 
         /* Notes + footer */
-        .notes   { margin-top: 16px; border-left: 3px solid #c7d2fe; background: #f8fafc; padding: 8px 11px; }
-        .footer  { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e5e7eb; text-align: center; color: #9ca3af; font-size: 9px; }
+        .notes   { margin-top: 9px; border-left: 3px solid #c7d2fe; background: #f8fafc; padding: 6px 8px; overflow-wrap: anywhere; page-break-inside: avoid; }
+        .footer  { margin-top: 12px; padding-top: 7px; border-top: 1px solid #e5e7eb; text-align: center; color: #9ca3af; font-size: 8px; }
 
         /* QR code */
-        .qr      { margin-top: 20px; text-align: right; page-break-inside: avoid; }
-        .qr img  { width: 110px; height: 110px; }
+        .qr      { margin-top: 10px; text-align: right; page-break-inside: avoid; }
+        .qr img  { width: 82px; height: 82px; }
         .qr .cap { margin-top: 4px; font-size: 9px; color: #6b7280; }
 
         @media print { body { margin: 0; } }
@@ -127,7 +128,7 @@
     {{-- ===== Header ===== --}}
     <table>
         <tr>
-            <td style="width:60%;">
+            <td style="width:100%;">
                 <table>
                     <tr>
                         @if ($logoSrc)
@@ -154,11 +155,18 @@
                     </tr>
                 </table>
             </td>
-            <td class="right" style="width:40%;">
+        </tr>
+    </table>
+
+    <table style="margin-top:8px;">
+        <tr>
+            <td>
                 <div class="doc-title">Order Receipt</div>
                 <div class="order-no">#{{ $order->order_number ?? $order->id }}</div>
                 <div class="muted">{{ optional($order->created_at)->format('d M Y, H:i') }}</div>
-                <div style="margin-top:5px;"><span class="pill {{ $pillClass }}">{{ ucfirst($status) }}</span></div>
+            </td>
+            <td class="right" style="vertical-align:middle;">
+                <span class="pill {{ $pillClass }}">{{ ucfirst($status) }}</span>
             </td>
         </tr>
     </table>
@@ -192,11 +200,11 @@
     <table class="items">
         <thead>
             <tr>
-                <th style="width:5%;"  class="center">#</th>
-                <th style="width:43%;" align="left">Item</th>
-                <th style="width:10%;" class="right">Qty</th>
-                <th style="width:20%;" class="right">Unit price</th>
-                <th style="width:22%;" class="right">Amount</th>
+                <th style="width:6%;" class="center">#</th>
+                <th style="width:37%;" align="left">Item</th>
+                <th style="width:12%;" class="right">Qty</th>
+                <th style="width:21%;" class="right">Unit</th>
+                <th style="width:24%;" class="right">Amount</th>
             </tr>
         </thead>
         <tbody>
