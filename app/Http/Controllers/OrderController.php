@@ -66,7 +66,7 @@ class OrderController extends Controller
             'approved' => (int) ($statusStats->get('approved')->order_count ?? 0),
             'rejected' => (int) ($statusStats->get('rejected')->order_count ?? 0),
             'cancelled' => (int) ($statusStats->get('cancelled')->order_count ?? 0),
-            'approved_total' => (float) ($statusStats->get('approved')->order_total ?? 0),
+            'approved_total' => (float) ($statusStats->get('completed')->order_total ?? 0),
             'today' => (clone $visibleOrders)->whereDate('created_at', today())->count(),
         ];
 
