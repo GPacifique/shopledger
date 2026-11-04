@@ -50,7 +50,7 @@
         .signature { width: 48%; margin: 38px 0 0 auto; text-align: center; page-break-inside: avoid; break-inside: avoid; }
         .signature-line { margin-bottom: 7px; border-top: 1px solid #86948d; }
         .qr { margin-top: 18px; text-align: right; page-break-inside: avoid; break-inside: avoid; }
-        .qr svg { width: 24mm; height: 24mm; }
+        .qr svg, .qr img { width: 29mm; height: 29mm; }
         .footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #e1e7e3; color: #71807a; font-size: 9px; white-space: pre-line; }
         @media print {
             body { background: white; }
@@ -193,9 +193,20 @@
             <span class="muted">{{ __('Authorized signature') }}</span>
         </div>
 
-        @if ($printSettings['show_qr'] && $qrCode)
+        @if ($printSettings['show_qr'] && ($pdfMode ? $qr : $qrCode))
             <div class="qr">
-                {!! $qrCode !!}
+                @if ($pdfMode)
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="text-align: right;">
+                                <img src="data:image/{{ $qrMimeType }};base64,{{ $qr }}" width="110" height="110" alt="{{ __('QR code for invoice') }} {{ $receiptNumber }}">
+                                <div class="muted">Scan to verify</div>
+                            </td>
+                        </tr>
+                    </table>
+                @else
+                    {!! $qrCode !!}
+                @endif
                 <div class="muted">{{ __('Invoice reference') }} {{ $receiptNumber }}</div>
             </div>
         @endif

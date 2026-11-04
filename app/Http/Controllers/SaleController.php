@@ -11,8 +11,10 @@ use App\Services\StockService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use App\Notifications\SaleDeleted;
 use Illuminate\Support\Facades\Notification;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 class SaleController extends Controller
 {
     protected StockService $stockService;
@@ -391,19 +393,25 @@ protected function authorizeSaleManage(Request $request, Sale $sale): void
         $referencePrefix = $documentType === 'invoice' ? 'INV' : 'RCP';
         $receiptNumber = $referencePrefix . '-' . str_pad((string) $sale->id, 8, '0', STR_PAD_LEFT);
         $qrCode = null;
+        $qr = null;
+        $qrMimeType = null;
 
         if ($printSettings['show_qr']) {
-            $qrPayload = implode("\n", [
-                'Reference: ' . $receiptNumber,
-                'Business: ' . $sale->shop->business_name,
-                'Date: ' . $sale->sale_date->format('Y-m-d') . ' ' . $sale->created_at->format('H:i'),
-                'Total: RWF ' . number_format($saleTotal),
-            ]);
-            $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
-                ->size(260)
-                ->margin(1)
-                ->errorCorrection('M')
-                ->generate($qrPayload);
+            $verificationUrl = URL::signedRoute('documents.verify', ['uuid' => $sale->uuid]);
+            if ($pdfMode && extension_loaded('imagick')) {
+                $qrMimeType = 'png';
+                $qr = base64_encode(
+                    QrCode::format('png')->size(200)->margin(1)->errorCorrection('M')->generate($verificationUrl)
+                );
+                $qrCode = $pdfMode
+                    ? null
+                    : QrCode::format('svg')->size(200)->margin(1)->errorCorrection('M')->generate($verificationUrl);
+            } else {
+                $qrSvg = QrCode::format('svg')->size(200)->margin(1)->errorCorrection('M')->generate($verificationUrl);
+                $qrMimeType = 'svg+xml';
+                $qr = base64_encode($qrSvg);
+                $qrCode = $pdfMode ? null : $qrSvg;
+            }
         }
 
         $subtotalAttribute = $sale->getAttribute('subtotal');
@@ -430,6 +438,8 @@ protected function authorizeSaleManage(Request $request, Sale $sale): void
             'discountAmount',
             'taxAmount',
             'serviceCharges',
+            'qr',
+            'qrMimeType',
             'qrCode',
             'logoSrc',
             'pdfMode',

@@ -4,10 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Sale extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Sale $sale): void {
+            if (blank($sale->uuid)) {
+                $sale->uuid = (string) Str::uuid();
+            }
+        });
+    }
 
     protected $fillable = [
         'shop_id', 'customer_id', 'sale_date', 'total_amount', 'payment_method','payment_status', 'created_by', 'import_reference',

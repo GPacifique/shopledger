@@ -5,10 +5,12 @@ namespace Tests\Feature;
 use App\Models\Shop;
 use App\Models\User;
 use App\Models\Category;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class PrintSettingsTest extends TestCase
@@ -93,6 +95,7 @@ class PrintSettingsTest extends TestCase
             'payment_method' => 'cash',
             'payment_status' => 'Paid',
         ]);
+        $this->assertNotEmpty($sale->uuid);
         SaleItem::create([
             'shop_id' => $shop->id,
             'sale_id' => $sale->id,
@@ -135,6 +138,43 @@ class PrintSettingsTest extends TestCase
         ]));
         $receiptPdf->assertOk()->assertHeader('content-type', 'application/pdf');
         $this->assertStringStartsWith('%PDF', $receiptPdf->getContent());
+
+        $order = Order::create([
+            'shop_id' => $shop->id,
+            'created_by' => $user->id,
+            'order_number' => 'PRINT-ORDER-001',
+            'status' => 'approved',
+            'subtotal' => 2500,
+            'total_amount' => 2500,
+            'payment_method' => 'cash',
+            'payment_status' => 'Paid',
+        ]);
+        $this->assertNotEmpty($order->uuid);
+        $billPdf = $this->actingAs($user)->get(route('waiter.orders.bill', [
+            'shop' => $shop,
+            'order' => $order,
+        ]));
+        $billPdf->assertOk()->assertHeader('content-type', 'application/pdf');
+
+        $orderReceiptPdf = $this->actingAs($user)->get(route('waiter.orders.receipt', [
+            'shop' => $shop,
+            'order' => $order,
+        ]));
+        $orderReceiptPdf->assertOk()->assertHeader('content-type', 'application/pdf');
+
+        $saleVerificationUrl = URL::signedRoute('documents.verify', ['uuid' => $sale->uuid]);
+        $this->get($saleVerificationUrl)
+            ->assertOk()
+            ->assertSee('SALE-00000001')
+            ->assertSee('Paid');
+        $this->get(route('documents.verify', ['uuid' => $sale->uuid]) . '?signature=invalid')
+            ->assertForbidden();
+
+        $orderVerificationUrl = URL::signedRoute('documents.verify', ['uuid' => $order->uuid]);
+        $this->get($orderVerificationUrl)
+            ->assertOk()
+            ->assertSee('PRINT-ORDER-001')
+            ->assertSee('Approved');
 
         $this->actingAs($user)
             ->get(route('pos.sales.print', $sale))

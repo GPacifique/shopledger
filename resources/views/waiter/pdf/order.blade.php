@@ -55,8 +55,8 @@
         .footer  { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e5e7eb; text-align: center; color: #9ca3af; font-size: 9px; }
 
         /* QR code */
-        .qr      { margin-top: 20px; text-align: center; page-break-inside: avoid; }
-        .qr img  { width: 90px; height: 90px; }
+        .qr      { margin-top: 20px; text-align: right; page-break-inside: avoid; }
+        .qr img  { width: 110px; height: 110px; }
         .qr .cap { margin-top: 4px; font-size: 9px; color: #6b7280; }
 
         @media print { body { margin: 0; } }
@@ -261,11 +261,15 @@
     @endif
 
     {{-- ===== QR code ===== --}}
-    @if ($qrSrc)
-        <div class="qr">
-            <img src="{{ $qrSrc }}" alt="QR code for order #{{ $orderNo }}" width="90" height="90">
-            <div class="cap">Scan to verify order #{{ $orderNo }}</div>
-        </div>
+    @if (!empty($qr))
+        <table class="qr" style="width: 100%;">
+            <tr>
+                <td style="text-align: right;">
+                    <img src="data:image/{{ $qrMimeType }};base64,{{ $qr }}" alt="QR code for order #{{ $orderNo }}" width="110" height="110">
+                    <div class="cap">Scan to verify</div>
+                </td>
+            </tr>
+        </table>
     @endif
 
     {{-- ===== Footer ===== --}}

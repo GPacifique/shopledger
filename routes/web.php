@@ -24,6 +24,7 @@ use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WaiterController;
+use App\Http\Controllers\DocumentVerificationController;
 use App\Http\Controllers\OtherIncomeController;
 use App\Http\Controllers\IncomeCategoryController;
 use App\Http\Controllers\ImportController;
@@ -48,6 +49,10 @@ Route::middleware(['auth', 'shop.roles:shop_admin,seller,cashier'])
 Route::prefix('buyer')->name('buyer.')->group(function () {
     Route::get('dashboard', [BuyerController::class, 'dashboard'])->name('dashboard');
 });
+
+Route::get('/documents/verify/{uuid}', [DocumentVerificationController::class, 'show'])
+    ->middleware('signed')
+    ->name('documents.verify');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('shops/{shop}/waiter/orders', [WaiterController::class, 'storeOrder'])
@@ -238,7 +243,7 @@ Route::middleware(['auth', 'verified','role:system_admin'])->prefix('admin')->na
     Route::get('/shops', [SystemAdminController::class, 'shopsIndex'])->name('shops.index');
 Route::get('/shops/create', [SystemAdminController::class, 'createShop'])->name('shops.create');
 Route::post('/shops', [SystemAdminController::class, 'storeShop'])->name('shops.store');
-    Route::post('/settings', [SystemAdminController::class, 'updateSettings'])->name('settings.update');
+    Route::put('/settings', [SystemAdminController::class, 'updateSettings'])->name('settings.update');
 });
 Route::get('/contact', function () {
     return view('contact');

@@ -9,9 +9,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\User;
+use Illuminate\Support\Str;
 class Order extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Order $order): void {
+            if (blank($order->uuid)) {
+                $order->uuid = (string) Str::uuid();
+            }
+        });
+    }
 
     protected $fillable = [
         'shop_id',

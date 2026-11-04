@@ -13,8 +13,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class WaiterController extends Controller
 {
@@ -253,12 +255,20 @@ class WaiterController extends Controller
                 ?? ((float) $item->unit_price * (float) $item->quantity
                     - (float) $item->discount_amount
                     + (float) $item->tax_amount))));
+        $orderNo = (string) ($order->order_number ?? $order->id);
+        $verificationUrl = URL::signedRoute('documents.verify', ['uuid' => $order->uuid]);
+        $qrMimeType = extension_loaded('imagick') ? 'png' : 'svg+xml';
+        $qr = extension_loaded('imagick')
+            ? QrCode::format('png')->size(200)->margin(1)->errorCorrection('M')->generate($verificationUrl)
+            : QrCode::format('svg')->size(200)->margin(1)->errorCorrection('M')->generate($verificationUrl);
 
         return [
             'shop'   => $shop,
             'order'  => $order,
             'total'  => $total,
             'waiter' => $order->waiter?->name,
+            'qr' => base64_encode($qr),
+            'qrMimeType' => $qrMimeType,
         ];
     }
 

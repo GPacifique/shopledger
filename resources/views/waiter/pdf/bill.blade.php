@@ -106,7 +106,7 @@
             border-top: 1px solid #e3e9e5;
         }
         .qr-section td { vertical-align: middle; }
-        .qr { width: 94px; height: 94px; }
+        .qr { width: 110px; height: 110px; }
         .footer {
             margin-top: 19px;
             color: #71807a;
@@ -128,19 +128,6 @@
     $totalAmount = (float) ($total ?? $order->total_amount ?? $subtotal);
     $shopName = $shop->business_name ?? 'MahWi POS';
 
-    $qrPayload = implode("\n", [
-        'Order: #' . $orderNo,
-        'Shop: ' . $shopName,
-        'Date: ' . optional($order->created_at)->format('Y-m-d H:i'),
-        'Total: ' . $currency . ' ' . $money($totalAmount),
-    ]);
-    $qrSrc = \Endroid\QrCode\Builder\Builder::create()
-        ->writer(new \Endroid\QrCode\Writer\PngWriter())
-        ->data($qrPayload)
-        ->size(300)
-        ->margin(1)
-        ->build()
-        ->getDataUri();
 @endphp
 
     <table class="header">
@@ -287,8 +274,8 @@
                 <p class="muted small" style="margin: 3px 0 0;">Keep this bill for your records.</p>
             </td>
             <td class="right" style="width: 115px;">
-                <img class="qr" src="{{ $qrSrc }}" alt="QR code for order #{{ $orderNo }}">
-                <div class="muted small">Scan for order summary</div>
+                <img class="qr" src="data:image/{{ $qrMimeType }};base64,{{ $qr }}" alt="QR code for order #{{ $orderNo }}" width="110" height="110">
+                <div class="muted small">Scan to verify</div>
             </td>
         </tr>
     </table>
