@@ -186,20 +186,20 @@ class SystemAdminController extends Controller
 
         if (Schema::hasColumn('shops', 'subscription_plan_id')) {
             $allByPlan = Shop::query()
-                ->whereNotNull('subscription_plan_id')
-                ->select('subscription_plan_id', DB::raw('COUNT(*) as total'))
-                ->groupBy('subscription_plan_id')
-                ->pluck('total', 'subscription_plan_id');
+                ->whereNotNull('subscriptionplan_id')
+                ->select('subscriptionplan_id', DB::raw('COUNT(*) as total'))
+                ->groupBy('subscriptionplan_id')
+                ->pluck('total', 'subscriptionplan_id');
 
             $approvedByPlan = Shop::query()
                 ->where('status', 'approved')
-                ->whereNotNull('subscription_plan_id')
-                ->select('subscription_plan_id', DB::raw('COUNT(*) as total'))
-                ->groupBy('subscription_plan_id')
-                ->pluck('total', 'subscription_plan_id');
+                ->whereNotNull('subscriptionplan_id')
+                ->select('subscriptionplan_id', DB::raw('COUNT(*) as total'))
+                ->groupBy('subscriptionplan_id')
+                ->pluck('total', 'subscriptionplan_id');
 
             $shopsOnPlans     = (int) $allByPlan->sum();
-            $shopsWithoutPlan = Shop::whereNull('subscription_plan_id')->count();
+            $shopsWithoutPlan = Shop::whereNull('subscriptionplan_id')->count();
 
             $planStats = $subscriptionPlans
                 ->map(function ($plan) use ($allByPlan, $approvedByPlan, $shopsOnPlans) {
