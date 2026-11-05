@@ -12,7 +12,12 @@ class EnsureShopSubscriptionActive
     {
         $user = $request->user();
 
-        if (! $user || $user->isSystemAdmin() || ! $user->shop_id) {
+        if (
+            ! $user
+            || $user->isSystemAdmin()
+            || ! $user->shop_id
+            || ($user->role === 'business_owner' && $request->routeIs('dashboard', 'business.dashboard'))
+        ) {
             return $next($request);
         }
 

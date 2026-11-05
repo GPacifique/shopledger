@@ -145,6 +145,12 @@ class Shop extends Model
         return $this->hasMany(User::class, 'shop_id');
     }
 
+    public function businessOwners()
+    {
+        return $this->belongsToMany(User::class, 'business_owner_shop', 'shop_id', 'business_owner_id')
+            ->withTimestamps();
+    }
+
     public function products()
     {
         return $this->hasMany(Product::class);

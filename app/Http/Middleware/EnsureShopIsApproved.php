@@ -23,6 +23,21 @@ class EnsureShopIsApproved
             return $next($request);
         }
 
+        if ($role === 'business_owner' && $request->routeIs('dashboard', 'business.dashboard')) {
+            return $next($request);
+        }
+
+        if ($role === 'business_owner') {
+            $shopId = $request->session()->get(
+                'active_business_shop_id',
+                $user->getRawOriginal('shop_id')
+            );
+            abort_unless(
+                $shopId && $user->shops()->whereKey($shopId)->exists(),
+                403
+            );
+        }
+
         // The user must be assigned to a shop.
         $shop = $user->shop;
 

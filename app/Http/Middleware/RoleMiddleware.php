@@ -48,8 +48,10 @@ class RoleMiddleware
         }
 
         $allowed = array_map(fn ($r) => $this->normalize($r), $roles);
+        $businessOwnerHasShopAdminAccess = $role === 'business_owner'
+            && in_array('shop_admin', $allowed, true);
 
-        if ($role === '' || ! in_array($role, $allowed, true)) {
+        if ($role === '' || (! in_array($role, $allowed, true) && ! $businessOwnerHasShopAdminAccess)) {
             Log::warning('Role check failed', [
                 'user_id' => $user->id,
                 'role'    => $role,
@@ -106,6 +108,7 @@ class RoleMiddleware
     {
         $candidates = match ($role) {
             'system_admin' => ['system-admin.dashboard', 'dashboard'],
+            'business_owner' => ['business.dashboard', 'dashboard'],
             'shop_admin',
             'admin'        => ['shop.dashboard', 'dashboard'],
             'seller',

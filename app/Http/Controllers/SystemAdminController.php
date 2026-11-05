@@ -493,6 +493,7 @@ class SystemAdminController extends Controller
                 'required',
                 Rule::in([
                     'system_admin',
+                    'business_owner',
                     'business_admin',
                     'shop_admin',
                     'seller',
@@ -522,6 +523,10 @@ class SystemAdminController extends Controller
         }
 
         $user->save();
+
+        if ($user->role === 'business_owner' && $validated['shop_id']) {
+            $user->shops()->syncWithoutDetaching([$validated['shop_id']]);
+        }
 
         return redirect()
             ->route('admin.users.index')

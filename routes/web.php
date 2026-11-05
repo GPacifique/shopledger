@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopAdminController;
+use App\Http\Controllers\BusinessOwnerController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\CustomerController;
@@ -287,6 +288,10 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     $user = Auth::user();
 
+    if ($user->role === 'business_owner') {
+        return redirect()->route('business.dashboard');
+    }
+
     // System admin dashboard
     if ($user->role === 'system_admin') {
         return redirect()->route('admin.dashboard');
@@ -318,6 +323,12 @@ if ($user->role==='waiter'){
     $shop = $user->shop;
     return view('dashboard.user', compact('shop'));
 })->middleware(['auth', 'verified', 'shop.approved', 'subscription.active'])->name('dashboard');
+
+Route::middleware(['auth', 'verified', RoleMiddleware::class.':business_owner'])->prefix('business')->name('business.')->group(function () {
+    Route::get('/dashboard', [BusinessOwnerController::class, 'dashboard'])->name('dashboard');
+    Route::post('/shops', [BusinessOwnerController::class, 'storeShop'])->name('shops.store');
+    Route::post('/shops/{shop}/select', [BusinessOwnerController::class, 'selectShop'])->name('shops.select');
+});
 
 Route::middleware(['auth', 'verified', 'shop.approved', 'subscription.active'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

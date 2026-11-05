@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -85,12 +86,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isShopAdmin(): bool
     {
-        return $this->role === 'shop_admin';
+        return in_array($this->role, ['shop_admin', 'business_owner'], true);
     }
 
     public function isAdmin(): bool
     {
-        return in_array($this->role, ['system_admin', 'shop_admin'], true);
+        return in_array($this->role, ['system_admin', 'shop_admin', 'business_owner'], true);
     }
 
     public function isManager(): bool
@@ -106,6 +107,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function shop()
     {
         return $this->belongsTo(Shop::class, 'shop_id');
+    }
+
+    public function getShopIdAttribute($value)
+    {
+        if (($this->attributes['role'] ?? null) === 'business_owner') {
+            return session()->get('active_business_shop_id', $value);
+        }
+
+        return $value;
+    }
+
+    public function shops(): BelongsToMany
+    {
+        return $this->belongsToMany(Shop::class, 'business_owner_shop', 'business_owner_id')
+            ->withTimestamps();
     }
 
     public function notifications(): MorphMany
