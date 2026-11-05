@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->string('city');
             $table->text('address');
             $table->string('logo')->nullable();
-            $table->foreignId('subscriptionplan_id')->nullable()->constrained('subscriptionplans');
+            $table->foreignId('subscriptionplan_id')->nullable()->constrained('subscription_plans');
             $table->string('slug')->unique();
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->foreignId('created_by')->constrained('users');

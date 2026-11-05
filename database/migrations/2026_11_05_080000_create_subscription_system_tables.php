@@ -41,42 +41,21 @@ return new class extends Migration
             ])->default('user')->change();
         });
 
-        Schema::create('subscription_plans', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->decimal('price', 12, 2);
-            $table->enum('billing_period', ['monthly', 'quarterly', 'yearly'])->default('monthly');
-            $table->unsignedInteger('max_users')->default(1);
-            $table->unsignedInteger('max_products')->nullable();
-            $table->json('features')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-        });
-
-        if (Schema::hasTable('subscriptionplans')) {
-            foreach (DB::table('subscriptionplans')->orderBy('id')->get() as $legacyPlan) {
-                $name = $legacyPlan->name ?: 'Plan ' . $legacyPlan->id;
-                $slug = Str::slug($name) ?: 'plan-' . $legacyPlan->id;
-
-                DB::table('subscription_plans')->insert([
-                    'id' => $legacyPlan->id,
-                    'name' => $name,
-                    'slug' => $slug . '-' . $legacyPlan->id,
-                    'price' => $legacyPlan->price ?? 0,
-                    'billing_period' => in_array($legacyPlan->billing_cycle ?? null, ['monthly', 'quarterly', 'yearly'], true)
-                        ? $legacyPlan->billing_cycle
-                        : 'monthly',
-                    'max_users' => max((int) ($legacyPlan->max_users ?? 1), 1),
-                    'max_products' => isset($legacyPlan->max_products) && (int) $legacyPlan->max_products > 0
-                        ? $legacyPlan->max_products
-                        : null,
-                    'features' => $legacyPlan->features ?? null,
-                    'is_active' => ($legacyPlan->status ?? 'active') === 'active',
-                    'created_at' => $legacyPlan->created_at ?? now(),
-                    'updated_at' => $legacyPlan->updated_at ?? now(),
-                ]);
-            }
+        if (! Schema::hasTable('subscription_plans')) {
+            Schema::create('subscription_plans', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('slug')->unique();
+                $table->decimal('price', 12, 2);
+                $table->enum('billing_period', ['monthly', 'quarterly', 'yearly'])->default('monthly');
+                $table->unsignedInteger('max_users')->default(1);
+                $table->unsignedInteger('max_products')->nullable();
+                $table->json('features')->nullable();
+                $table->boolean('is_active')->default(true);
+                $table->timestamps();
+            });
+        } else {
+            $this->upgradeSubscriptionPlansTable();
         }
 
         if (DB::table('subscription_plans')->count() === 0) {
@@ -166,6 +145,69 @@ return new class extends Migration
     {
         Schema::dropIfExists('subscription_payments');
         Schema::dropIfExists('subscriptions');
-        Schema::dropIfExists('subscription_plans');
+    }
+
+    private function upgradeSubscriptionPlansTable(): void
+    {
+        $addSlug = ! Schema::hasColumn('subscription_plans', 'slug');
+        $addBillingPeriod = ! Schema::hasColumn('subscription_plans', 'billing_period');
+        $addActive = ! Schema::hasColumn('subscription_plans', 'is_active');
+
+        Schema::table('subscription_plans', function (Blueprint $table) use ($addSlug, $addBillingPeriod, $addActive): void {
+            if ($addSlug) {
+                $table->string('slug')->nullable()->unique();
+            }
+            if ($addBillingPeriod) {
+                $table->string('billing_period')->nullable();
+            }
+            if ($addActive) {
+                $table->boolean('is_active')->nullable();
+            }
+        });
+
+        foreach (DB::table('subscription_plans')->get() as $plan) {
+            $updates = [];
+
+            if ($addSlug || empty($plan->slug)) {
+                $slug = Str::slug($plan->name ?? '') ?: 'plan';
+                $updates['slug'] = $slug . '-' . $plan->id;
+            }
+            if ($addBillingPeriod || empty($plan->billing_period)) {
+                $period = $plan->billing_cycle ?? 'monthly';
+                $updates['billing_period'] = in_array($period, ['monthly', 'quarterly', 'yearly'], true)
+                    ? $period
+                    : 'monthly';
+            }
+            if ($addActive || $plan->is_active === null) {
+                $updates['is_active'] = ($plan->status ?? 'active') === 'active';
+            }
+
+            if ($updates !== []) {
+                DB::table('subscription_plans')->where('id', $plan->id)->update($updates);
+            }
+        }
+
+        Schema::table('subscription_plans', function (Blueprint $table) use ($addSlug, $addBillingPeriod, $addActive): void {
+            if ($addSlug) {
+                $table->string('slug')->nullable(false)->change();
+            }
+            if ($addBillingPeriod) {
+                $table->string('billing_period')->default('monthly')->nullable(false)->change();
+            }
+            if ($addActive) {
+                $table->boolean('is_active')->default(true)->nullable(false)->change();
+            }
+            $table->integer('max_products')->nullable()->default(null)->change();
+        });
+
+        $dropLegacyColumns = array_values(array_filter(
+            ['billing_cycle', 'status'],
+            fn (string $column) => Schema::hasColumn('subscription_plans', $column)
+        ));
+        if ($dropLegacyColumns !== []) {
+            Schema::table('subscription_plans', function (Blueprint $table) use ($dropLegacyColumns): void {
+                $table->dropColumn($dropLegacyColumns);
+            });
+        }
     }
 };

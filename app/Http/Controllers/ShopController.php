@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Shop;
+use App\Models\SubscriptionPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Services\SubscriptionLifecycleService;
+use Illuminate\Validation\Rule;
 
 class ShopController extends Controller
 {
@@ -14,14 +16,14 @@ class ShopController extends Controller
         $user = $request->user();
 
         if ($user->isSystemAdmin()) {
-            return response()->json(Shop::with('creator', 'subscriptionPlan')->paginate(20));
+            return response()->json(Shop::with('creator', 'subscription.subscriptionPlan')->paginate(20));
         }
 
-        return response()->json($user->shop()->with('subscriptionPlan')->first());
+        return response()->json($user->shop()->with('subscription.subscriptionPlan')->first());
     }
 
     // Shop admin registration (creates pending shop)
-    public function store(Request $request)
+    public function store(Request $request, SubscriptionLifecycleService $subscriptions)
     {
         $request->validate([
             'business_name' => 'required|string|max:255',
@@ -34,7 +36,10 @@ class ShopController extends Controller
             'city' => 'required|string|max:255',
             'address' => 'required|string',
             'logo' => 'nullable|string',
-            'subscriptionplan_id' => 'nullable|exists:subscriptionplans,id',
+            'subscription_plan_id' => [
+                'nullable',
+                Rule::exists('subscription_plans', 'id')->where('is_active', true),
+            ],
         ]);
 
         $user = $request->user();
@@ -55,11 +60,17 @@ class ShopController extends Controller
             'city' => $request->city,
             'address' => $request->address,
             'logo' => $request->logo,
-            'subscriptionplan_id' => $request->subscriptionplan_id,
             'slug' => Str::slug($request->business_name) . '-' . Str::random(6),
             'status' => 'pending',
             'created_by' => $user->id,
         ]);
+
+        if ($request->filled('subscription_plan_id')) {
+            $plan = SubscriptionPlan::query()
+                ->where('is_active', true)
+                ->findOrFail($request->input('subscription_plan_id'));
+            $subscriptions->assignPlan($shop, $plan);
+        }
 
         // Link user to shop and promote to shop_admin
         $user->shop_id = $shop->id;
@@ -100,10 +111,14 @@ class ShopController extends Controller
             abort(403);
         }
 
-        return response()->json($shop->load('subscriptionPlan'));
+        return response()->json($shop->load('subscription.subscriptionPlan'));
     }
 
-    public function update(Request $request, Shop $shop)
+    public function update(
+        Request $request,
+        Shop $shop,
+        SubscriptionLifecycleService $subscriptions
+    )
     {
         $user = $request->user();
 
@@ -111,7 +126,7 @@ class ShopController extends Controller
             abort(403);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'business_name' => 'sometimes|required|string|max:255',
             'business_type' => 'sometimes|required|string|max:255',
             'tin_number' => 'sometimes|nullable|string|max:255',
@@ -121,8 +136,17 @@ class ShopController extends Controller
             'address' => 'sometimes|required|string',
             'status' => 'sometimes|required|in:pending,approved,rejected',
             'logo' => 'sometimes|nullable|string',
-            'subscriptionplan_id' => 'sometimes|nullable|integer|exists:subscriptionplans,id',
+            'subscription_plan_id' => [
+                'sometimes',
+                'nullable',
+                'integer',
+                Rule::exists('subscription_plans', 'id')->where('is_active', true),
+            ],
         ]);
+
+        if (array_key_exists('subscription_plan_id', $validated)) {
+            abort_unless($user->isSystemAdmin(), 403);
+        }
 
         $shop->update($request->only(
             'business_name',
@@ -133,10 +157,16 @@ class ShopController extends Controller
             'city',
             'address',
             'status',
-            'logo',
-            'subscriptionplan_id'
+            'logo'
         ));
 
-        return response()->json($shop);
+        if (! empty($validated['subscription_plan_id'])) {
+            $plan = SubscriptionPlan::query()
+                ->where('is_active', true)
+                ->findOrFail($validated['subscription_plan_id']);
+            $subscriptions->assignPlan($shop, $plan);
+        }
+
+        return response()->json($shop->load('subscription.subscriptionPlan'));
     }
 }

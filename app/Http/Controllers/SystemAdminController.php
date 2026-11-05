@@ -6,6 +6,7 @@ use App\Models\Shop;
 use App\Models\Settings;
 use App\Models\SubscriptionPayment;
 use App\Models\SubscriptionPlan;
+use App\Models\Subscription;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 use App\Services\SubscriptionLifecycleService;
 
 class SystemAdminController extends Controller
@@ -184,52 +186,56 @@ class SystemAdminController extends Controller
         $activeSubscriptions = 0;
         $shopsWithoutPlan    = 0;
 
-        if (Schema::hasColumn('shops', 'subscription_plan_id')) {
-            $allByPlan = Shop::query()
-                ->whereNotNull('subscriptionplan_id')
-                ->select('subscriptionplan_id', DB::raw('COUNT(*) as total'))
-                ->groupBy('subscriptionplan_id')
-                ->pluck('total', 'subscriptionplan_id');
+        $shopsWithSubscriptions = Shop::query()
+            ->with(['subscription.subscriptionPlan'])
+            ->get();
+        $approvedShopIds = $shopsWithSubscriptions
+            ->where('status', 'approved')
+            ->modelKeys();
+        $currentSubscriptions = $shopsWithSubscriptions
+            ->map(fn (Shop $shop) => $shop->subscription)
+            ->filter();
+        $subscriptionsByPlan = $currentSubscriptions
+            ->filter(fn (Subscription $subscription) => $subscription->subscription_plan_id !== null)
+            ->groupBy('subscription_plan_id');
+        $shopsOnPlans = (int) $subscriptionsByPlan->sum(fn ($subscriptions) => $subscriptions->count());
+        $shopsWithoutPlan = max($totalShops - $shopsOnPlans, 0);
+        $totalSubscriptionsOnPlans = max($shopsOnPlans, 1);
 
-            $approvedByPlan = Shop::query()
-                ->where('status', 'approved')
-                ->whereNotNull('subscriptionplan_id')
-                ->select('subscriptionplan_id', DB::raw('COUNT(*) as total'))
-                ->groupBy('subscriptionplan_id')
-                ->pluck('total', 'subscriptionplan_id');
+        $planStats = $subscriptionPlans
+            ->map(function ($plan) use ($subscriptionsByPlan, $approvedShopIds, $totalSubscriptionsOnPlans) {
+                $subscriptions = $subscriptionsByPlan->get($plan->id, collect());
+                $activeSubscriptions = $subscriptions->filter(fn (Subscription $subscription) =>
+                    $subscription->status === 'active'
+                    && $subscription->ends_at?->isFuture()
+                    && in_array((int) $subscription->shop_id, $approvedShopIds, true)
+                );
+                $monthlyPrice = match ($plan->billing_period) {
+                    'quarterly' => (float) $plan->price / 3,
+                    'yearly' => (float) $plan->price / 12,
+                    default => (float) $plan->price,
+                };
 
-            $shopsOnPlans     = (int) $allByPlan->sum();
-            $shopsWithoutPlan = Shop::whereNull('subscriptionplan_id')->count();
+                return [
+                    'id' => $plan->id,
+                    'name' => $plan->name,
+                    'price' => (float) $plan->price,
+                    'billing_cycle' => $plan->billing_period,
+                    'status' => $plan->is_active ? 'active' : 'inactive',
+                    'max_users' => $plan->max_users,
+                    'max_products' => $plan->max_products,
+                    'max_branches' => $plan->max_branches,
+                    'shops' => $subscriptions->count(),
+                    'approved' => $activeSubscriptions->count(),
+                    'share' => round($subscriptions->count() / $totalSubscriptionsOnPlans * 100, 1),
+                    'mrr' => round($activeSubscriptions->count() * $monthlyPrice, 2),
+                ];
+            })
+            ->sortByDesc('shops')
+            ->values();
 
-            $planStats = $subscriptionPlans
-                ->map(function ($plan) use ($allByPlan, $approvedByPlan, $shopsOnPlans) {
-                    $shops    = (int) ($allByPlan[$plan->id] ?? 0);
-                    $approved = (int) ($approvedByPlan[$plan->id] ?? 0);
-                    $monthly  = ($plan->billing_cycle ?? 'monthly') === 'yearly'
-                        ? ((float) $plan->price) / 12
-                        : (float) $plan->price;
-
-                    return [
-                        'id'            => $plan->id,
-                        'name'          => $plan->name,
-                        'price'         => (float) $plan->price,
-                        'billing_cycle' => $plan->billing_cycle ?? 'monthly',
-                        'status'        => $plan->status ?? 'active',
-                        'max_users'     => $plan->max_users,
-                        'max_products'  => $plan->max_products,
-                        'max_branches'  => $plan->max_branches,
-                        'shops'         => $shops,
-                        'approved'      => $approved,
-                        'share'         => $shopsOnPlans > 0 ? round($shops / $shopsOnPlans * 100, 1) : 0,
-                        'mrr'           => round($approved * $monthly, 2),
-                    ];
-                })
-                ->sortByDesc('shops')
-                ->values();
-
-            $mrr                 = (float) $planStats->sum('mrr');
-            $activeSubscriptions = (int) $planStats->sum('approved');
-        }
+        $mrr = (float) $planStats->sum('mrr');
+        $activeSubscriptions = (int) $planStats->sum('approved');
 
         /* ---------------------------------------------------------------
          | Platform health
@@ -357,17 +363,77 @@ class SystemAdminController extends Controller
     }
 
     // POST /admin/shops  (admin.shops.store)
-    public function storeShop(Request $request)
+    public function storeShop(
+        Request $request,
+        SubscriptionLifecycleService $subscriptions
+    ): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            // add the other shop columns here
+        $validated = $request->validate([
+            'user_id' => [
+                'required',
+                'integer',
+                Rule::exists('users', 'id')
+                    ->whereNull('shop_id')
+                    ->where('role', '!=', 'system_admin'),
+            ],
+            'business_name' => ['required', 'string', 'max:255'],
+            'business_type' => ['required', 'string', 'max:255'],
+            'registration_number' => ['nullable', 'string', 'max:255', 'unique:shops,registration_number'],
+            'tin_number' => ['nullable', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:shops,email'],
+            'phone' => ['nullable', 'string', 'max:255'],
+            'country' => ['required', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:255'],
+            'address' => ['required', 'string'],
+            'logo' => ['nullable', 'image', 'max:2048'],
+            'subscription_plan_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('subscription_plans', 'id')->where('is_active', true),
+            ],
+            'status' => ['required', Rule::in(['approved', 'pending'])],
         ]);
 
-        Shop::create($data);
+        $user = User::query()->findOrFail($validated['user_id']);
+        $registrationNumber = $validated['registration_number'] ?: Str::upper(Str::random(10));
+        while (Shop::query()->where('registration_number', $registrationNumber)->exists()) {
+            $registrationNumber = Str::upper(Str::random(10));
+        }
+        $logo = $request->file('logo')?->store('shop-logos', 'public');
+
+        DB::transaction(function () use ($validated, $user, $registrationNumber, $logo, $subscriptions): void {
+            $approved = $validated['status'] === 'approved';
+            $shop = Shop::create([
+                'business_name' => $validated['business_name'],
+                'business_type' => $validated['business_type'],
+                'registration_number' => $registrationNumber,
+                'tin_number' => $validated['tin_number'] ?? null,
+                'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
+                'country' => $validated['country'],
+                'city' => $validated['city'],
+                'address' => $validated['address'],
+                'logo' => $logo,
+                'slug' => Str::slug($validated['business_name']) . '-' . Str::lower(Str::random(6)),
+                'status' => $validated['status'],
+                'created_by' => $user->id,
+                'approved_by' => $approved ? auth()->id() : null,
+                'approved_at' => $approved ? now() : null,
+            ]);
+
+            if (! empty($validated['subscription_plan_id'])) {
+                $plan = SubscriptionPlan::query()->findOrFail($validated['subscription_plan_id']);
+                $subscriptions->assignPlan($shop, $plan);
+            }
+
+            $user->update([
+                'shop_id' => $shop->id,
+                'role' => 'shop_admin',
+            ]);
+        });
 
         return redirect()->route('admin.shops.index')
-            ->with('status', 'Shop created.');
+            ->with('success', 'Shop created.');
     }
 
     // GET /admin/shops/create  (admin.shops.create)

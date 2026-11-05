@@ -179,17 +179,17 @@
 
                     <!-- Subscription Plan -->
                     <div>
-                        <label for="subscriptionplan_id" class="block text-sm font-medium text-gray-700 mb-2">Subscription Plan</label>
-                        <select name="subscriptionplan_id" id="subscriptionplan_id"
+                        <label for="subscription_plan_id" class="block text-sm font-medium text-gray-700 mb-2">Subscription Plan</label>
+                        <select name="subscription_plan_id" id="subscription_plan_id"
                             class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition">
                             <option value="">No plan assigned</option>
                             @foreach($subscriptionPlans as $plan)
-                                <option value="{{ $plan->id }}" {{ old('subscriptionplan_id') == $plan->id ? 'selected' : '' }}>
+                                <option value="{{ $plan->id }}" {{ old('subscription_plan_id') == $plan->id ? 'selected' : '' }}>
                                     {{ $plan->name }}
                                 </option>
                             @endforeach
                         </select>
-                        @error('subscriptionplan_id')
+                        @error('subscription_plan_id')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>

@@ -18,11 +18,10 @@ class Shop extends Model
                 return;
             }
 
-            $plan = SubscriptionPlan::query()->find($shop->subscriptionplan_id)
-                ?? SubscriptionPlan::query()
-                    ->where('is_active', true)
-                    ->orderBy('price')
-                    ->firstOrFail();
+            $plan = SubscriptionPlan::query()
+                ->where('is_active', true)
+                ->orderBy('price')
+                ->firstOrFail();
             $startsAt = now();
             $pending = $shop->isPending();
             $endsAt = $pending
@@ -55,7 +54,6 @@ class Shop extends Model
         'city',
         'address',
         'logo',
-        'subscriptionplan_id',
         'slug',
         'status',
         'rejection_reason',
@@ -125,14 +123,6 @@ class Shop extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
-    }
-
-    public function subscriptionPlan()
-    {
-        return $this->belongsTo(
-            SubscriptionPlan::class,
-            'subscriptionplan_id'
-        );
     }
 
     public function subscriptions()
