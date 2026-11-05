@@ -11,3 +11,6 @@ Artisan::command('inspire', function () {
 Schedule::command('reports:send-scheduled')
     ->everyMinute();
 
+Schedule::command('subscriptions:notify')
+    ->daily()
+    ->withoutOverlapping();

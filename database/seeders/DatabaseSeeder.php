@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(SubscriptionPlanSeeder::class);
+
         // Create System Admin first (no shop required)
         $systemAdmin = User::create([
             'name' => 'System Admin',
@@ -51,7 +53,6 @@ class DatabaseSeeder extends Seeder
             'city' => 'Tech City',
             'address' => '456 Tech Avenue',
             'logo' => 'techstore_logo.png',
-            'subscription_plan' => 'premium',
             'slug' => 'tech-store',
             'status' => 'approved',
             'created_by' => $shopAdmin1->id,
@@ -104,7 +105,6 @@ class DatabaseSeeder extends Seeder
             'city' => 'Fashion City',
             'address' => '789 Fashion Street',
             'logo' => 'fashionhub_logo.png',
-            'subscription_plan' => 'premium',
             'slug' => 'fashion-hub',
             'status' => 'approved',
             'created_by' => $shopAdmin2->id,
@@ -137,7 +137,13 @@ class DatabaseSeeder extends Seeder
 
         // Create Pending Shop
         $pendingShop = Shop::create([
-            'name' => 'New Electronics',
+            'business_name' => 'New Electronics',
+            'business_type' => 'electronics',
+            'registration_number' => 'REG-PENDING-001',
+            'email' => 'mike@newelectronics.com',
+            'country' => 'Rwanda',
+            'city' => 'Kigali',
+            'address' => 'Pending shop address',
             'slug' => 'new-electronics',
             'status' => 'pending',
             'created_by' => $pendingAdmin1->id,
@@ -158,7 +164,13 @@ class DatabaseSeeder extends Seeder
 
         // Create another Pending Shop
         $pendingShop2 = Shop::create([
-            'name' => 'Grocery Mart',
+            'business_name' => 'Grocery Mart',
+            'business_type' => 'grocery',
+            'registration_number' => 'REG-PENDING-002',
+            'email' => 'sarah@grocerymart.com',
+            'country' => 'Rwanda',
+            'city' => 'Kigali',
+            'address' => 'Pending shop address',
             'slug' => 'grocery-mart',
             'status' => 'pending',
             'created_by' => $pendingAdmin2->id,

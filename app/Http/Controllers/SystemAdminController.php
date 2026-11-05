@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Shop;
 use App\Models\Settings;
+use App\Models\SubscriptionPayment;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Carbon\Carbon;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use App\Services\SubscriptionLifecycleService;
 
 class SystemAdminController extends Controller
 {
@@ -92,6 +94,11 @@ class SystemAdminController extends Controller
             ->get();
 
         $subscriptionPlans = SubscriptionPlan::all();
+        $subscriptionPaymentsThisMonth = SubscriptionPayment::query()
+            ->whereBetween('paid_at', [now()->startOfMonth(), now()->endOfMonth()]);
+        $subscriptionRevenueThisMonth = (float) (clone $subscriptionPaymentsThisMonth)->sum('amount');
+        $subscriptionPaymentCountThisMonth = (clone $subscriptionPaymentsThisMonth)->count();
+        $subscriptionRevenueTotal = (float) SubscriptionPayment::query()->sum('amount');
 
         /* ---------------------------------------------------------------
          | 12-month trend series
@@ -259,6 +266,9 @@ class SystemAdminController extends Controller
             'pendingShopsList',
             'recentShops',
             'subscriptionPlans',
+            'subscriptionRevenueThisMonth',
+            'subscriptionPaymentCountThisMonth',
+            'subscriptionRevenueTotal',
             'monthLabels',
             'shopSeries',
             'userSeries',
@@ -292,11 +302,58 @@ class SystemAdminController extends Controller
     }
 
     // GET /admin/shops  (admin.shops.index)
-    public function shopsIndex()
+    public function shopsIndex(Request $request)
     {
-        $shops = Shop::query()->latest()->paginate(20);
+        $filter = $request->query('subscription', 'all');
+        abort_unless(in_array($filter, ['all', 'active', 'expiring', 'expired'], true), 404);
 
-        return view('admin.shops.index', compact('shops'));
+        $query = Shop::query()
+            ->with(['creator', 'subscription.subscriptionPlan'])
+            ->when($filter === 'active', fn ($query) =>
+                $query->whereHas('subscription', fn ($subscriptions) =>
+                    $subscriptions->whereIn('status', ['trial', 'active'])
+                        ->where('ends_at', '>=', now())
+                )
+            )
+            ->when($filter === 'expiring', fn ($query) =>
+                $query->whereHas('subscription', fn ($subscriptions) =>
+                    $subscriptions->whereIn('status', ['trial', 'active'])
+                        ->whereBetween('ends_at', [now(), now()->addDays(14)])
+                )
+            )
+            ->when($filter === 'expired', fn ($query) =>
+                $query->whereHas('subscription', fn ($subscriptions) =>
+                    $subscriptions->where(fn ($query) =>
+                        $query->whereIn('status', ['past_due', 'expired', 'suspended'])
+                            ->orWhere('ends_at', '<', now())
+                    )
+                )
+            );
+
+        $shops = $query->latest()->paginate(20)->withQueryString();
+        $currentSubscriptions = Shop::with('subscription.subscriptionPlan')
+            ->get()
+            ->pluck('subscription')
+            ->filter();
+        $mrr = $currentSubscriptions
+            ->where('status', 'active')
+            ->filter(fn ($subscription) => $subscription->ends_at?->isFuture())
+            ->sum(function ($subscription) {
+                $price = (float) ($subscription->subscriptionPlan?->price ?? 0);
+
+                return match ($subscription->subscriptionPlan?->billing_period) {
+                    'quarterly' => $price / 3,
+                    'yearly' => $price / 12,
+                    default => $price,
+                };
+            });
+        $expiringThisMonth = $currentSubscriptions->filter(fn ($subscription) =>
+            in_array($subscription->status, ['trial', 'active'], true)
+                && $subscription->ends_at?->between(now(), now()->endOfMonth())
+        )->count();
+        $plans = SubscriptionPlan::query()->where('is_active', true)->orderBy('price')->get();
+
+        return view('admin.shops.index', compact('shops', 'filter', 'mrr', 'expiringThisMonth', 'plans'));
     }
 
     // POST /admin/shops  (admin.shops.store)
@@ -327,15 +384,20 @@ class SystemAdminController extends Controller
         return view('admin.shops.create', compact('subscriptionPlans', 'unassignedUsers'));
     }
 
-    public function approveShop(Shop $shop): RedirectResponse
+    public function approveShop(
+        Shop $shop,
+        SubscriptionLifecycleService $subscriptions
+    ): RedirectResponse
     {
-        DB::transaction(function () use ($shop) {
+        DB::transaction(function () use ($shop, $subscriptions) {
             $shop->update([
                 'status'           => 'approved',
                 'approved_by'      => auth()->id(),
                 'approved_at'      => now(),
                 'rejection_reason' => null,
             ]);
+
+            $subscriptions->activate($shop);
         });
 
         return redirect()

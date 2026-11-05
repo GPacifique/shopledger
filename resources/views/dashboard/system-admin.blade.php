@@ -437,18 +437,33 @@
                     </div>
 
                     <div class="flex flex-wrap gap-2">
-                        @if(Route::has('subscription-plans.create'))
-                            <a href="{{ route('subscription-plans.create') }}"
+                        @if(Route::has('admin.subscription-plans.create'))
+                            <a href="{{ route('admin.subscription-plans.create') }}"
                                class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
                                 {{ __('New plan') }}
                             </a>
                         @endif
-                        @if(Route::has('subscription-plans.index'))
-                            <a href="{{ route('subscription-plans.index') }}"
+                        @if(Route::has('admin.subscription-plans.index'))
+                            <a href="{{ route('admin.subscription-plans.index') }}"
                                class="inline-flex items-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
                                 {{ __('Manage plans') }}
                             </a>
                         @endif
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 border-b border-gray-100 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
+                    <div class="rounded-xl bg-sky-50 p-4">
+                        <p class="text-sm text-sky-700">{{ __('subscription.payments_received_this_month') }}</p>
+                        <p class="mt-1 text-2xl font-bold tabular-nums text-sky-950">{{ $money($subscriptionRevenueThisMonth) }}</p>
+                    </div>
+                    <div class="rounded-xl bg-emerald-50 p-4">
+                        <p class="text-sm text-emerald-700">{{ __('subscription.total_payments_received') }}</p>
+                        <p class="mt-1 text-2xl font-bold tabular-nums text-emerald-950">{{ $money($subscriptionRevenueTotal) }}</p>
+                    </div>
+                    <div class="rounded-xl bg-violet-50 p-4">
+                        <p class="text-sm text-violet-700">{{ __('subscription.payment_count_this_month') }}</p>
+                        <p class="mt-1 text-2xl font-bold tabular-nums text-violet-950">{{ $fmt($subscriptionPaymentCountThisMonth) }}</p>
                     </div>
                 </div>
 
@@ -465,7 +480,7 @@
                 @else
                     <div class="space-y-6 p-5 sm:p-6">
                         {{-- Summary strip --}}
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                             <div class="rounded-xl bg-indigo-50 p-4">
                                 <p class="text-sm text-indigo-700">{{ __('Monthly recurring revenue') }}</p>
                                 <p class="mt-1 text-2xl font-bold tabular-nums text-indigo-950">{{ $money($mrr) }}</p>
@@ -667,7 +682,7 @@
                             ['route' => 'admin.shops.create', 'title' => __('Register Shop'),  'text' => __('Create a shop account.'),               'border' => 'hover:border-emerald-400', 'color' => 'text-emerald-700'],
                             ['route' => 'admin.shops.index',  'title' => __('Manage Shops'),   'text' => __('View and review shop registrations.'),  'border' => 'hover:border-indigo-400',  'color' => 'text-indigo-700'],
                             ['route' => 'admin.users.index',  'title' => __('Manage Users'),   'text' => __('Review and update user accounts.'),     'border' => 'hover:border-purple-400',  'color' => 'text-purple-700'],
-                            ['route' => 'subscription-plans.index', 'title' => __('Subscription Plans'), 'text' => __('Prices, limits and status.'),  'border' => 'hover:border-sky-400',     'color' => 'text-sky-700'],
+                            ['route' => 'admin.subscription-plans.index', 'title' => __('Subscription Plans'), 'text' => __('Prices, limits and status.'),  'border' => 'hover:border-sky-400',     'color' => 'text-sky-700'],
                             ['route' => 'admin.settings',     'title' => __('System Settings'), 'text' => __('Open platform configuration.'),        'border' => 'hover:border-gray-400',    'color' => 'text-gray-800'],
                         ];
                     @endphp

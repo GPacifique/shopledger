@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Shop;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Services\SubscriptionLifecycleService;
 
 class ShopController extends Controller
 {
@@ -69,7 +70,11 @@ class ShopController extends Controller
     }
 
     // System admin approves
-    public function approve(Request $request, Shop $shop)
+    public function approve(
+        Request $request,
+        Shop $shop,
+        SubscriptionLifecycleService $subscriptions
+    )
     {
         $user = $request->user();
 
@@ -81,6 +86,8 @@ class ShopController extends Controller
         $shop->approved_by = $user->id;
         $shop->approved_at = now();
         $shop->save();
+
+        $subscriptions->activate($shop);
 
         return response()->json($shop);
     }

@@ -8,6 +8,9 @@
 </head>
 <body class="min-h-screen bg-slate-50">
     <main>
+        <div class="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
+            @include('partials.back-button', ['fallbackUrl' => auth()->check() ? route('dashboard') : url('/')])
+        </div>
         @yield('content')
     </main>
 </body>

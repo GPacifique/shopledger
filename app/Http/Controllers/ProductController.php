@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 use App\Notifications\ProductDeleted;
 use App\Notifications\ProductUpdated;
 use App\Models\StockMovement;
+use App\Models\Shop;
+use App\Services\SubscriptionLimitService;
 use chillerlan\QRCode\QRCode;
 use Illuminate\Support\Facades\Validator;
 use App\Exports\ProductsExport;
@@ -163,7 +165,7 @@ class ProductController extends Controller
         );
     }
 
-    public function import(Request $request)
+    public function import(Request $request, SubscriptionLimitService $subscriptionLimits)
     {
         $request->validate([
             'file' => [
@@ -245,6 +247,18 @@ class ProductController extends Controller
                     );
                 }
             }
+
+            $skuColumn = array_search('sku', $header, true);
+            $newProducts = collect($sheet)
+                ->map(fn ($row) => trim((string) ($row[$skuColumn] ?? '')))
+                ->filter()
+                ->unique()
+                ->reject(fn ($sku) => Product::where('shop_id', $shopId)->where('sku', $sku)->exists())
+                ->count();
+            $subscriptionLimits->assertCanAddProducts(
+                Shop::findOrFail($shopId),
+                $newProducts
+            );
 
             /*
             |--------------------------------------------------------------------------
@@ -593,9 +607,10 @@ class ProductController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, SubscriptionLimitService $subscriptionLimits)
     {
         $shopId = $request->user()->shop_id;
+        $subscriptionLimits->assertCanAddProducts(Shop::findOrFail($shopId));
 
         $validated = $request->validate([
             'sku' => [

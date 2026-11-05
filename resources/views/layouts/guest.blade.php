@@ -25,6 +25,10 @@
 
     <div class="flex min-h-screen flex-col items-center justify-center px-4 py-10">
 
+        <div class="mb-4 w-full max-w-md">
+            @include('partials.back-button', ['fallbackUrl' => url('/')])
+        </div>
+
         {{-- Brand --}}
         <a href="{{ url('/') }}"
            class="mb-6 flex items-center gap-2.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">

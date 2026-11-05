@@ -11,6 +11,39 @@ class Shop extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::created(function (Shop $shop): void {
+            if ($shop->subscriptions()->exists()) {
+                return;
+            }
+
+            $plan = SubscriptionPlan::query()->find($shop->subscriptionplan_id)
+                ?? SubscriptionPlan::query()
+                    ->where('is_active', true)
+                    ->orderBy('price')
+                    ->firstOrFail();
+            $startsAt = now();
+            $pending = $shop->isPending();
+            $endsAt = $pending
+                ? $startsAt->copy()->addDays((int) config('subscription.trial_days', 14))
+                : match ($plan->billing_period) {
+                    'quarterly' => $startsAt->copy()->addMonths(3),
+                    'yearly' => $startsAt->copy()->addYear(),
+                    default => $startsAt->copy()->addMonth(),
+                };
+
+            Subscription::create([
+                'shop_id' => $shop->id,
+                'subscription_plan_id' => $plan->id,
+                'status' => $pending ? 'trial' : ($shop->isApproved() ? 'active' : 'expired'),
+                'starts_at' => $startsAt,
+                'ends_at' => $endsAt,
+                'trial_ends_at' => $pending ? $endsAt : null,
+            ]);
+        });
+    }
+
     protected $fillable = [
         'business_name',
         'business_type',
@@ -104,7 +137,12 @@ class Shop extends Model
 
     public function subscriptions()
     {
-        return $this->hasMany(ShopSubscription::class);
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function subscription()
+    {
+        return $this->hasOne(Subscription::class)->latestOfMany();
     }
 
     public function customers()
@@ -115,6 +153,11 @@ class Shop extends Model
     public function users()
     {
         return $this->hasMany(User::class, 'shop_id');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
     }
 
     public function orders(): HasMany

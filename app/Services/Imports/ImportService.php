@@ -12,6 +12,7 @@ use App\Models\SaleItem;
 use App\Models\StockMovement;
 use App\Models\Supplier;
 use App\Services\StockService;
+use App\Services\SubscriptionLimitService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -19,8 +20,10 @@ use Throwable;
 
 class ImportService
 {
-    public function __construct(private readonly StockService $stockService)
-    {
+    public function __construct(
+        private readonly StockService $stockService,
+        private readonly SubscriptionLimitService $subscriptionLimits
+    ) {
     }
 
     public function normalizeRows(array $rows): array
@@ -171,6 +174,15 @@ class ImportService
 
     private function importProducts(array $rows, int $shopId): array
     {
+        $shop = \App\Models\Shop::findOrFail($shopId);
+        $newProducts = collect($rows)
+            ->pluck('sku')
+            ->filter(fn ($sku) => $sku !== null && $sku !== '')
+            ->unique()
+            ->reject(fn ($sku) => $shop->products()->where('sku', $sku)->exists())
+            ->count();
+        $this->subscriptionLimits->assertCanAddProducts($shop, $newProducts);
+
         $created = $updated = 0;
         foreach ($rows as $row) {
             $category = Category::firstOrCreate(['shop_id' => $shopId, 'name' => $row['category']], ['description' => null]);

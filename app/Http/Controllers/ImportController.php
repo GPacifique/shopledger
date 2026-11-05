@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Exports\ImportTemplateExport;
 use App\Imports\SpreadsheetImport;
 use App\Services\Imports\ImportService;
+use App\Models\Shop;
+use App\Services\SubscriptionLimitService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
@@ -69,7 +71,11 @@ class ImportController extends Controller
         return view('imports.preview', compact('pending', 'token'));
     }
 
-    public function confirm(string $token, Request $request)
+    public function confirm(
+        string $token,
+        Request $request,
+        SubscriptionLimitService $subscriptionLimits
+    )
     {
         $pending = session("pending_imports.{$token}");
         abort_unless($pending, 404);
@@ -80,6 +86,17 @@ class ImportController extends Controller
         }
 
         try {
+            if ($pending['type'] === 'products') {
+                $shop = Shop::findOrFail($request->user()->shop_id);
+                $newProducts = collect($pending['valid'])
+                    ->pluck('sku')
+                    ->filter(fn ($sku) => $sku !== null && $sku !== '')
+                    ->unique()
+                    ->reject(fn ($sku) => $shop->products()->where('sku', $sku)->exists())
+                    ->count();
+                $subscriptionLimits->assertCanAddProducts($shop, $newProducts);
+            }
+
             $result = $this->importService->import($pending['type'], $pending['valid'], (int) $request->user()->shop_id, (int) $request->user()->id);
             Storage::delete($pending['path']);
             session()->forget("pending_imports.{$token}");

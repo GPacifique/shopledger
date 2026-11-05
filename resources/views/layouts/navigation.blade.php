@@ -85,6 +85,25 @@
         ],
     ] : [];
 
+    if ($currentUser?->isSystemAdmin()) {
+        $groups['platform'] = [
+            'label' => __('Platform'),
+            'icon' => 'team',
+            'items' => [
+                [__('Shops and subscriptions'), 'admin.shops.index', 'admin.shops.*'],
+                [__('Subscription plans'), 'admin.subscription-plans.index', 'admin.subscription-plans.*'],
+            ],
+        ];
+    } elseif ($currentUser?->isShopAdmin()) {
+        $groups['subscription'] = [
+            'label' => __('Account'),
+            'icon' => 'team',
+            'items' => [
+                [__('My Subscription'), 'shop.subscriptions.index', 'shop.subscriptions.*'],
+            ],
+        ];
+    }
+
     $openGroups = collect($groups)
         ->map(fn ($g) => collect($g['items'])->contains(fn ($i) => request()->routeIs($i[2])))
         ->all();

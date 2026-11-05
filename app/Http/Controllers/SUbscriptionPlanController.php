@@ -3,121 +3,102 @@
 namespace App\Http\Controllers;
 
 use App\Models\SubscriptionPlan;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class SubscriptionPlanController extends Controller
 {
-    /**
-     * Display all plans
-     */
-    public function index()
+    public function index(): View
     {
-        $plans = SubscriptionPlan::latest()->paginate(10);
+        Gate::authorize('administer-platform');
+
+        $plans = SubscriptionPlan::query()->orderBy('price')->paginate(20);
 
         return view('admin.subscription-plans.index', compact('plans'));
     }
 
-    /**
-     * Show create form
-     */
-    public function create()
+    public function create(): View
     {
-        return view('admin.subscription-plans.create');
-    }
+        Gate::authorize('administer-platform');
 
-    /**
-     * Store new plan
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'billing_cycle' => 'required|in:monthly,yearly',
-            'max_users' => 'required|integer|min:1',
-            'max_products' => 'required|integer|min:1',
-            'max_branches' => 'required|integer|min:1',
-            'status' => 'required|in:active,inactive',
+        return view('admin.subscription-plans.form', [
+            'subscriptionPlan' => new SubscriptionPlan(['billing_period' => 'monthly', 'max_users' => 3]),
+            'action' => route('admin.subscription-plans.store'),
+            'method' => 'POST',
         ]);
+    }
 
-        SubscriptionPlan::create([
-            'name' => $request->name,
-            'price' => $request->price,
-            'billing_cycle' => $request->billing_cycle,
-            'max_users' => $request->max_users,
-            'max_products' => $request->max_products,
-            'max_branches' => $request->max_branches,
-            'features' => $request->features,
-            'status' => $request->status
+    public function store(Request $request): RedirectResponse
+    {
+        Gate::authorize('administer-platform');
+        $validated = $this->validated($request);
+        $validated['slug'] = ($validated['slug'] ?? null) ?: Str::slug($validated['name']);
+        $validated['is_active'] = $request->boolean('is_active');
+
+        SubscriptionPlan::create($validated);
+
+        return redirect()->route('admin.subscription-plans.index')->with('success', __('subscription.plan_created'));
+    }
+
+    public function edit(SubscriptionPlan $subscriptionPlan): View
+    {
+        Gate::authorize('administer-platform');
+
+        return view('admin.subscription-plans.form', [
+            'subscriptionPlan' => $subscriptionPlan,
+            'action' => route('admin.subscription-plans.update', $subscriptionPlan),
+            'method' => 'PUT',
         ]);
-
-        return redirect()
-            ->route('subscription-plans.index')
-            ->with('success', 'Subscription plan created successfully');
     }
 
-    /**
-     * Show single plan
-     */
-    public function show(SubscriptionPlan $subscriptionPlan)
+    public function update(Request $request, SubscriptionPlan $subscriptionPlan): RedirectResponse
     {
-        return view(
-            'admin.subscription-plans.show',
-            compact('subscriptionPlan')
-        );
+        Gate::authorize('administer-platform');
+        $validated = $this->validated($request, $subscriptionPlan);
+        $validated['slug'] = ($validated['slug'] ?? null) ?: Str::slug($validated['name']);
+        $validated['is_active'] = $request->boolean('is_active');
+
+        $subscriptionPlan->update($validated);
+
+        return redirect()->route('admin.subscription-plans.index')->with('success', __('subscription.plan_updated'));
     }
 
-    /**
-     * Edit form
-     */
-    public function edit(SubscriptionPlan $subscriptionPlan)
+    public function destroy(SubscriptionPlan $subscriptionPlan): RedirectResponse
     {
-        return view(
-            'admin.subscription-plans.edit',
-            compact('subscriptionPlan')
-        );
-    }
-
-    /**
-     * Update plan
-     */
-    public function update(Request $request, SubscriptionPlan $subscriptionPlan)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'billing_cycle' => 'required|in:monthly,yearly',
-            'max_users' => 'required|integer|min:1',
-            'max_products' => 'required|integer|min:1',
-            'max_branches' => 'required|integer|min:1',
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        $subscriptionPlan->update([
-            'name' => $request->name,
-            'price' => $request->price,
-            'billing_cycle' => $request->billing_cycle,
-            'max_users' => $request->max_users,
-            'max_products' => $request->max_products,
-            'max_branches' => $request->max_branches,
-            'features' => $request->features,
-            'status' => $request->status
-        ]);
-
-        return redirect()
-            ->route('subscription-plans.index')
-            ->with('success', 'Subscription plan updated successfully');
-    }
-
-    /**
-     * Delete plan
-     */
-    public function destroy(SubscriptionPlan $subscriptionPlan)
-    {
+        Gate::authorize('administer-platform');
+        abort_if($subscriptionPlan->subscriptions()->exists(), 422, __('subscription.plan_delete_in_use'));
         $subscriptionPlan->delete();
 
-        return redirect()
-            ->route('subscription-plans.index')
-            ->with('success', 'Subscription plan deleted successfully');
+        return redirect()->route('admin.subscription-plans.index')->with('success', __('subscription.plan_deleted'));
+    }
+
+    private function validated(Request $request, ?SubscriptionPlan $subscriptionPlan = null): array
+    {
+        $request->merge([
+            'features' => array_values(array_filter(
+                (array) $request->input('features', []),
+                fn ($feature) => is_string($feature) && trim($feature) !== ''
+            )),
+        ]);
+
+        return $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'slug' => [
+                'nullable',
+                'string',
+                'max:140',
+                Rule::unique('subscription_plans', 'slug')->ignore($subscriptionPlan?->id),
+            ],
+            'price' => ['required', 'numeric', 'min:0'],
+            'billing_period' => ['required', Rule::in(['monthly', 'quarterly', 'yearly'])],
+            'max_users' => ['required', 'integer', 'min:1'],
+            'max_products' => ['nullable', 'integer', 'min:1'],
+            'features' => ['nullable', 'array'],
+            'features.*' => ['string', 'max:100'],
+        ]);
     }
 }

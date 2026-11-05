@@ -69,6 +69,7 @@
 
             {{-- Account Actions --}}
             <div class="flex shrink-0 items-center gap-2">
+                @include('partials.back-button', ['fallbackUrl' => auth()->check() ? route('dashboard') : url('/')])
                 @auth
                     <a href="{{ url('/dashboard') }}"
                        class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">

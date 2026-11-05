@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\SubscriptionLimitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -44,7 +45,7 @@ class StaffController extends Controller
         return view('staff.create');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, SubscriptionLimitService $subscriptionLimits)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -57,6 +58,8 @@ class StaffController extends Controller
         if (!$admin->isShopAdmin()) {
             abort(403);
         }
+
+        $subscriptionLimits->assertCanAddUsers($admin->shop);
 
         User::create([
             'name' => $request->name,

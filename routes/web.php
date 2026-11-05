@@ -32,8 +32,11 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\BuyerController;
 use App\Http\Controllers\PrintSettingsController;
+use App\Http\Controllers\AdminSubscriptionController;
+use App\Http\Controllers\ShopSubscriptionController;
+use App\Http\Controllers\SubscriptionNotificationController;
 
-Route::middleware(['auth', 'shop.roles:shop_admin,seller,cashier'])
+Route::middleware(['auth', 'verified', 'shop.approved', 'subscription.active', 'shop.roles:shop_admin,seller,cashier'])
     ->prefix('pos')
     ->name('pos.')
     ->group(function () {
@@ -54,7 +57,7 @@ Route::get('/documents/verify/{uuid}', [DocumentVerificationController::class, '
     ->middleware('signed')
     ->name('documents.verify');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'shop.approved', 'subscription.active'])->group(function () {
     Route::post('shops/{shop}/waiter/orders', [WaiterController::class, 'storeOrder'])
         ->name('waiter.orders.store');
 
@@ -74,14 +77,20 @@ Route::middleware('auth')->get(
     }
 )->name('shop.assignment.required');
 
+Route::middleware('auth')->post(
+    '/notifications/{notification}/read',
+    [SubscriptionNotificationController::class, 'markRead']
+)->name('notifications.read');
+
 Route::view('/terms', 'legal.terms')->name('terms');
 Route::view('/privacy', 'legal.privacy')->name('privacy');
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified', 'shop.approved', 'subscription.active'])->group(function () {
     Route::get('/pos', [PosController::class, 'index'])
         ->name('pos.index');
 });
 
 Route::middleware(['auth', 'verified', 'shop.approved'])
+    ->middleware('subscription.active')
     ->prefix('reports')
     ->name('reports.')
     ->group(function () {
@@ -133,14 +142,17 @@ Route::middleware(['auth', 'verified', 'shop.approved'])
             ->name('export.csv');
     });
 Route::get('/products/export', [ProductController::class, 'export'])
+    ->middleware(['auth', 'verified', 'shop.approved', 'subscription.active', 'role:shop_admin,seller'])
     ->name('products.export');
 
 Route::post('/products/import', [ProductController::class, 'import'])
+    ->middleware(['auth', 'verified', 'shop.approved', 'subscription.active', 'role:shop_admin'])
     ->name('products.import');
 
 Route::get('/products/import/template', [ProductController::class, 'importTemplate'])
+    ->middleware(['auth', 'verified', 'shop.approved', 'subscription.active', 'role:shop_admin,seller'])
     ->name('products.import.template');
-Route::middleware(['auth', 'verified', 'role:shop_admin,seller'])->group(function () {
+Route::middleware(['auth', 'verified', 'shop.approved', 'subscription.active', 'role:shop_admin,seller'])->group(function () {
 
     Route::resource('expenses', ExpenseController::class);
 
@@ -154,25 +166,24 @@ Route::middleware(['auth', 'verified', 'role:shop_admin,seller'])->group(functio
         [ExpenseController::class, 'download']
     )->name('expenses.download');
 });
-// Other Income
-Route::resource('other_incomes', OtherIncomeController::class);
-
-// Income Categories
-Route::resource('income_categories', IncomeCategoryController::class);
-
-Route::patch(
-    'income_categories/{incomeCategory}/toggle-status',
-    [IncomeCategoryController::class, 'toggleStatus']
-)->name('income_categories.toggle-status');
-Route::resource('other_incomes', OtherIncomeController::class);
+Route::middleware(['auth', 'verified', 'shop.approved', 'subscription.active', 'role:shop_admin,accountant'])->group(function () {
+    Route::resource('other_incomes', OtherIncomeController::class);
+    Route::resource('income_categories', IncomeCategoryController::class);
+    Route::patch(
+        'income_categories/{incomeCategory}/toggle-status',
+        [IncomeCategoryController::class, 'toggleStatus']
+    )->name('income_categories.toggle-status');
+});
 
 Route::get('/shops/{shop}/orders/{order}/bill', [WaiterController::class, 'downloadBill'])
+    ->middleware(['auth', 'verified', 'shop.approved', 'subscription.active'])
     ->name('shops.orders.bill.download');
 
 Route::get('/shops/{shop}/orders/{order}/print', [WaiterController::class, 'printOrder'])
+    ->middleware(['auth', 'verified', 'shop.approved', 'subscription.active'])
     ->name('shops.orders.print');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'shop.approved', 'subscription.active'])->group(function () {
 
     Route::prefix('shops/{shop}')->name('shops.')->group(function () {
 Route::get('orders/take', [OrderController::class, 'create'])
@@ -204,7 +215,7 @@ Route::get('orders/take', [OrderController::class, 'create'])
     });
 
 });
-Route::middleware(['auth', 'verified', 'shop.approved'])->group(function () {
+Route::middleware(['auth', 'verified', 'shop.approved', 'subscription.active'])->group(function () {
     Route::prefix('shops/{shop}')->name('shops.')->group(function () {
 
         Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
@@ -221,7 +232,7 @@ Route::middleware(['auth', 'verified', 'shop.approved'])->group(function () {
 });
 
 
-Route::middleware(['auth', 'verified', 'shop.approved'])->group(function () {
+Route::middleware(['auth', 'verified', 'shop.approved', 'subscription.active'])->group(function () {
     Route::prefix('shops/{shop}')->name('shops.')->group(function () {
 
         Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
@@ -241,13 +252,30 @@ Route::middleware(['auth', 'verified', 'shop.approved'])->group(function () {
 Route::middleware(['auth', 'verified','role:system_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/settings', [SystemAdminController::class, 'settings'])->name('settings');
     Route::get('/shops', [SystemAdminController::class, 'shopsIndex'])->name('shops.index');
-Route::get('/shops/create', [SystemAdminController::class, 'createShop'])->name('shops.create');
-Route::post('/shops', [SystemAdminController::class, 'storeShop'])->name('shops.store');
+    Route::get('/shops/create', [SystemAdminController::class, 'createShop'])->name('shops.create');
+    Route::post('/shops', [SystemAdminController::class, 'storeShop'])->name('shops.store');
     Route::put('/settings', [SystemAdminController::class, 'updateSettings'])->name('settings.update');
+    Route::resource('subscription-plans', SubscriptionPlanController::class)
+        ->parameters(['subscription-plans' => 'subscriptionPlan'])
+        ->except(['show']);
+    Route::post('/shops/{shop}/subscription', [AdminSubscriptionController::class, 'assignPlan'])->name('shops.subscription.assign');
+    Route::post('/subscriptions/{subscription}/payments', [AdminSubscriptionController::class, 'recordPayment'])->name('subscriptions.payments.store');
+    Route::post('/subscriptions/{subscription}/extend', [AdminSubscriptionController::class, 'extend'])->name('subscriptions.extend');
+    Route::post('/subscriptions/{subscription}/plan', [AdminSubscriptionController::class, 'changePlan'])->name('subscriptions.plan.update');
+    Route::post('/subscriptions/{subscription}/suspend', [AdminSubscriptionController::class, 'suspend'])->name('subscriptions.suspend');
+    Route::post('/subscriptions/{subscription}/reactivate', [AdminSubscriptionController::class, 'reactivate'])->name('subscriptions.reactivate');
 });
 Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
+
+Route::get('/subscription/expired', [\App\Http\Controllers\ShopSubscriptionController::class, 'expired'])
+    ->middleware(['auth', 'verified'])
+    ->name('shop.subscription.expired');
+
+Route::get('/shop/subscription', [ShopSubscriptionController::class, 'index'])
+    ->middleware(['auth', 'verified', 'role:shop_admin', 'shop.approved'])
+    ->name('shop.subscriptions.index');
 
 // Language Switch Route
 Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
@@ -289,9 +317,9 @@ if ($user->role==='waiter'){
     // User with pending shop or no shop - show under review
     $shop = $user->shop;
     return view('dashboard.user', compact('shop'));
-})->middleware(['auth', 'verified', 'shop.approved'])->name('dashboard');
+})->middleware(['auth', 'verified', 'shop.approved', 'subscription.active'])->name('dashboard');
 
-Route::middleware(['auth', 'verified', 'shop.approved'])->group(function () {
+Route::middleware(['auth', 'verified', 'shop.approved', 'subscription.active'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

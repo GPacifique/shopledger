@@ -470,6 +470,8 @@
 
         @php
             $authUser = Auth::user();
+            $currentSubscription = $authUser?->shop?->subscription;
+            $unreadSubscriptionNotifications = $authUser?->unreadNotifications()->limit(5)->get() ?? collect();
 
             // Profile photo saved as public/images/users/{id}.jpg|jpeg|png (see User::getProfilePhotoUrlAttribute)
             $photo = $authUser?->profile_photo_url;
@@ -525,6 +527,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
+
+                @include('partials.back-button', ['fallbackUrl' => route('dashboard')])
 
                 {{-- Page header (@section('header') style) --}}
                 <div class="hidden min-w-0 flex-1 lg:block">
@@ -609,6 +613,50 @@
                                     @endif
                                 </a>
                             @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Subscription notifications --}}
+                    <div x-data="{ open: false }" @keydown.escape.window="open = false" @click.outside="open = false" class="relative">
+                        <button
+                            type="button"
+                            @click="open = !open"
+                            class="app-btn relative"
+                            aria-label="{{ __('Notifications') }}"
+                            :aria-expanded="open"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.4-1.4a2 2 0 01-.6-1.4V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"/>
+                            </svg>
+                            @if($unreadSubscriptionNotifications->isNotEmpty())
+                                <span class="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                                    {{ $authUser->unreadNotifications()->count() }}
+                                </span>
+                            @endif
+                        </button>
+                        <div
+                            x-show="open"
+                            x-cloak
+                            x-transition.origin.top.right
+                            class="app-dropdown absolute right-0 z-50 mt-2 w-80 max-w-[90vw] p-2"
+                            role="menu"
+                            aria-label="{{ __('Notifications') }}"
+                        >
+                            <p class="px-3 py-2 text-sm font-semibold">{{ __('Notifications') }}</p>
+                            @forelse($unreadSubscriptionNotifications as $subscriptionNotification)
+                                <div class="rounded-lg px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
+                                    <a href="{{ $subscriptionNotification->data['url'] ?? route('dashboard') }}" class="block font-semibold">
+                                        {{ $subscriptionNotification->data['title'] ?? __('Notifications') }}
+                                    </a>
+                                    <p class="mt-1 text-xs" style="color: var(--text-muted)">{{ $subscriptionNotification->data['message'] ?? '' }}</p>
+                                    <form method="POST" action="{{ route('notifications.read', $subscriptionNotification) }}" class="mt-1 text-right">
+                                        @csrf
+                                        <button type="submit" class="text-xs font-semibold underline">{{ __('Mark as read') }}</button>
+                                    </form>
+                                </div>
+                            @empty
+                                <p class="px-3 py-4 text-sm" style="color: var(--text-muted)">{{ __('No unread notifications.') }}</p>
+                            @endforelse
                         </div>
                     </div>
 
@@ -711,6 +759,36 @@
 
         {{-- Main content --}}
         <main class="app-main p-4 sm:p-6 lg:p-8">
+
+            @if(
+                request()->routeIs('shop.dashboard')
+                && $currentSubscription
+                && ($currentSubscription->onGracePeriod() || $currentSubscription->daysRemaining() <= 7)
+                && ! $currentSubscription->isExpired()
+            )
+                <div
+                    x-data="{ visible: true }"
+                    x-show="visible"
+                    x-cloak
+                    class="mb-6 flex items-start justify-between gap-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100"
+                    role="status"
+                >
+                    <p class="text-sm">
+                        @if($currentSubscription->onGracePeriod())
+                            {{ __('subscription.warning_grace', ['date' => $currentSubscription->grace_ends_at?->format('Y-m-d')]) }}
+                        @else
+                            {{ __('subscription.warning_ending', ['days' => max(0, $currentSubscription->daysRemaining()), 'date' => $currentSubscription->ends_at?->format('Y-m-d')]) }}
+                        @endif
+                        <a href="{{ route('shop.subscriptions.index') }}" class="ml-1 font-semibold underline">{{ __('subscription.view_subscription') }}</a>
+                    </p>
+                    <button
+                        type="button"
+                        @click="visible = false"
+                        class="shrink-0 text-lg leading-none"
+                        aria-label="{{ __('Dismiss') }}"
+                    >&times;</button>
+                </div>
+            @endif
 
             @if(session('success'))
                 <div

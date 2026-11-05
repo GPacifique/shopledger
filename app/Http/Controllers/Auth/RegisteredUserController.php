@@ -62,7 +62,7 @@ class RegisteredUserController extends Controller
                     'city'     => $data['city'],
                     'address'  => $data['address'],
                     'password' => Hash::make($data['password']),
-                    'role'     => 'user', // use the exact role string your RoleMiddleware expects
+                    'role'     => 'shop_admin',
                 ])->save();
 
                 $shop = new Shop();
@@ -70,7 +70,7 @@ class RegisteredUserController extends Controller
                     'business_name'       => $data['business_name'],
                     'business_type'       => $data['business_type'],
                     // generated here so it never depends on the model having a creating hook
-                    'registration_number' => $data['registration_number'] ?: $this->generateRegistrationNumber(),
+                    'registration_number' => ($data['registration_number'] ?? null) ?: $this->generateRegistrationNumber(),
                     'tin_number'          => $data['tin_number'] ?? null,
                     'email'               => $data['email'],
                     'phone'               => $data['phone'],
@@ -78,7 +78,9 @@ class RegisteredUserController extends Controller
                     'city'                => $data['city'],
                     'address'             => $data['address'],
                     'logo'                => $logoPath,   // stored as images/logos/xxxx.png|jpg
+                    'slug'                => Str::slug($data['business_name']) . '-' . Str::lower(Str::random(6)),
                     'status'              => 'pending', // a system admin approves it later
+                    'created_by'          => $user->id,
                 ]);
 
                 // Link shop and user, whichever way your schema stores it
@@ -103,7 +105,7 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
+        Auth::guard('web')->login($user);
 
         return redirect()->route('verification.notice');
     }
