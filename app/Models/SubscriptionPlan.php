@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SubscriptionPlan extends Model
 {
@@ -16,13 +17,10 @@ class SubscriptionPlan extends Model
         'slug',
         'price',
         'billing_period',
-        'billing_cycle',
         'max_users',
         'max_products',
-        'max_branches',
         'features',
         'is_active',
-        'status',
     ];
 
     protected $casts = [
@@ -31,28 +29,8 @@ class SubscriptionPlan extends Model
         'is_active' => 'boolean',
     ];
 
-    public function subscriptions()
+    public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
-    }
-
-    public function getBillingCycleAttribute(): string
-    {
-        return $this->billing_period ?? 'monthly';
-    }
-
-    public function getStatusAttribute(): string
-    {
-        return ($this->is_active ?? true) ? 'active' : 'inactive';
-    }
-
-    public function setBillingCycleAttribute(string $value): void
-    {
-        $this->attributes['billing_period'] = $value;
-    }
-
-    public function setStatusAttribute(string $value): void
-    {
-        $this->attributes['is_active'] = $value === 'active';
     }
 }
