@@ -20,7 +20,6 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-           
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -162,6 +161,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                         <a href="{{ route('purchases.show', $purchase) }}" class="text-indigo-600 hover:text-indigo-900">{{ __('View') }}</a>
                                         @if(auth()->user()->isSystemAdmin() || auth()->user()->isShopAdmin())
+                                            <a href="{{ route('purchases.edit', $purchase) }}" class="text-yellow-600 hover:text-yellow-900">{{ __('Edit') }}</a>
                                             {{-- data-confirm is handled by the global submit listener in layouts/app.blade.php (CSP-safe, no inline JS) --}}
                                             <form action="{{ route('purchases.destroy', $purchase) }}" method="POST" class="inline"
                                                   data-confirm="{{ __('Are you sure? This will reverse stock changes.') }}">

@@ -36,6 +36,7 @@ use App\Http\Controllers\PrintSettingsController;
 use App\Http\Controllers\AdminSubscriptionController;
 use App\Http\Controllers\ShopSubscriptionController;
 use App\Http\Controllers\SubscriptionNotificationController;
+ Route::resource('purchases', PurchaseController::class);
 
 Route::middleware(['auth', 'verified', 'shop.approved', 'subscription.active', 'shop.roles:shop_admin,seller,cashier'])
     ->prefix('pos')
@@ -113,9 +114,12 @@ Route::middleware(['auth', 'verified', 'shop.approved'])
 
         Route::get('/sales', [ReportController::class, 'sales'])
             ->name('sales');
-
+   Route::get('purchases/{purchase}/edit', [PurchaseController::class, 'edit'])->name('purchases.edit');
+   Route::put('purchases/{purchase}', [PurchaseController::class, 'update'])->name('purchases.update');
         Route::get('/purchases', [ReportController::class, 'purchases'])
             ->name('purchases');
+             Route::get('/purchases', [ReportController::class, 'edit'])
+            ->name('purchases.edit');
 
         Route::get('/expenses', [ReportController::class, 'expenses'])
             ->name('expenses');

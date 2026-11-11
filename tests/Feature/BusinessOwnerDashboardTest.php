@@ -138,6 +138,33 @@ class BusinessOwnerDashboardTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_business_owner_can_view_subscriptions_for_linked_shops_without_a_selected_shop(): void
+    {
+        $owner = User::factory()->create([
+            'role' => 'business_owner',
+            'email_verified_at' => now(),
+        ]);
+        $firstShop = $this->createShop($owner, 'First Subscription Shop');
+        $secondShop = $this->createShop($owner, 'Second Subscription Shop');
+        $unrelatedShop = $this->createShop(User::factory()->create(), 'Unrelated Subscription Shop');
+        $owner->shops()->attach([$firstShop->id, $secondShop->id]);
+
+        $this->actingAs($owner)
+            ->get(route('shop.subscriptions.index'))
+            ->assertOk()
+            ->assertSee('First Subscription Shop')
+            ->assertSee('Second Subscription Shop')
+            ->assertSessionHas('active_business_shop_id', $firstShop->id);
+
+        $this->get(route('shop.subscriptions.index', ['shop' => $secondShop->id]))
+            ->assertOk()
+            ->assertSee('Second Subscription Shop')
+            ->assertSessionHas('active_business_shop_id', $secondShop->id);
+
+        $this->get(route('shop.subscriptions.index', ['shop' => $unrelatedShop->id]))
+            ->assertForbidden();
+    }
+
     public function test_dashboard_uses_existing_financial_and_inventory_calculations(): void
     {
         $owner = User::factory()->create([

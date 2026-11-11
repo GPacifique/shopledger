@@ -4,6 +4,24 @@
     </x-slot>
 
     <div class="mx-auto max-w-5xl space-y-6">
+        @if($ownerShops->count() > 1)
+            <form method="GET" action="{{ route('shop.subscriptions.index') }}" class="flex flex-wrap items-end gap-3">
+                <div>
+                    <label for="subscription-shop" class="block text-sm font-medium">{{ __('Shop') }}</label>
+                    <select id="subscription-shop" name="shop" class="mt-1 rounded-lg border-slate-300">
+                        @foreach($ownerShops as $ownerShop)
+                            <option value="{{ $ownerShop->id }}" @selected((int) request('shop', $shop->id) === $ownerShop->id)>
+                                {{ $ownerShop->business_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="submit" class="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white">
+                    {{ __('View subscription') }}
+                </button>
+            </form>
+        @endif
+
         <section class="rounded-2xl border p-5 sm:p-7" style="border-color:var(--border);background:var(--surface)">
             <h2 class="text-lg font-semibold">{{ $shop->business_name }}</h2>
             @if($subscription)

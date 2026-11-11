@@ -32,6 +32,43 @@ class EnsureShopIsApproved
                 'active_business_shop_id',
                 $user->getRawOriginal('shop_id')
             );
+
+            if ($request->routeIs('shop.subscriptions.index') && !$shopId) {
+                $requestedShopId = $request->query('shop');
+                if ($requestedShopId !== null) {
+                    abort_unless(
+                        ctype_digit((string) $requestedShopId)
+                        && $user->shops()->whereKey($requestedShopId)->exists(),
+                        403
+                    );
+                    $shopId = (int) $requestedShopId;
+                } else {
+                    $shopId = $user->shops()
+                        ->where('status', 'approved')
+                        ->orderBy('business_name')
+                        ->value('shops.id');
+                }
+
+                if (!$shopId) {
+                    return redirect()
+                        ->route('business.dashboard')
+                        ->with('error', __('Select an approved shop to view its subscription.'));
+                }
+
+                $request->session()->put('active_business_shop_id', $shopId);
+            } elseif (
+                $request->routeIs('shop.subscriptions.index')
+                && $request->query('shop') !== null
+            ) {
+                abort_unless(
+                    ctype_digit((string) $request->query('shop'))
+                    && $user->shops()->whereKey($request->query('shop'))->exists(),
+                    403
+                );
+                $shopId = (int) $request->query('shop');
+                $request->session()->put('active_business_shop_id', $shopId);
+            }
+
             abort_unless(
                 $shopId && $user->shops()->whereKey($shopId)->exists(),
                 403
